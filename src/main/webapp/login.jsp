@@ -4,16 +4,16 @@
     <meta charset="UTF-8">
     <title>Ocean View Hotel - Login</title>
 
-    <!-- bootstrap -->
-    <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-            rel="stylesheet"
-    >
+    <!-- bootstrap CSS -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+
+    <!-- bootstrap Icons -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
     <!-- creating custom css for rounded corners and edges-->
     <style>
-
-
         body {
             min-height: 100vh;
             background: linear-gradient(to bottom, #4682A9, #FFFBDE);
@@ -74,6 +74,7 @@
 <body>
 
 <div class="login-card">
+
     <!-- heading part of form -->
     <div class="login-header">
         <h1>Welcome to</h1>
@@ -82,15 +83,20 @@
 
     <!-- form body -->
     <div class="login-body">
-        <form action = ""  method="post">
+        <form action = ""  method="post" id="loginForm">
             <div class="mb-3">
                 <label>Username</label>
-                <input type="text" class="form-control" id="username" name="username">
+                <input type="text" class="form-control" id="username" name="username" required>
             </div>
 
             <div class="mb-3">
                 <label>Password</label>
-                <input type="password" class="form-control" id="password" name="password">
+                <div style="position: relative;">
+                    <input type="password" class="form-control" id="password" name="password" required>
+                    <button type="button" id="togglePassword" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer;">
+                        <i class="bi bi-eye" id="eyeIcon"></i>
+                    </button>
+                </div>
             </div>
 
             <div class="text-center">
@@ -101,6 +107,29 @@
         </form>
     </div>
 </div>
+
+<%--if user enters password, they may toggle the eye icon and choose between viewing the password text or not--%>
+<%--this controls showing/not showing the text --%>
+<%--by toggling the eye icon--%>
+<script>
+        const passwordInput = document.getElementById('password');
+        const togglePassword = document.getElementById('togglePassword');
+        const eyeIcon = document.getElementById('eyeIcon');
+
+        togglePassword.addEventListener('click', function () {
+
+        if (passwordInput.type === 'password')
+        {
+            passwordInput.type = 'text';
+            eyeIcon.classList.remove('bi-eye');
+            eyeIcon.classList.add('bi-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            eyeIcon.classList.remove('bi-eye-slash');
+            eyeIcon.classList.add('bi-eye');
+        }
+        });
+</script>
 
 </body>
 </html>
