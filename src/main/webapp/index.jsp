@@ -20,7 +20,7 @@
         }
 
         .logo-card {
-            background: white;
+            background: #f3fdfd;
             padding: 50px 60px;
             border-radius: 18px;
             text-align: center;
@@ -44,6 +44,7 @@
         }
 
         .enter-btn {
+            background: #4682A9 !important;
             margin-top: 20px;
             border-radius: 20px;
             padding: 6px 25px;
@@ -57,9 +58,9 @@
     <img src="images/logo.png" alt="Ocean View Hotel Logo">
 
     <h1>Ocean View Hotel</h1>
-    <p><b>Comfort</b> 𓆝 <b>Galle 𓆝</b> <b>Experience</b></p>
+    <p><b>Comfort</b> 𓆝 <b>Galle</b>  𓆝<b>Experience</b></p>
 
-    <a href="login.jsp" class="btn btn-primary enter-btn">
+    <a href="login.jsp" class="btn enter-btn">
         Enter
     </a>
 </div>
