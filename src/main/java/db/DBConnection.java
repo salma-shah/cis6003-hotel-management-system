@@ -8,7 +8,7 @@ import java.sql.SQLException;
 public class DBConnection {
 
     // database connection details and credentials
-    private static final String DB_URL = "jdbc:mysql://localhost:3306/ocean_view_hotel_db";
+    private static final String DB_URL = "jdbc:mysql://localhost:3306/ocean_view_hotel_db?useSSL=false&serverTimezone=UTC";
     private static final String USER = "root";
     private static final String PASSWORD = "admin12345678";
 
@@ -16,17 +16,18 @@ public class DBConnection {
 
     private DBConnection() {
         try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
             // this is the actual db connection
             connection = DriverManager.getConnection(DB_URL, USER, PASSWORD);
             System.out.println("Connected to database successfully");
-        } catch (SQLException e) {
+        } catch (ClassNotFoundException | SQLException e) {
             System.err.println(e.getMessage());
             throw new RuntimeException("Error connecting to database" + e.getMessage());
         }
     }
 
     // but this is the INNER static field which holds the single instance
-    private static DBConnection instance = new DBConnection();
+    private static final DBConnection instance = new DBConnection();
 
     // public method to return the instance
     public static DBConnection getInstance() {
@@ -52,7 +53,7 @@ public class DBConnection {
     public void closeConnection() {
         try
         {
-            if ( connection != null || !connection.isClosed())
+            if ( !connection.isClosed() || connection != null)
             {
                 connection.close();
                 System.out.println("Connection closed successfully");

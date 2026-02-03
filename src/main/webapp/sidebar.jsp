@@ -1,3 +1,4 @@
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <head>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css"/>
 </head>
@@ -62,10 +63,20 @@
             <i class="bi bi-question-square me-2"></i> Help
         </a>
 
+<%--        this is a section only manager can view--%>
+<%--        <c:if test="${sessionScope.userRole == 'manager'}">--%>
         <a class="nav-link" href="register.jsp">
             <i class="bi bi-person-circle"></i>    Create New Account
         </a>
 
+        <a class="nav-link" href="register.jsp">
+            <i class="bi bi-gear"></i>   Manager User Accounts
+        </a>
+
+        <a class="nav-link" href="register.jsp">
+            <i class="bi bi-journal-check"></i>    Generate Reports
+        </a>
+<%--        </c:if>--%>
     </nav>
 
     <button class="logout-btn">

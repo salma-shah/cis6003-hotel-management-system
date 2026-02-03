@@ -1,7 +1,12 @@
 package mapper;
 
+import dto.UserCredentialDTO;
 import dto.UserDTO;
 import entity.User;
+
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class UserMapper {
 
@@ -21,30 +26,37 @@ public class UserMapper {
                 .lastName(user.getLastName())
                 .contactNumber(user.getContactNumber())
                 .role(user.getRole())
-                .createdAt(user.getCreatedAt())
-                .updatedAt(user.getUpdatedAt())
-                .deletedAt(user.getDeletedAt())
+                .address(user.getAddress())
                 .build();
     }
 
     // converting from entity to dto now
-    public static User toUser(UserDTO userDTO) {
+    public static User toUser(UserDTO userDTO, UserCredentialDTO userCredentialDTO, String hashedPassword) {
         if (userDTO == null) {
             return null;
         }
 
         return new User.UserBuilder()
-                .userId(userDTO.getUserDTOId())
-                .username(userDTO.getUserDTOUsername())
+                .userId(userDTO.getUserId())
+                .username(userCredentialDTO.getUsername())
+                .password(hashedPassword)
                 .firstName(userDTO.getFirstName())
                 .lastName(userDTO.getLastName())
                 .email(userDTO.getEmail())
+                .address(userDTO.getAddress())
                 .contactNumber(userDTO.getContactNumber())
                 .role(userDTO.getRole())
-                .createdAt(userDTO.getCreatedAt())
-                .updatedAt(userDTO.getUpdatedAt())
-                .deletedAt(userDTO.getDeletedAt())
                 .build();
+    }
+        // convert list of Users to list of UserDTOs
+        public static List<UserDTO> toDTOList(List<User> users) {
+            if (users == null) {
+                return null;
+            }
+            return users.stream()
+                    .map(UserMapper::toUserDTO)
+                    .collect(Collectors.toList());
+        }
     }
 }
 

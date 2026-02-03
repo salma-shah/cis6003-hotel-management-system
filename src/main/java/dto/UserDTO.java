@@ -1,6 +1,7 @@
 package dto;
 
 import constant.Role;
+import entity.SuperEntity;
 
 import java.util.Date;
 
@@ -13,6 +14,7 @@ public class UserDTO implements SuperDTO {
     private final String firstName;
     private final String lastName;
     private final String contactNumber;
+    private final String address;
     private final Role role;
     private final Date createdAt;
     private final Date updatedAt;
@@ -28,17 +30,18 @@ public class UserDTO implements SuperDTO {
         this.lastName = userDTOBuilder.lastName;
         this.contactNumber = userDTOBuilder.contactNumber;
         this.role = userDTOBuilder.role;
+        this.address = userDTOBuilder.address;
         this.createdAt = userDTOBuilder.createdAt;
         this.updatedAt = userDTOBuilder.updatedAt;
         this.deletedAt = userDTOBuilder.deletedAt;
     }
 
     // getters only again as it is immutable
-    public String getUserDTOId() {
+    public String getUserId() {
         return userId;
     }
 
-    public String getUserDTOUsername() {
+    public String getUsername() {
         return username;
     }
 //
@@ -65,6 +68,7 @@ public class UserDTO implements SuperDTO {
     public Role getRole() {
         return role;
     }
+    public String getAddress() {return address;}
 
     public Date getCreatedAt() {
         return createdAt;
@@ -89,6 +93,7 @@ public class UserDTO implements SuperDTO {
                 ", lastName='" + lastName + '\'' +
                 ", contactNumber='" + contactNumber + '\'' +
                 ", role=" + role +
+                ", address=" + address +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 ", deletedAt=" + deletedAt +
@@ -105,6 +110,7 @@ public class UserDTO implements SuperDTO {
         private String lastName;
         private String contactNumber;
         private Role role;
+        private String address;
         private Date createdAt;
         private Date updatedAt;
         private Date deletedAt;
@@ -150,6 +156,11 @@ public class UserDTO implements SuperDTO {
 
         public UserDTO.UserDTOBuilder role(Role role) {
             this.role = role;
+            return this;
+        }
+
+        public UserDTO.UserDTOBuilder address(String address) {
+            this.address = address;
             return this;
         }
 

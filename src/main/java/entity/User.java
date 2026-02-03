@@ -13,6 +13,7 @@ public class User implements SuperEntity {
     private final String lastName;
     private final String contactNumber;
     private final Role role;
+    private final String address;
     private final Date createdAt;
     private final Date updatedAt;
     private final Date deletedAt;
@@ -50,6 +51,9 @@ public class User implements SuperEntity {
     public Role getRole() {
         return role;
     }
+    public String getAddress() {
+        return address;
+    }
 
     public Date getCreatedAt() {
         return createdAt;
@@ -75,6 +79,7 @@ public class User implements SuperEntity {
                 ", lastName='" + lastName + '\'' +
                 ", contactNumber='" + contactNumber + '\'' +
                 ", role=" + role +
+                ", address='" + address + '\'' +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 ", deletedAt=" + deletedAt +
@@ -92,6 +97,7 @@ public class User implements SuperEntity {
         this.lastName = builder.lastName;
         this.contactNumber = builder.contactNumber;
         this.role = builder.role;
+        this.address = builder.address;
         this.createdAt = builder.createdAt;
         this.updatedAt = builder.updatedAt;
         this.deletedAt = builder.deletedAt;
@@ -107,6 +113,7 @@ public class User implements SuperEntity {
         private String lastName;
         private String contactNumber;
         private Role role;
+        private String address;
         private Date createdAt;
         private Date updatedAt;
         private Date deletedAt;
@@ -152,6 +159,12 @@ public class User implements SuperEntity {
         public UserBuilder contactNumber(String contactNumber)
         {
             this.contactNumber = contactNumber;
+            return this;
+        }
+
+        public UserBuilder address(String address)
+        {
+            this.address = address;
             return this;
         }
 

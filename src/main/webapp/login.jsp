@@ -1,3 +1,5 @@
+<%--<%@ page isELIgnored="false" %>--%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -83,7 +85,7 @@
 
     <!-- form body -->
     <div class="login-body">
-        <form action = ""  method="post" id="loginForm">
+        <form action="auth"  method="post" id="loginForm">
             <div class="mb-3">
                 <label>Username</label>
                 <input type="text" class="form-control" id="username" name="username" required>
@@ -105,6 +107,14 @@
                 </button>
             </div>
         </form>
+
+<%--        ensuring input is valid--%>
+<%--<c:if test="${not empty param.error}">--%>
+<%--    <c:choose>--%>
+<%--        <c:when test=""></c:when>--%>
+<%--    </c:choose>--%>
+<%--</c:if>--%>
+
     </div>
 </div>
 
