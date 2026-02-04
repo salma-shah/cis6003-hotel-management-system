@@ -43,6 +43,32 @@
         border-radius: 20px;
         width: fit-content;
     }
+
+     /*modal css */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.5);
+    }
+    .modal-content {
+        background-color: #fff;
+        margin: 15% auto;
+        padding: 20px;
+        width: 300px;
+        border-radius: 8px;
+        text-align: center;
+    }
+    .close {
+        float: right;
+        font-size: 20px;
+        cursor: pointer;
+    }
 </style>
 
 <div class="sidebar p-3">
@@ -83,5 +109,48 @@
         Logout
     </button>
 
+<%--    we will use a pop up modal--%>
+    <div id="logoutModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p>Are you sure you want to logout?</p>
+            <button id="confirmLogout">Yes</button>
+            <button id="cancelLogout">No</button>
+        </div>
+    </div>
 </div>
+
+<script>
+    const logoutBtn = document.getElementById('logout-btn');
+    const confirmLogoutBtn = document.getElementById('confirmLogoutBtn');
+    const cancelLogoutBtn = document.getElementById('cancelLogoutBtn');
+    const modal = document.getElementById('logoutModal');
+    const closeBtn = modal.querySelector('.close');
+
+    // open modal
+    logoutBtn.addEventListener('click', () => {
+        modal.style.display = 'block';
+    });
+
+    // close modal
+    closeBtn.addEventListener('click', () => {
+        modal.style.display = 'none';});
+
+    cancelLogoutBtn.addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+
+    // confirm logout
+    confirmLogoutBtn.addEventListener('click', () => {
+        window.location.href = '/auth/logout'; // redirect to logout servlet
+    });
+
+    // close modal if clicked outside content
+    window.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+
+</script>
 
