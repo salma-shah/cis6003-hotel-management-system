@@ -32,7 +32,7 @@ public class AuthServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
-        LOG.info("AuthServlet doGet hit");
+       // LOG.info("AuthServlet doGet hit");
         response.sendRedirect(request.getContextPath() + "/login.jsp");
     }
 
@@ -41,9 +41,9 @@ public class AuthServlet extends HttpServlet {
             throws IOException {
 
         // logs for debugging
-        LOG.log(Level.INFO, "Handling POST request for authentication purposes.");
-        LOG.info("ServletPath = " + request.getServletPath());
-        LOG.info("PathInfo = " + request.getPathInfo());
+//        LOG.log(Level.INFO, "Handling POST request for authentication purposes.");
+//        LOG.info("ServletPath = " + request.getServletPath());
+//        LOG.info("PathInfo = " + request.getPathInfo());
 
         String path = request.getPathInfo();
 
