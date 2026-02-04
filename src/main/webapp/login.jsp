@@ -1,4 +1,4 @@
-<%--<%@ page isELIgnored="false" %>--%>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html>
 <html lang="en">
@@ -71,6 +71,22 @@
             padding: 6px 25px;
             font-size: 14px;
         }
+
+        .form-error {
+            margin-top: 12px;
+            padding: 10px 14px;
+            border-radius: 6px;
+            background-color: #fdecea;
+            color: #b42318;
+            border: 1px solid #f5c2c7;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .form-error i {
+            margin-right: 6px;
+        }
+
     </style>
 </head>
 <body>
@@ -85,8 +101,8 @@
 
     <!-- form body -->
     <div class="login-body">
-        <form action="auth"  method="post" id="loginForm">
-            <div class="mb-3">
+        <form action="<c:url value='/auth/login' />" method="post" id="loginForm">
+        <div class="mb-3">
                 <label>Username</label>
                 <input type="text" class="form-control" id="username" name="username" required>
             </div>
@@ -108,13 +124,33 @@
             </div>
         </form>
 
-<%--        ensuring input is valid--%>
-<%--<c:if test="${not empty param.error}">--%>
-<%--    <c:choose>--%>
-<%--        <c:when test=""></c:when>--%>
-<%--    </c:choose>--%>
-<%--</c:if>--%>
+<%-- ensuring input is valid  --%>
 
+<c:if test="${not empty param.error}">
+    <c:choose>
+        <c:when test="${param.error == 'empty_fields'}">
+            <p class="form-error"> Please provide both username and password.</p>
+        </c:when>
+    </c:choose>
+    <c:choose>
+        <c:when test="${param.error == 'invalid_credentials'}">
+            <p class="form-error"> You have entered an invalid username or password.</p>
+        </c:when>
+    </c:choose>
+<%--    <c:choose>--%>
+<%--        <c:when test="${param.error == 'user_not_found'}">--%>
+<%--            <p class="form-error"> User could not be found.</p>--%>
+<%--        </c:when>--%>
+<%--    </c:choose>--%>
+    <c:choose>
+        <c:when test="${param.error == 'system_error'}">
+            <p class="form-error"> Something went wrong. We apologize.</p>
+        </c:when>
+    </c:choose>
+    <c:otherwise>
+        <p class="form-error">Login failed. Please try again.</p>
+    </c:otherwise>
+</c:if>
     </div>
 </div>
 
@@ -140,6 +176,5 @@
         }
         });
 </script>
-
 </body>
 </html>
