@@ -5,6 +5,8 @@ public class UserCredentialDTO {
     private String password;
 
     public UserCredentialDTO(String username, String password) {
+        this.username = username;
+        this.password = password;
     }
 
     public String getUsername() {
