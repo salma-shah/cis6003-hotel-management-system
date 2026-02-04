@@ -37,7 +37,20 @@
             border-radius: 20px;
             padding: 6px 25px;
             font-size: 14px;
+            color: white;
         }
+
+        .form-error {
+            margin-top: 12px;
+            padding: 10px 14px;
+            border-radius: 6px;
+            background-color: #fdecea;
+            color: #b42318;
+            border: 1px solid #f5c2c7;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
     </style>
 </head>
 
@@ -56,7 +69,7 @@
             <div class="alert alert-danger">${param.error}</div>
         </c:if>
 
-        <form action="register" method="post">
+        <form action="<c:url value='/user/register' />" method="post">
             <div class="mb-3">
                 <label class="form-label">Username</label>
                 <input type="text" name="username" class="form-control" required>
@@ -100,7 +113,7 @@
                 <select name="role" class="form-select" required>
                     <option value="">Select role</option>
                     <option value="Manager">Manager</option>
-                    <option value="Receptionist">Receptionist</option>
+                    <option value="User">Receptionist</option>
 <%--                    <option value="STAFF">Staff</option>--%>
                 </select>
             </div>
@@ -110,9 +123,43 @@
                     Create Account
                 </button>
             </div>
-
         </form>
 
+        <%-- ensuring input is valid  --%>
+
+        <c:if test="${not empty param.error}">
+            <c:choose>
+                <c:when test="${param.error == 'empty_fields'}">
+                    <p class="form-error"> Please fill in all the fields.</p>
+                </c:when>
+            </c:choose>
+            <c:choose>
+                <c:when test="${param.error == 'username_used'}">
+                    <p class="form-error"> This username is already in use.</p>
+                </c:when>
+            </c:choose>
+            <c:choose>
+                <c:when test="${param.error == 'email_used'}">
+                    <p class="form-error"> This email is already in use.</p>
+                </c:when>
+            </c:choose>
+            <%--    <c:choose>--%>
+            <%--        <c:when test="${param.error == 'user_not_found'}">--%>
+            <%--            <p class="form-error"> User could not be found.</p>--%>
+            <%--        </c:when>--%>
+            <%--    </c:choose>--%>
+            <c:choose>
+                <c:when test="${param.error == 'system_error'}">
+                    <p class="form-error"> Something went wrong. We apologize.</p>
+                </c:when>
+            </c:choose>
+            <c:otherwise>
+                <p class="form-error">The new user account could not be created. Please try again.</p>
+            </c:otherwise>
+        </c:if>
+        <c:if test="${not empty param.success}">
+        <p class="form-error">The account was registered successfully! User may now log in into their account.</p>
+        </c:if>
     </div>
 </div>
 
