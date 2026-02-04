@@ -37,7 +37,6 @@ public class AuthServiceImpl implements AuthService {
                 return null;
             }
 
-
             boolean passwordValid = PasswordManager.checkPassword(credentials.getPassword(), user.getPassword());
 
             if (!passwordValid) {

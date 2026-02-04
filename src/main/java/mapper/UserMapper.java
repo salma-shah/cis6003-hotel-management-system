@@ -48,7 +48,7 @@ public class UserMapper {
                 .role(userDTO.getRole())
                 .build();
     }
-        // convert list of Users to list of UserDTOs
+        // converting list of Users to list of UserDTos
         public static List<UserDTO> toDTOList(List<User> users) {
             if (users == null) {
                 return null;
@@ -58,5 +58,4 @@ public class UserMapper {
                     .collect(Collectors.toList());
         }
     }
-}
 
