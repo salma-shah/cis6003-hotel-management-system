@@ -69,11 +69,11 @@
             <i class="bi bi-person-circle"></i>    Create New Account
         </a>
 
-        <a class="nav-link" href="register.jsp">
+        <a class="nav-link" href="user_accounts.jsp">
             <i class="bi bi-gear"></i>   Manager User Accounts
         </a>
 
-        <a class="nav-link" href="register.jsp">
+        <a class="nav-link" href="reports.jsp">
             <i class="bi bi-journal-check"></i>    Generate Reports
         </a>
 <%--        </c:if>--%>
