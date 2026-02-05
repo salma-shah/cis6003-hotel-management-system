@@ -15,6 +15,7 @@ public interface CRUDDAO<T extends SuperEntity> {
     boolean update(Connection conn, T entity) throws SQLException;
     boolean delete(Connection conn, int id) throws SQLException;
     T searchById(Connection conn, String id) throws SQLException;
+    T findById(Connection conn, int id) throws SQLException;
     List<T> getAll(Connection conn, Map<String, String> searchParams) throws SQLException;
     boolean existsByPrimaryKey(Connection conn, int primaryKey) throws SQLException;
 
