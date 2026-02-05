@@ -87,9 +87,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean delete(String id) throws SQLException {
+    public boolean delete(int id) throws SQLException {
         // if the user for the specific PK exists, delete the user
-        if (userDAO.existsByPrimaryKey(connection, Integer.parseInt(id)))
+        if (userDAO.existsByPrimaryKey(connection, id))
         {
             return userDAO.delete(connection, id);
         }

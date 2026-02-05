@@ -49,7 +49,7 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
-    public boolean delete(Connection conn, String id) throws SQLException {
+    public boolean delete(Connection conn, int id) throws SQLException {
         try
         {
             return QueryHelper.execute(conn,
