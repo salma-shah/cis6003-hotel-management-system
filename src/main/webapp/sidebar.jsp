@@ -82,11 +82,15 @@
         </a>
 
         <a class="nav-link" href="rooms.jsp">
-            <i class="bi bi-house-door"></i>    Rooms
+            <i class="bi bi-house-door"></i>  Rooms
         </a>
 
         <a href="<c:url value='/help' />">
-            <i class="bi bi-question-square me-2"></i> Help
+            <i class="bi bi-question-square me-2"></i>  Help
+        </a>
+
+        <a class="nav-link" href="reports.jsp">
+            <i class="bi bi-journal-check"></i>    Generate Reports
         </a>
 
 <%--        this is a section only manager can view--%>
@@ -98,9 +102,6 @@
             <i class="bi bi-gear"></i> Manage User Accounts
         </a>
 
-        <a class="nav-link" href="reports.jsp">
-            <i class="bi bi-journal-check"></i>    Generate Reports
-        </a>
 <%--        </c:if>--%>
     </nav>
 
