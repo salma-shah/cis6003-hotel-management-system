@@ -83,7 +83,7 @@ public class UserDAOImpl implements UserDAO {
     @Override
     public List<User> getAll(Connection conn, Map<String, String> searchParams) throws SQLException {
         try {
-            ResultSet resultSet = QueryHelper.execute(conn, "SELECT * FROM user ");
+            ResultSet resultSet = QueryHelper.execute(conn, "SELECT user_id, username, password, email, address, first_name, last_name, role, contact_number FROM user ");
             List<User> users = new ArrayList<>();
             while (resultSet.next()) {
                 users.add(mapResultSetToUser(resultSet));
@@ -196,6 +196,7 @@ public class UserDAOImpl implements UserDAO {
                 .lastName(resultSet.getString("last_name"))
                 .contactNumber(resultSet.getString("contact_number"))
                 .role(Role.valueOf(resultSet.getString("role")))
+                .address(resultSet.getString("address"))
 //                .createdAt(resultSet.getDate("created_at"))
 //                .updatedAt(resultSet.getDate("updated_at"))
 //                .deletedAt(resultSet.getDate("deleted_at"))

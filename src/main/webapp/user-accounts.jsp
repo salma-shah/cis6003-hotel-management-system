@@ -1,4 +1,5 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page isELIgnored="false" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -115,11 +116,11 @@
                            placeholder="Search by ID, username or email">
                 </div>
 
-<c:if test="${empty users}">
-    <p>No user accounts found.</p>
-</c:if>
+<%--<c:if test="${empty users}">--%>
+<%--    <p>No user accounts found.</p>--%>
+<%--</c:if>--%>
 
-<c:if test="${not empty users}">
+                <c:if test="${not empty users}">
     <table class="table">
     <thead>
     <tr>
@@ -156,7 +157,6 @@
     </tbody>
     </table>
 </c:if>
-
             </div>
         </section>
     </main>

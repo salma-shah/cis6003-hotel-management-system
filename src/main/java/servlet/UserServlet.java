@@ -11,10 +11,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -157,6 +154,7 @@ public class UserServlet extends HttpServlet {
     private void getAllUsers(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         LOG.log(Level.INFO, "Getting all users");
         try {
+
             List<UserDTO> users = userService.getAll(null);
             request.setAttribute("users", users);
 
@@ -166,6 +164,7 @@ public class UserServlet extends HttpServlet {
             }
             else
             {
+                LOG.log(Level.INFO, "Users found: " + users);
                 request.getRequestDispatcher("/user-accounts.jsp").forward(request, response);
             }
         }
