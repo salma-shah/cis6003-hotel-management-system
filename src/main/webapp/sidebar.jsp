@@ -85,18 +85,17 @@
             <i class="bi bi-house-door"></i>    Rooms
         </a>
 
-        <a class="nav-link" href="help.jsp">
+        <a href="<c:url value='/help' />">
             <i class="bi bi-question-square me-2"></i> Help
         </a>
 
 <%--        this is a section only manager can view--%>
 <%--        <c:if test="${sessionScope.userRole == 'manager'}">--%>
-        <a class="nav-link" href="register.jsp">
+        <a href="<c:url value='/user/register' />">
             <i class="bi bi-person-circle"></i>    Create New Account
         </a>
-
-        <a class="nav-link" href="user_accounts.jsp">
-            <i class="bi bi-gear"></i>   Manager User Accounts
+        <a href="<c:url value='/user/all' />">
+            <i class="bi bi-gear"></i> Manage User Accounts
         </a>
 
         <a class="nav-link" href="reports.jsp">
