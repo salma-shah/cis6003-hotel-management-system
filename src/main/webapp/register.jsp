@@ -65,57 +65,61 @@
             <i class="bi bi-person-plus me-2"></i>Create New User Account
         </h4>
 
-        <c:if test="${not empty param.error}">
-            <div class="alert alert-danger">${param.error}</div>
-        </c:if>
-
-        <form action="<c:url value='/user/register' />" method="post">
+        <form id="registerForm" action="<c:url value='/user/register' />" method="post">
             <div class="mb-3">
                 <label class="form-label">Username</label>
-                <input type="text" name="username" class="form-control" required>
+                <input type="text" name="username" id="username"class="form-control" required>
+                <div class="form-error d-none" id="usernameError">Please enter a username</div>
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Password</label>
-                <input type="password" name="password" class="form-control" required>
+                <input type="password" name="password" id="password" class="form-control" required>
+                <div class="form-error d-none" id="passwordError">Please enter a password</div>
             </div>
 
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label class="form-label">First Name</label>
-                    <input type="text" name="firstName" class="form-control" required>
+                    <input type="text" name="firstName" id="firstName" class="form-control" required>
+                    <div class="form-error d-none" id="firstNameError">Please enter first name</div>
                 </div>
 
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Last Name</label>
-                    <input type="text" name="lastName" class="form-control" required>
+                    <input type="text" name="lastName" id="lastName" class="form-control" required>
+                    <div class="form-error d-none" id="lastName">Please enter the last name</div>
                 </div>
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Email</label>
-                <input type="email" name="email" class="form-control" required>
+                <input type="email" id="email" name="email" class="form-control" required>
+                <div class="form-error d-none" id="emailError">Please enter a valid email</div>
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Contact Number</label>
-                <input type="text" name="contactNumber" class="form-control" required>
+                <input type="text" id="contactNumber" name="contactNumber" class="form-control" required>
+                <div class="form-error d-none" id="contactNumberError">Please enter contact number</div>
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Address</label>
-                <input type="text" name="address" class="form-control" required>
+                <input type="text" id="address" name="address" class="form-control" required>
+                <div class="form-error d-none" id="addressError">Please enter address</div>
             </div>
 
 
             <div class="mb-4">
                 <label class="form-label">Role</label>
-                <select name="role" class="form-select" required>
+                <select name="role" id="role" class="form-select" required>
                     <option value="">Select role</option>
                     <option value="Manager">Manager</option>
                     <option value="User">Receptionist</option>
 <%--                    <option value="STAFF">Staff</option>--%>
                 </select>
+                <div class="form-error d-none" id="roleError">Please select a role</div>
             </div>
 
             <div class="d-flex justify-content-end">
@@ -124,42 +128,6 @@
                 </button>
             </div>
         </form>
-
-        <%-- ensuring input is valid  --%>
-
-        <c:if test="${not empty param.error}">
-            <c:choose>
-                <c:when test="${param.error == 'empty_fields'}">
-                    <p class="form-error"> Please fill in all the fields.</p>
-                </c:when>
-            </c:choose>
-            <c:choose>
-                <c:when test="${param.error == 'username_used'}">
-                    <p class="form-error"> This username is already in use.</p>
-                </c:when>
-            </c:choose>
-            <c:choose>
-                <c:when test="${param.error == 'email_used'}">
-                    <p class="form-error"> This email is already in use.</p>
-                </c:when>
-            </c:choose>
-            <%--    <c:choose>--%>
-            <%--        <c:when test="${param.error == 'user_not_found'}">--%>
-            <%--            <p class="form-error"> User could not be found.</p>--%>
-            <%--        </c:when>--%>
-            <%--    </c:choose>--%>
-            <c:choose>
-                <c:when test="${param.error == 'system_error'}">
-                    <p class="form-error"> Something went wrong. We apologize.</p>
-                </c:when>
-            </c:choose>
-            <c:otherwise>
-                <p class="form-error">The new user account could not be created. Please try again.</p>
-            </c:otherwise>
-        </c:if>
-        <c:if test="${not empty param.success}">
-        <p class="form-error">The account was registered successfully! User may now log in into their account.</p>
-        </c:if>
     </div>
 </div>
 
