@@ -52,15 +52,13 @@ public class UserServiceImpl implements UserService {
         String username = userCredentialDTO.getUsername();
         String email = userDTO.getEmail();
 
-//        if (!usernames.add(username)) {
-//            throw new IllegalArgumentException("Duplicate username");
-//        }
-//
-//        if (!emails.add(email)) {
-//            throw new IllegalArgumentException("Duplicate email");
-//        }
+        if (!usernames.add(username)) {
+            throw new IllegalArgumentException("Duplicate username");
+        }
 
-        // UserDTO loggedInUser = HttpSession.g
+        if (!emails.add(email)) {
+            throw new IllegalArgumentException("Duplicate email");
+        }
 
         try {
             // if manager is logged in
@@ -82,7 +80,28 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean update(UserDTO entity) throws SQLException {
+    public boolean update(UserDTO userDTO) throws SQLException {
+        try
+        {
+            // if manager is logged in
+            if (validateManager(userDTO)) {
+                // fetching existing user
+                User existingUser = userDAO.searchById(connection, userDTO.getUserId());
+
+                // if it doesnt exist
+                if  (existingUser == null) {
+                    throw new IllegalArgumentException("User not found");
+                }
+
+                // if it exists then update the fields
+                // using mapper to update
+                userDAO.update(connection, UserMapper.toUpdatedUser(existingUser, userDTO));
+            }
+        }
+        catch (SQLException ex)
+        {
+            throw ex;
+        }
         return false;
     }
 
@@ -110,7 +129,7 @@ public class UserServiceImpl implements UserService {
 
     // searching methods
     @Override
-    public UserDTO searchById(String id) throws SQLException {
+    public UserDTO searchById(int id) throws SQLException {
         return UserMapper.toUserDTO(userDAO.searchById(connection, id));
     }
 
@@ -135,6 +154,18 @@ public class UserServiceImpl implements UserService {
         catch (Exception ex)
         {
             throw new Exception(ex.getMessage());
+        }
+    }
+
+    @Override
+    public UserDTO getById(int id) throws Exception {
+        try
+        {
+            return UserMapper.toUserDTO(userDAO.searchById(connection, id));
+        }
+        catch (Exception ex)
+        {
+            throw new SQLException(ex.getMessage());
         }
     }
 

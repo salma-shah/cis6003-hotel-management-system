@@ -38,7 +38,7 @@ public class UserDAOImpl implements UserDAO {
         try
         {
             return QueryHelper.execute(conn,
-                    "UPDATE user SET password=?, first_name=?, last_name=?, contact_number=?, role=?, address=? where user_id=?",
+                    "UPDATE user SET first_name=?, last_name=?, contact_number=?, role=?, address=? where user_id=?",
                     entity.getPassword(), entity.getFirstName(), entity.getLastName(), entity.getContactNumber(), entity.getRole().toString(), entity.getAddress());
         }
         catch (SQLException ex)
@@ -63,21 +63,23 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
-    public User searchById(Connection conn, String id) throws SQLException {
+    public User searchById(Connection conn, int id) throws SQLException {
         try
         {
             ResultSet resultSet =  QueryHelper.execute(conn, "SELECT * FROM user WHERE user_id=?", id);
-            if (resultSet.next())
+            if (!  resultSet.next())
             {
-                return mapResultSetToUser(resultSet);
+                return null;
+
             }
-            return null;
+            return mapResultSetToUser(resultSet);
         }
         catch (SQLException ex)
         {
             LOG.log(Level.SEVERE, "There was an error searching the user: ", ex);
             throw new SQLException(ex.getMessage());
         }
+
     }
 
     @Override

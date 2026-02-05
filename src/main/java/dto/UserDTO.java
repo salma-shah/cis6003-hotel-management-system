@@ -7,7 +7,7 @@ import java.util.Date;
 
 // user data-to-obj is safe to expose
 public class UserDTO implements SuperDTO {
-    private final String userId;
+    private final int userId;
     private final String username;
    // private final String password;
     private final String email;
@@ -37,7 +37,7 @@ public class UserDTO implements SuperDTO {
     }
 
     // getters only again as it is immutable
-    public String getUserId() {
+    public int getUserId() {
         return userId;
     }
 
@@ -102,7 +102,7 @@ public class UserDTO implements SuperDTO {
 
     // public static builder class
     public static class UserDTOBuilder {
-        private String userId;
+        private int userId;
         private String username;
     //    private String password;
         private String email;
@@ -119,7 +119,7 @@ public class UserDTO implements SuperDTO {
         }
 
         // builder methods for every variable
-        public UserDTO.UserDTOBuilder userId(String userId) {
+        public UserDTO.UserDTOBuilder userId(int userId) {
             this.userId = userId;
             return this;
         }

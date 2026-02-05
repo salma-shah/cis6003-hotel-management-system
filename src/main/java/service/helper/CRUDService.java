@@ -12,7 +12,7 @@ public interface CRUDService <T extends SuperDTO> {
         // boolean add(T entity) throws SQLException;
         boolean update(T entity) throws SQLException;
         boolean delete(int id) throws SQLException;
-        T searchById(String id) throws SQLException;
+        T searchById(int id) throws SQLException;
         List<T> getAll(Map<String, String> searchParams) throws SQLException;
         boolean existsByPrimaryKey(int primaryKey) throws SQLException;
     }
