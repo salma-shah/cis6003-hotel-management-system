@@ -18,7 +18,7 @@ public class UserDAOImpl implements UserDAO {
     // enabling logging in tomcat server
     private static final Logger LOG = Logger.getLogger(UserDAOImpl.class.getName());
 
-    // inserting a new user into the table
+    // inserting a new user into the table  = working
     @Override
     public boolean add(Connection conn, User entity) throws SQLException {
         try
@@ -180,7 +180,7 @@ public class UserDAOImpl implements UserDAO {
         }
         catch (SQLException ex)
         {
-            LOG.log(Level.SEVERE, "There was an error finding the username: ", ex);
+            LOG.log(Level.SEVERE, "There was an error finding the email: ", ex);
             throw new SQLException(ex.getMessage());
         }
     }
@@ -196,9 +196,9 @@ public class UserDAOImpl implements UserDAO {
                 .lastName(resultSet.getString("last_name"))
                 .contactNumber(resultSet.getString("contact_number"))
                 .role(Role.valueOf(resultSet.getString("role")))
-                .createdAt(resultSet.getDate("created_at"))
-                .updatedAt(resultSet.getDate("updated_at"))
-                .deletedAt(resultSet.getDate("deleted_at"))
+//                .createdAt(resultSet.getDate("created_at"))
+//                .updatedAt(resultSet.getDate("updated_at"))
+//                .deletedAt(resultSet.getDate("deleted_at"))
                 .build();
     }
 }
