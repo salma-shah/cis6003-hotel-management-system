@@ -2,6 +2,7 @@ package service.impl;
 
 import constant.Role;
 import dao.UserDAO;
+import dao.impl.UserDAOImpl;
 import db.DBConnection;
 import dto.UserCredentialDTO;
 import dto.UserDTO;
@@ -31,16 +32,16 @@ public class UserServiceImpl implements UserService {
     private final Set<String> usernames = ConcurrentHashMap.newKeySet();
     private final Set<String> emails = ConcurrentHashMap.newKeySet();
 
-    public UserServiceImpl(UserDAO userDao) {
-        this.userDAO = userDao;
+    public UserServiceImpl() {
+        this.userDAO = new UserDAOImpl();
         preloadUniqueFields();  // we preload the unique usernames and fields so nothing new pops up after tomcat server is restarted ecery time
     }
 
     private void preloadUniqueFields() {
-        List<UserDTO> userDTOS = new ArrayList<>();
+        List<UserDTO> userDTOs = new ArrayList<>();
 
-        // using lambda function
-        userDTOS.forEach(userDTO -> {
+        // lambda function
+        userDTOs.forEach(userDTO -> {
             usernames.add(userDTO.getUsername());
             emails.add(userDTO.getEmail());
         });
@@ -51,13 +52,13 @@ public class UserServiceImpl implements UserService {
         String username = userCredentialDTO.getUsername();
         String email = userDTO.getEmail();
 
-        if (!usernames.add(username)) {
-            throw new IllegalArgumentException("Duplicate username");
-        }
-
-        if (!emails.add(email)) {
-            throw new IllegalArgumentException("Duplicate email");
-        }
+//        if (!usernames.add(username)) {
+//            throw new IllegalArgumentException("Duplicate username");
+//        }
+//
+//        if (!emails.add(email)) {
+//            throw new IllegalArgumentException("Duplicate email");
+//        }
 
         // UserDTO loggedInUser = HttpSession.g
 
@@ -96,32 +97,21 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDTO searchById(String id) throws SQLException {
-        return UserMapper.toUserDTO(userDAO.searchById(connection, id));
-    }
-
-    @Override
-    public List<UserDTO> getAll(Map<String, String> searchParams) throws SQLException {
-        try
-        {
-            return UserMapper.toDTOList(userDAO.getAll(connection, searchParams));
-        }
-        catch (Exception ex)
-            {
-            throw new SQLException(ex.getMessage());
-            }
-    }
-
-    @Override
     public boolean existsByPrimaryKey(int primaryKey) throws SQLException {
         try
         {
             return userDAO.existsByPrimaryKey(connection, primaryKey);
         }
         catch (Exception ex)
-            {
+        {
             throw new SQLException(ex.getMessage());
-            }
+        }
+    }
+
+    // searching methods
+    @Override
+    public UserDTO searchById(String id) throws SQLException {
+        return UserMapper.toUserDTO(userDAO.searchById(connection, id));
     }
 
     @Override
@@ -148,8 +138,20 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public List<UserDTO> getAll(Map<String, String> searchParams) throws SQLException {
+        try
+        {
+            return UserMapper.toDTOList(userDAO.getAll(connection, searchParams));
+        }
+        catch (Exception ex)
+        {
+            throw new SQLException(ex.getMessage());
+        }
+    }
+
     // method to validate that user is a manager logged in
     private boolean validateManager(UserDTO manager) throws SQLException {
-        return manager.getRole() == Role.ROLE_MANAGER && manager.getUsername() != null;
+        return manager.getRole() == Role.Manager && manager.getUsername() != null;
     }
 }
