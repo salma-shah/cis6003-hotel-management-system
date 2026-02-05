@@ -52,6 +52,9 @@ public class UserServlet extends HttpServlet {
                     deleteUser(request, response);   // we access it using POST method
                 request.getRequestDispatcher("/user-accounts.jsp").forward(request, response);
                 break;
+//            case "/get":
+//                getUserDetails(request, response);
+//                break;
             default:
                 LOG.log(Level.SEVERE, "Unsupported path: " + path);
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -73,12 +76,15 @@ public class UserServlet extends HttpServlet {
 
         // setting the methods based on the paths
         switch (path) {
-//            case "/register":
-//            // showing registration form
-//            request.getRequestDispatcher("/register.jsp").forward(request, response);
-//            break;
+             case "/register":
+             // showing registration form
+            request.getRequestDispatcher("/register.jsp").forward(request, response);
+            break;
             case "/all":
                 getAllUsers(request, response);
+                break;
+            case "/get":
+                getUserDetails(request, response);
                 break;
             default:
                 LOG.log(Level.SEVERE, "Unsupported path: " + path);
@@ -95,10 +101,6 @@ public class UserServlet extends HttpServlet {
             String email = request.getParameter("email");
             String password = request.getParameter("password");
             Role role = Role.valueOf(request.getParameter("role"));
-            String firstName = request.getParameter("firstName");
-            String lastName = request.getParameter("lastName");
-            String address = request.getParameter("address");
-            String contactNumber = request.getParameter("contactNumber");
 
           //   ensuring the main fields are not empty
             if (username == null || email == null || password == null || username.isEmpty() ||  email.isEmpty() || password.isEmpty()) {
@@ -133,11 +135,14 @@ public class UserServlet extends HttpServlet {
 
             // now the service will do the registering
            boolean successRegistration = userService.add(userCredentialDTO, userDTO);
+
+           // succesful account registered
            if (successRegistration)
            {
                LOG.log(Level.INFO, "User registered successfully");
                response.sendRedirect(request.getContextPath() + "/user/register?success=true");
            }
+           // failed to do so
            else
             {
                LOG.log(Level.INFO, "User could not be registered successfully");
@@ -176,6 +181,90 @@ public class UserServlet extends HttpServlet {
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }
+
+//    // passing user details to the user acc modal
+//    private void getUserDetails(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+//        LOG.log(Level.INFO, "Getting user details method reached...");
+//        String id = request.getParameter("id");
+//
+//        LOG.log(Level.INFO, "User ID : " + id);
+//
+//        int userId = Integer.parseInt(id);
+//        LOG.log(Level.INFO, "Getting user details for user ID :" + userId);
+//
+//        try {
+//            if (userId == 0) {
+//                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing userId");
+//                return;
+//            }
+//
+//            UserDTO user = userService.getById(userId);
+//
+//            if (user == null) {
+//                response.sendError(HttpServletResponse.SC_NOT_FOUND, "User not found");
+//                return;
+//            }
+//
+//            // converting user to JSON for JS to recognize
+//            response.setContentType("application/json");
+//            response.setCharacterEncoding("UTF-8");
+//
+//            // using Gson to serialize
+//            String userJson = new com.google.gson.Gson().toJson(user);
+//            response.getWriter().write(userJson);
+//            LOG.log(Level.INFO, "User JSON sent: " + userJson);
+//
+//
+//        } catch (Exception ex) {
+//            LOG.log(Level.SEVERE, "Error fetching user details: " + ex);
+//            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Server error");
+//        }
+//    }
+
+    private void getUserDetails(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        LOG.log(Level.INFO, "Getting user details method reached...");
+
+        String idParam = request.getParameter("id");
+        LOG.log(Level.INFO, "User ID param: '" + idParam + "'");
+
+        if (idParam == null || idParam.trim().isEmpty()) {
+            LOG.warning("Missing userId parameter");
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing userId");
+            return;
+        }
+
+        int userId;
+        try {
+            userId = Integer.parseInt(idParam.trim());
+        } catch (NumberFormatException e) {
+            LOG.warning("Invalid userId format: " + idParam);
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid userId");
+            return;
+        }
+
+        try {
+            UserDTO user = userService.getById(userId);
+
+            if (user == null) {
+                LOG.warning("User not found for ID: " + userId);
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "User not found");
+                return;
+            }
+
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+
+            String userJson = new com.google.gson.Gson().toJson(user);
+            response.getWriter().write(userJson);
+            LOG.log(Level.INFO, "User JSON sent: " + userJson);
+
+        } catch (Exception ex) {
+            LOG.log(Level.SEVERE, "Error fetching user details: ", ex);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Server error");
+        }
+    }
+
+
 
     // deleting user method
     private void deleteUser(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

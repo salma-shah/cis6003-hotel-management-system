@@ -102,6 +102,12 @@
         cursor: pointer;
     }
 
+    .btn-update
+    {
+        background-color: #4CAF50 !important;
+    }
+
+
 
 </style>
 <body>
@@ -129,7 +135,7 @@
 <%--</c:if>--%>
 
                 <c:if test="${not empty users}">
-    <table class="table">
+    <table class="table" id="userTable">
     <thead>
     <tr>
     <th>ID</th>
@@ -147,12 +153,8 @@
         <td>${user.email}</td>
         <td>${user.role}</td>
         <td>
-        <a href="javascript:void(0)" onclick="openDeleteModal('${user.userId}')">
-        View
-        </a>
-        |
-        <a href="<c:url value='/user/update?id=${user.userId}' />">
-        Edit
+            <a href="javascript:void(0)" onclick="openViewAndEditModal('${user.userId}')">
+                View
         </a>
             |
             <a href="javascript:void(0)" onclick="openDeleteModal('${user.userId}')">
@@ -171,21 +173,18 @@
 </div>
 
 <!-- modals -->
-<!-- viewing details of an account-->
-<div id="viewModal" class="custom-modal">
+<!-- view & edit modal -->
+<div id="viewAndEditModal" class="custom-modal">
     <div class="custom-modal-content">
-        <span class="close" onclick="closeModal('viewModal')">&times;</span>
-        <h5>User Details</h5>
-        <div id="viewModalBody"></div>
-    </div>
-</div>
-
-<!-- edit modal -->
-<div id="editModal" class="custom-modal">
-    <div class="custom-modal-content">
-        <span class="close" onclick="closeModal('editModal')">&times;</span>
-        <form method="post" action="${pageContext.request.contextPath}/users/update">
+        <span class="close" onclick="closeModal('viewAndEditModal')">&times;</span>
+<%--        <form method="post" action="<c:url value= '/user/update' />">--%>
             <input type="hidden" name="userId" id="editUserId">
+            <label>Username</label>
+            <input class="form-control" name="username" id="editUsername" readonly>
+            <label>Email</label>
+            <input class="form-control" name="email" id="editEmail" readonly>
+            <label>Role</label>
+            <input class="form-control" name="role" id="editRole" readonly>
             <label>First Name</label>
             <input class="form-control" name="firstName" id="editFirstName">
             <label class="mt-2">Last Name</label>
@@ -195,8 +194,8 @@
             <label class="mt-2">Address</label>
             <input class="form-control" name="address" id="editAddress">
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="closeModal('editModal')">Cancel</button>
-                <button type="submit" class="btn btn-warning">Update</button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal('viewAndEditModal')">Cancel</button>
+                <button type="submit" class="btn btn-warning btn-update">Update</button>
             </div>
         </form>
     </div>
@@ -229,19 +228,42 @@
         });
     });
 
-    // These would usually fetch data via AJAX.
-    // For now, assume backend preloads data in hidden fields or JS map.
+    function openViewAndEditModal(userId) {
+        // validate userId
+        userId = parseInt(userId);
+        if (isNaN(userId) || userId <= 0) {
+            alert("Invalid user ID");
+            return;
+        }
 
-    function openViewModal(userId) {
-        document.getElementById("viewModalBody").innerHTML =
-            `<p><strong>User ID:</strong> ${userId}</p>
-         <p>More details can be loaded here.</p>`;
-        document.getElementById("viewModal").style.display = "block";
-    }
+        // this is for form submission
+        // document.getElementById("editUserId").value = userId;
 
-    function openEditModal(userId) {
-        document.getElementById("editUserId").value = userId;
-        document.getElementById("editModal").style.display = "block";
+        fetch('<c:url value='/user/get?id=' />' + userId)
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error("HTTP error " + res.status);
+                }
+                return res.json();
+            })
+            .then(user => {
+                console.log("User object received:", user);
+
+                document.getElementById('editUsername').value = user.username;
+                document.getElementById('editEmail').value = user.email;
+                document.getElementById('editRole').value = user.role;
+                document.getElementById('editFirstName').value = user.firstName;
+                document.getElementById('editLastName').value = user.lastName;
+                document.getElementById('editContact').value = user.contactNumber;
+                document.getElementById('editAddress').value = user.address;
+                console.log("User ID passed :", userId);
+                // Show the modal
+                document.getElementById('viewAndEditModal').style.display = 'block';
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Error fetching user details");
+            });
     }
 
     function openDeleteModal(userId) {
@@ -255,7 +277,7 @@
 
     // closes modal if user clicks outside it
     window.onclick = function(event) {
-        ["viewModal", "editModal", "deleteModal"].forEach(id => {
+        ["viewAndEditModal", "deleteModal"].forEach(id => {
             let modal = document.getElementById(id);
             if(event.target === modal) modal.style.display = "none";
         });
