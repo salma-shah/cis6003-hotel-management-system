@@ -77,23 +77,31 @@
         font-size: 13px;
     }
 
-    .btn-view {
-        background-color: #4b86a5;
-        color: white;
-        border: none;
+    .custom-modal {
+        display: none; /* hidden by default */
+        position: fixed;
+        z-index: 1000;
+        left: 0; top: 0;
+        width: 100%; height: 100%;
+        background-color: rgba(0,0,0,0.5);
     }
 
-    .btn-edit {
-        background-color: #f0ad4e;
-        color: white;
-        border: none;
+    .custom-modal-content {
+        background-color: #fff;
+        margin: 10% auto;
+        padding: 20px;
+        width: 400px;
+        border-radius: 5px;
+        position: relative;
     }
 
-    .btn-delete {
-        background-color: #d9534f;
-        color: white;
-        border: none;
+    .custom-modal .close {
+        position: absolute;
+        top: 5px; right: 10px;
+        font-size: 24px;
+        cursor: pointer;
     }
+
 
 </style>
 <body>
@@ -139,16 +147,15 @@
         <td>${user.email}</td>
         <td>${user.role}</td>
         <td>
-        <a href="${pageContext.request.contextPath}/user/view?id=${user.userId}">
+        <a href="javascript:void(0)" onclick="openDeleteModal('${user.userId}')">
         View
         </a>
         |
-        <a href="${pageContext.request.contextPath}/user/edit?id=${user.userId}">
+        <a href="<c:url value='/user/update?id=${user.userId}' />">
         Edit
         </a>
             |
-            <a href="${pageContext.request.contextPath}/user/delete?id=${user.userId}"
-               onclick="return confirm('Are you sure?');">
+            <a href="javascript:void(0)" onclick="openDeleteModal('${user.userId}')">
                 Delete
             </a>
         </td>
@@ -163,77 +170,52 @@
 
 </div>
 
-
 <!-- modals -->
 <!-- viewing details of an account-->
-<div class="modal fade" id="viewModal">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5>User Details</h5>
-                <button class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" id="viewModalBody"></div>
-        </div>
+<div id="viewModal" class="custom-modal">
+    <div class="custom-modal-content">
+        <span class="close" onclick="closeModal('viewModal')">&times;</span>
+        <h5>User Details</h5>
+        <div id="viewModalBody"></div>
     </div>
 </div>
 
-<!-- editing / updating details -->
-<div class="modal fade" id="editModal">
-    <div class="modal-dialog">
-        <form method="post" action="${pageContext.request.contextPath}/users/update" class="modal-content">
-            <div class="modal-header">
-                <h5>Edit User</h5>
-                <button class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-
-            <div class="modal-body">
-                <input type="hidden" name="userId" id="editUserId">
-
-                <label>First Name</label>
-                <input class="form-control" name="firstName" id="editFirstName">
-
-                <label class="mt-2">Last Name</label>
-                <input class="form-control" name="lastName" id="editLastName">
-
-                <label class="mt-2">Contact</label>
-                <input class="form-control" name="contactNumber" id="editContact">
-
-                <label class="mt-2">Address</label>
-                <input class="form-control" name="address" id="editAddress">
-            </div>
-
+<!-- edit modal -->
+<div id="editModal" class="custom-modal">
+    <div class="custom-modal-content">
+        <span class="close" onclick="closeModal('editModal')">&times;</span>
+        <form method="post" action="${pageContext.request.contextPath}/users/update">
+            <input type="hidden" name="userId" id="editUserId">
+            <label>First Name</label>
+            <input class="form-control" name="firstName" id="editFirstName">
+            <label class="mt-2">Last Name</label>
+            <input class="form-control" name="lastName" id="editLastName">
+            <label class="mt-2">Contact</label>
+            <input class="form-control" name="contactNumber" id="editContact">
+            <label class="mt-2">Address</label>
+            <input class="form-control" name="address" id="editAddress">
             <div class="modal-footer">
-                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button class="btn btn-warning">Update</button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal('editModal')">Cancel</button>
+                <button type="submit" class="btn btn-warning">Update</button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- deelting account -->
-<div class="modal fade" id="deleteModal">
-    <div class="modal-dialog">
-        <form method="post" action="${pageContext.request.contextPath}/users/delete" class="modal-content">
-            <div class="modal-header">
-                <h5>Confirm Delete</h5>
-            </div>
-
-            <div class="modal-body">
-                Are you sure you want to delete this user?
-                <input type="hidden" name="userId" id="deleteUserId">
-            </div>
-
+<!-- delete a user acc modal -->
+<div id="deleteModal" class="custom-modal">
+    <div class="custom-modal-content">
+        <span class="close" onclick="closeModal('deleteModal')">&times;</span>
+        <form method="post" action="<c:url value='/user/delete' />">
+            <input type="hidden" name="userId" id="deleteUserId">
+            <p>Are you sure you want to delete this user?</p>
             <div class="modal-footer">
-                <button class="btn btn-secondary" data-bs-dismiss="modal">No</button>
-                <button class="btn btn-danger">Yes, Delete</button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal('deleteModal')">No</button>
+                <button type="submit" class="btn btn-danger">Yes</button>
             </div>
         </form>
     </div>
 </div>
-
-<!-- bootstrap -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
     // search bar
@@ -254,21 +236,33 @@
         document.getElementById("viewModalBody").innerHTML =
             `<p><strong>User ID:</strong> ${userId}</p>
          <p>More details can be loaded here.</p>`;
-
-        new bootstrap.Modal(document.getElementById("viewModal")).show();
+        document.getElementById("viewModal").style.display = "block";
     }
 
     function openEditModal(userId) {
         document.getElementById("editUserId").value = userId;
-        new bootstrap.Modal(document.getElementById("editModal")).show();
+        document.getElementById("editModal").style.display = "block";
     }
 
     function openDeleteModal(userId) {
         document.getElementById("deleteUserId").value = userId;
-        new bootstrap.Modal(document.getElementById("deleteModal")).show();
+        document.getElementById("deleteModal").style.display = "block";
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = "none";
+    }
+
+    // closes modal if user clicks outside it
+    window.onclick = function(event) {
+        ["viewModal", "editModal", "deleteModal"].forEach(id => {
+            let modal = document.getElementById(id);
+            if(event.target === modal) modal.style.display = "none";
+        });
     }
 
 </script>
-
+<!-- bootstrap -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

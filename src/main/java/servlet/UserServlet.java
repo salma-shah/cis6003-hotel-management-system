@@ -31,11 +31,11 @@ public class UserServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
         // logs for debugging
-    //    System.err.println("DO POST IS BEING HIT");
-//        LOG.log(Level.INFO, "Handling POST request for registration purposes.");
-//        LOG.info("ServletPath = " + request.getServletPath());
-//        LOG.info("PathInfo = " + request.getPathInfo());
-//        LOG.log(Level.INFO, "Context path = " + request.getContextPath());
+        System.err.println("DO POST IS BEING HIT");
+        LOG.log(Level.INFO, "Handling POST request for registration purposes.");
+        LOG.info("ServletPath = " + request.getServletPath());
+        LOG.info("PathInfo = " + request.getPathInfo());
+        LOG.log(Level.INFO, "Context path = " + request.getContextPath());
 
         String path = request.getPathInfo();
 
@@ -45,17 +45,19 @@ public class UserServlet extends HttpServlet {
 
         // setting the methods based on the paths
         switch (path) {
-            case "/register":
+            case "/register":   // this is for registering users
                 register(request, response);
                 break;
-            case "/all":
-                    getAllUsers(request, response);
-                    break;
+            case "/delete":   // this is for deleting a user ; since html forms dont have DELETE,
+                    deleteUser(request, response);   // we access it using POST method
+                request.getRequestDispatcher("/user-accounts.jsp").forward(request, response);
+                break;
             default:
                 LOG.log(Level.SEVERE, "Unsupported path: " + path);
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
@@ -72,8 +74,9 @@ public class UserServlet extends HttpServlet {
         // setting the methods based on the paths
         switch (path) {
 //            case "/register":
-//                register(request, response);
-//                break;
+//            // showing registration form
+//            request.getRequestDispatcher("/register.jsp").forward(request, response);
+//            break;
             case "/all":
                 getAllUsers(request, response);
                 break;
@@ -170,6 +173,35 @@ public class UserServlet extends HttpServlet {
         }
         catch (Exception ex) {
             LOG.log(Level.SEVERE, "Error fetching users:" +  ex);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // deleting user method
+    private void deleteUser(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        LOG.log(Level.INFO, "Deleting user");
+        try
+        {
+            String id = request.getParameter("userId");
+            int userId = Integer.parseInt(id);
+            if (userId == 0) {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                return;
+            }
+
+            boolean isDeleted = userService.delete(userId);
+            if (isDeleted)
+            {
+                LOG.log(Level.INFO, "User ID:" + userId + " was deleted successfully");
+            }
+            else
+            {
+                LOG.log(Level.INFO, "User ID:" + userId + " was not deleted.");
+                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            }
+        }
+        catch (Exception ex) {
+            LOG.log(Level.SEVERE, "Error deleting user:" +  ex);
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }
