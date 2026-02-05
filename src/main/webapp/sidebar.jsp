@@ -27,12 +27,24 @@
     .sidebar a {
         color: white;
         text-decoration: none;
-        margin: 15px 0;
-        display: block;
+        margin: 12px 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 15px;
+    }
+
+    .sidebar i {
+        width: 20px;
+        text-align: center;
+        font-size: 18px;
     }
 
     .sidebar a:hover {
         text-decoration: underline;
+        background: rgba(255,255,255,0.12);
+        border-radius: 6px;
+        padding-left: 6px;
     }
 
     .logout-btn {
@@ -78,15 +90,11 @@
     <nav class="nav flex-column sidebar-nav">
 
         <a class="nav-link" href="reservations.jsp">
-            <i class="bi bi-book me-2"></i> Reservations
+            <i class="bi bi-book"></i> Reservations
         </a>
 
         <a class="nav-link" href="rooms.jsp">
             <i class="bi bi-house-door"></i>  Rooms
-        </a>
-
-        <a href="<c:url value='/help' />">
-            <i class="bi bi-question-square me-2"></i>  Help
         </a>
 
         <a class="nav-link" href="reports.jsp">
@@ -95,14 +103,18 @@
 
 <%--        this is a section only manager can view--%>
 <%--        <c:if test="${sessionScope.userRole == 'manager'}">--%>
-        <a href="<c:url value='/user/register' />">
+        <a class="nav-link" href="<c:url value='/user/register' />">
             <i class="bi bi-person-circle"></i>    Create New Account
         </a>
-        <a href="<c:url value='/user/all' />">
+        <a class="nav-link" href="<c:url value='/user/all' />">
             <i class="bi bi-gear"></i> Manage User Accounts
         </a>
 
-<%--        </c:if>--%>
+        <a class="nav-link" href="<c:url value='/help' />">
+            <i class="bi bi-question-square"></i>  Help
+        </a>
+
+    <%--        </c:if>--%>
     </nav>
 
     <button class="logout-btn">
@@ -140,9 +152,9 @@
         modal.style.display = 'none';
     });
 
-    // confirm logout
+    // confirm logout modal
     confirmLogoutBtn.addEventListener('click', () => {
-        window.location.href = '/auth/logout'; // redirect to logout servlet
+        window.location.href = '/auth/logout'; // redirect to logout in auth servlet
     });
 
     // close modal if clicked outside content
