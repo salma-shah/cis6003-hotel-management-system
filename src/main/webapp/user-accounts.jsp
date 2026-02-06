@@ -130,11 +130,10 @@
                            placeholder="Search by ID, username or email">
                 </div>
 
-<%--<c:if test="${empty users}">--%>
-<%--    <p>No user accounts found.</p>--%>
-<%--</c:if>--%>
+<c:if test="${empty users}">
+    <p>No user accounts found.</p>
+</c:if>
 
-                <c:if test="${not empty users}">
     <table class="table" id="userTable">
     <thead>
     <tr>
@@ -165,7 +164,6 @@
     </c:forEach>
     </tbody>
     </table>
-</c:if>
             </div>
         </section>
     </main>
@@ -177,7 +175,7 @@
 <div id="viewAndEditModal" class="custom-modal">
     <div class="custom-modal-content">
         <span class="close" onclick="closeModal('viewAndEditModal')">&times;</span>
-<%--        <form method="post" action="<c:url value= '/user/update' />">--%>
+        <form method="post" action="<c:url value= '/user/update'  />">
             <input type="hidden" name="userId" id="editUserId">
             <label>Username</label>
             <input class="form-control" name="username" id="editUsername" readonly>
@@ -247,8 +245,7 @@
                 return res.json();
             })
             .then(user => {
-                console.log("User object received:", user);
-
+                document.getElementById('editUserId').value = user.userId;
                 document.getElementById('editUsername').value = user.username;
                 document.getElementById('editEmail').value = user.email;
                 document.getElementById('editRole').value = user.role;

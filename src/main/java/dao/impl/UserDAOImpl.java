@@ -38,8 +38,8 @@ public class UserDAOImpl implements UserDAO {
         try
         {
             return QueryHelper.execute(conn,
-                    "UPDATE user SET first_name=?, last_name=?, contact_number=?, role=?, address=? WHERE user_id=?",
-                   entity.getFirstName(), entity.getLastName(), entity.getContactNumber(), entity.getRole().toString(), entity.getAddress(), entity.getUserId());
+                    "UPDATE user SET first_name=?, last_name=?, contact_number=?, address=? WHERE user_id=?",
+                   entity.getFirstName(), entity.getLastName(), entity.getContactNumber(), entity.getAddress(), entity.getUserId());
         }
         catch (SQLException ex)
         {

@@ -31,11 +31,11 @@ public class UserServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
         // logs for debugging
-        System.err.println("DO POST IS BEING HIT");
-        LOG.log(Level.INFO, "Handling POST request for registration purposes.");
-        LOG.info("ServletPath = " + request.getServletPath());
-        LOG.info("PathInfo = " + request.getPathInfo());
-        LOG.log(Level.INFO, "Context path = " + request.getContextPath());
+//        System.err.println("DO POST IS BEING HIT");
+//        LOG.log(Level.INFO, "Handling POST request for registration purposes.");
+//        LOG.info("ServletPath = " + request.getServletPath());
+//        LOG.info("PathInfo = " + request.getPathInfo());
+//        LOG.log(Level.INFO, "Context path = " + request.getContextPath());
 
         String path = request.getPathInfo();
 
@@ -52,9 +52,9 @@ public class UserServlet extends HttpServlet {
                     deleteUser(request, response);   // we access it using POST method
                 request.getRequestDispatcher("/user-accounts.jsp").forward(request, response);
                 break;
-//            case "/get":
-//                getUserDetails(request, response);
-//                break;
+            case "/update":
+                updateUser(request, response);
+                break;
             default:
                 LOG.log(Level.SEVERE, "Unsupported path: " + path);
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -92,6 +92,7 @@ public class UserServlet extends HttpServlet {
         }
     }
 
+    // crating  a new user account
     private void register(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try
         {
@@ -155,12 +156,9 @@ public class UserServlet extends HttpServlet {
             }
     }
 
-    private void searchUsers(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
-    }
-
     private void getAllUsers(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         LOG.log(Level.INFO, "Getting all users");
+
         try {
 
             List<UserDTO> users = userService.getAll(null);
@@ -182,89 +180,78 @@ public class UserServlet extends HttpServlet {
         }
     }
 
-//    // passing user details to the user acc modal
-//    private void getUserDetails(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-//        LOG.log(Level.INFO, "Getting user details method reached...");
-//        String id = request.getParameter("id");
-//
-//        LOG.log(Level.INFO, "User ID : " + id);
-//
-//        int userId = Integer.parseInt(id);
-//        LOG.log(Level.INFO, "Getting user details for user ID :" + userId);
-//
-//        try {
-//            if (userId == 0) {
-//                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing userId");
-//                return;
-//            }
-//
-//            UserDTO user = userService.getById(userId);
-//
-//            if (user == null) {
-//                response.sendError(HttpServletResponse.SC_NOT_FOUND, "User not found");
-//                return;
-//            }
-//
-//            // converting user to JSON for JS to recognize
-//            response.setContentType("application/json");
-//            response.setCharacterEncoding("UTF-8");
-//
-//            // using Gson to serialize
-//            String userJson = new com.google.gson.Gson().toJson(user);
-//            response.getWriter().write(userJson);
-//            LOG.log(Level.INFO, "User JSON sent: " + userJson);
-//
-//
-//        } catch (Exception ex) {
-//            LOG.log(Level.SEVERE, "Error fetching user details: " + ex);
-//            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Server error");
-//        }
-//    }
-
+    // passing user details to the user acc modal
     private void getUserDetails(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         LOG.log(Level.INFO, "Getting user details method reached...");
 
-        String idParam = request.getParameter("id");
-        LOG.log(Level.INFO, "User ID param: '" + idParam + "'");
+        String id = request.getParameter("id");
+        LOG.log(Level.INFO, "User ID passed is: " + id);
 
-        if (idParam == null || idParam.trim().isEmpty()) {
-            LOG.warning("Missing userId parameter");
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing userId");
-            return;
-        }
-
-        int userId;
-        try {
-            userId = Integer.parseInt(idParam.trim());
-        } catch (NumberFormatException e) {
-            LOG.warning("Invalid userId format: " + idParam);
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid userId");
-            return;
-        }
+        // turning the string into an integer
+        int userId = Integer.parseInt(id);
+        LOG.log(Level.INFO, "Getting user details for user ID :" + userId);
 
         try {
+            if (userId == 0) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The userID is missing.");
+                return;
+            }
+
+            // if user id exists, details for that user id will be apssed as JSON to frontend
             UserDTO user = userService.getById(userId);
 
             if (user == null) {
-                LOG.warning("User not found for ID: " + userId);
                 response.sendError(HttpServletResponse.SC_NOT_FOUND, "User not found");
                 return;
             }
 
+            // converting user to JSON for javascript to recognize
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
 
+            // using Gson to serialize
             String userJson = new com.google.gson.Gson().toJson(user);
             response.getWriter().write(userJson);
             LOG.log(Level.INFO, "User JSON sent: " + userJson);
 
-        } catch (Exception ex) {
-            LOG.log(Level.SEVERE, "Error fetching user details: ", ex);
+        }
+        catch (Exception ex) {
+            LOG.log(Level.SEVERE, "Error fetching user details: " + ex);
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Server error");
         }
     }
 
+    // updating user account's details
+    private void updateUser(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        LOG.log(Level.INFO, "Updating user ID : " + request.getParameter("userId"));
+        String id = (request.getParameter("userId"));
+        int userId = Integer.parseInt(id);
 
+        try
+        {
+            UserDTO user = new UserDTO.UserDTOBuilder().userId(userId)
+                    .firstName(request.getParameter("firstName"))
+                    .lastName(request.getParameter("lastName"))
+                    .address(request.getParameter("address"))
+                    .contactNumber(request.getParameter("contactNumber"))
+                    .build();
+
+            // if user exists, fields will be updated
+            boolean isUpdated = userService.update(user);
+            if (isUpdated) {
+                LOG.log(Level.INFO, "User with ID: " + userId + "was updated successfully");
+            //   request.getRequestDispatcher("/user-accounts.jsp").forward(request, response);
+            }
+            else
+            {
+                LOG.log(Level.INFO, "User details of userID: " + userId + "was not updated");
+                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            }
+        }
+        catch (Exception ex) {
+            LOG.log(Level.SEVERE, "Error updating the user details: " + ex);
+        }
+    }
 
     // deleting user method
     private void deleteUser(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -295,4 +282,7 @@ public class UserServlet extends HttpServlet {
         }
     }
 
+    private void searchUsers(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+    }
 }

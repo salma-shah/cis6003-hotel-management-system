@@ -81,10 +81,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean update(UserDTO userDTO) throws SQLException {
-        try
-        {
             // if manager is logged in
-            if (validateManager(userDTO)) {
+            // if (validateManager(userDTO)) {
                 // fetching existing user
                 User existingUser = userDAO.searchById(connection, userDTO.getUserId());
 
@@ -95,14 +93,8 @@ public class UserServiceImpl implements UserService {
 
                 // if it exists then update the fields
                 // using mapper to update
-                userDAO.update(connection, UserMapper.toUpdatedUser(existingUser, userDTO));
-            }
-        }
-        catch (SQLException ex)
-        {
-            throw ex;
-        }
-        return false;
+               return userDAO.update(connection, UserMapper.toUpdatedUser(existingUser, userDTO));
+           // }
     }
 
     @Override
