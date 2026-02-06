@@ -23,7 +23,7 @@
 
 <body>
 
-<%@ include file="sidebar.jsp" %>
+<jsp:include page="sidebar.jsp" />
 
 <div class="main-content">
 
