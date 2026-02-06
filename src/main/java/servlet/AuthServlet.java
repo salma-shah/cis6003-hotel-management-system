@@ -32,8 +32,18 @@ public class AuthServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
-       // LOG.info("AuthServlet doGet hit");
-        response.sendRedirect(request.getContextPath() + "/login.jsp");
+        // LOG.info("AuthServlet doGet hit");
+//        response.sendRedirect(request.getContextPath() + "/login.jsp");
+
+        String path = request.getPathInfo();
+        if (path == null) {
+            path = "/";
+        }
+
+        if  (path.equals("/logout")) {
+            logout(request, response);
+        }
+
     }
 
     @Override
@@ -56,9 +66,9 @@ public class AuthServlet extends HttpServlet {
             case "/login":
                 login(request, response);
                 break;
-            case "/logout":
-                logout(request, response);
-                break;
+//            case "/logout":
+//                logout(request, response);
+//                break;
             default:
                 LOG.log(Level.SEVERE, "Unsupported path: " + path);
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -86,7 +96,7 @@ public class AuthServlet extends HttpServlet {
 
             // verifying password for username
             // using password manager class
-            // but the service will do it
+            //  the service will do it
 
             UserDTO user =  authService.login(credentials);
             if  (user == null) {
@@ -97,13 +107,12 @@ public class AuthServlet extends HttpServlet {
             // if credentials are correct, then the user will be taken to dashboard
             // create session and passing use details
             HttpSession session = request.getSession();
-            session.setAttribute("user", user);
+            // System.out.println("SESSION ID (login): " + request.getSession().getId());
+
             session.setAttribute("userId", user.getUserId());
             session.setAttribute("username", user.getUsername());
             session.setAttribute("userRole", user.getRole().name());
-
             response.sendRedirect(request.getContextPath() + "/dashboard.jsp");
-
         }
         catch (Exception e)
         {
@@ -129,13 +138,14 @@ public class AuthServlet extends HttpServlet {
                 // if username exists
                 if (username != null) {
                     LOG.log(Level.INFO, "Logout from user: " + username);
+                    LOG.log(Level.INFO, "Logout from session: " + session.getId());
                 } else {
                     LOG.log(Level.INFO, "Logout from unidentified user");
                 }
 
                 // now destroying the session
                 session.invalidate();
-                LOG.log(Level.INFO, "Logout successful. Session was destroyed");
+                LOG.log(Level.INFO, "Logout successful. Session: " + session.getId() + " was destroyed");
             }
             else
             {
@@ -149,24 +159,4 @@ public class AuthServlet extends HttpServlet {
         }
     }
 }
-
-//@WebServlet("/auth")
-//public class AuthServlet extends HttpServlet {
-//
-//    @Override
-//    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-//            throws IOException {
-//
-//        System.err.println("=== AUTH SERVLET DOGET HIT ===");
-//        resp.getWriter().write("Auth servlet working");
-//    }
-//
-//    @Override
-//    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
-//            throws IOException {
-//
-//        System.err.println("=== AUTH SERVLET DOPOST HIT ===");
-//        resp.getWriter().write("POST working");
-//    }
-//}
 
