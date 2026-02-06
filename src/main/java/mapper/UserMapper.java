@@ -70,6 +70,7 @@ public class UserMapper {
                 .lastName(updatedDTO.getLastName())
                 .address(updatedDTO.getAddress())
                 .contactNumber(updatedDTO.getContactNumber())
+                .role(updatedDTO.getRole())
                 .build();
     }
 
