@@ -62,21 +62,19 @@ public class UserServiceImpl implements UserService {
 
         try {
             // if manager is logged in
-            if (validateManager(userDTO)) {
+         //   if (validateManager(userDTO)) {
                 // first, generating salt and hashing password using password manager method
                 String hashedPassword = PasswordManager.saltAndHashPassword(userCredentialDTO.getPassword());
                 // will make user to entity using user mapper
                 User userEntity = UserMapper.toUser(userDTO, userCredentialDTO, hashedPassword);
                 return userDAO.add(connection, userEntity);
             }
-        }
-
+       // }
         catch (SQLException ex) {
             usernames.remove(username);
             emails.remove(email);
             throw ex;
         }
-        return false;
     }
 
     @Override
