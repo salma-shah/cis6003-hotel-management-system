@@ -3,6 +3,10 @@ package servlet;
 import constant.Role;
 import dto.UserCredentialDTO;
 import dto.UserDTO;
+import mail.EmailBase;
+import mail.EmailUtility;
+import mail.factory.EmailCreator;
+import mail.factory.impl.WelcomeEmailCreator;
 import service.impl.UserServiceImpl;
 
 import javax.servlet.ServletException;
@@ -137,16 +141,30 @@ public class UserServlet extends HttpServlet {
             // now the service will do the registering
            boolean successRegistration = userService.add(userCredentialDTO, userDTO);
 
-           // succesful account registered
+           // successful account registered
            if (successRegistration)
            {
-               LOG.log(Level.INFO, "User registered successfully");
-               response.sendRedirect(request.getContextPath() + "/user/register?success=true");
+               LOG.log(Level.INFO, "User registered successfully.");
+
+               // sending the email
+               // using the creator method for welcoming user email
+               EmailCreator emailCreator = new WelcomeEmailCreator((userDTO.getFirstName() + " " + userDTO.getLastName()), userDTO.getEmail(), userDTO.getUsername(), userCredentialDTO.getPassword());
+
+               // then using the base interface
+               EmailBase emailBase = emailCreator.createEmail();
+
+               // then finally the send mail utility
+               EmailUtility.sendMail(emailBase.getReceiver(), emailBase.getSubject(), emailBase.getBody());
+
+               LOG.log(Level.INFO, "Email sent successfully.");
+
+
+               // response.sendRedirect(request.getContextPath() + "/user/register?success=true");
            }
            // failed to do so
            else
             {
-               LOG.log(Level.INFO, "User could not be registered successfully");
+               LOG.log(Level.INFO, "User could not be registered successfully nor was email sent.");
                response.sendRedirect(request.getContextPath() + "/user/register?error=system_error");
             }
         }

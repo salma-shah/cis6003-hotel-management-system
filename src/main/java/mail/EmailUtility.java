@@ -13,11 +13,13 @@ import java.util.Properties;
 public class EmailUtility {
 
     // method to send the email
-    public static String sendMail(String title, String receiver, String sender, String subject, String body,
-                                  boolean content, String password) {
+    public static String sendMail(String receiver, String subject, String body) {
         String status = null;
         try
         {
+            final String sender = "ocean.view.hotel.cis6003@gmail.com";
+            final String password = "tohpobcamqemwzox ";
+
             // configuring stmp properties
             Properties props = new Properties();
             props.put("mail.smtp.host", "smtp.gmail.com");
@@ -49,12 +51,11 @@ public class EmailUtility {
 
             // sending the email through transport
             Transport.send(message);
+            return status = "Email was sent successfully.";
         }
          catch (Exception ex)
          {
-             System.out.println("Email couldn't be sent because: " + ex);
+             return status = "Email couldn't be sent because: " + ex.getMessage();
          }
-
-        return status;
     }
 }
