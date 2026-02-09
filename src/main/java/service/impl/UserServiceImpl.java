@@ -148,15 +148,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDTO getById(int id) throws Exception {
-        try
-        {
-            return UserMapper.toUserDTO(userDAO.searchById(connection, id));
-        }
-        catch (Exception ex)
-        {
-            throw new SQLException(ex.getMessage());
-        }
+    public List<UserDTO> searchUsers(String query) throws Exception {
+        return UserMapper.toDTOList(userDAO.searchUsers(connection, query));
     }
 
     @Override

@@ -178,13 +178,37 @@ public class UserDAOImpl implements UserDAO {
             if  (resultSet.next()) {
                 return mapResultSetToUser(resultSet);
             }
-            return null;
+            else {return null;}
         }
         catch (SQLException ex)
         {
             LOG.log(Level.SEVERE, "There was an error finding the email: ", ex);
             throw new SQLException(ex.getMessage());
         }
+    }
+
+    @Override
+    public List<User> searchUsers(Connection conn, String query) throws SQLException {
+        // using a list since db returns a list
+        List<User> users = new ArrayList<>();
+
+        try {
+            String searchPattern = "%" + query + "%";
+            ResultSet resultSet = QueryHelper.execute(conn,
+                    "SELECT * FROM user WHERE username LIKE ? OR email LIKE ? OR CAST(user_id AS CHAR) LIKE ?", searchPattern);
+
+            // if result exists, it will be mapped to the User
+            while (resultSet.next()) {
+                    users.add(mapResultSetToUser(resultSet));
+            }
+        }
+        catch (SQLException ex)
+            {
+            LOG.log(Level.SEVERE, "There was an error searching the user: ", ex);
+            throw new SQLException(ex.getMessage());
+            }
+        LOG.log(Level.INFO, "There are " + users.size() + " users in the database");
+        return users;
     }
 
     // this is the mapping to User, based on table's column names

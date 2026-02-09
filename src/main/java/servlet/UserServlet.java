@@ -158,7 +158,6 @@ public class UserServlet extends HttpServlet {
 
                LOG.log(Level.INFO, "Email sent successfully.");
 
-
                // response.sendRedirect(request.getContextPath() + "/user/register?success=true");
            }
            // failed to do so
@@ -215,8 +214,8 @@ public class UserServlet extends HttpServlet {
                 return;
             }
 
-            // if user id exists, details for that user id will be apssed as JSON to frontend
-            UserDTO user = userService.getById(userId);
+            // if user id exists, details for that user id will be passed as JSON to frontend
+            UserDTO user = userService.searchById(userId);
 
             if (user == null) {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND, "User not found");
@@ -301,6 +300,23 @@ public class UserServlet extends HttpServlet {
     }
 
     private void searchUsers(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        LOG.log(Level.INFO, "Searching users...");
 
+        try
+        {
+            List<UserDTO> userDTO = userService.searchUsers(request.getParameter("username"));
+            if (userDTO == null) {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            }
+            else
+            {
+                response.setContentType("application/json");
+            }
+        }
+
+        catch (Exception ex) {
+            LOG.log(Level.SEVERE, "Error searching users: " + ex);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
     }
 }
