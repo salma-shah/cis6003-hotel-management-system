@@ -30,12 +30,12 @@ public class WelcomeUserEmail implements EmailBase {
     public String getBody() {
 
         return "Dear " + name + "," + "\n\n" +
-                "Welcome to Ocean View Hotel. We are delighted to inform you that your account has been created.\n\n" +
+                "Welcome to Ocean View Hotel. We would like to inform you that your account has been created.\n\n" +
                 "Here are your login details: \n\n" +
                 "Username: " + username + "\n" +
                 "Password: " + password + "\n\n" +
                 "Please log into your account and change your password to secure your account.\n\n" +
-                "We are excited to have you with us. Please contact us if you have any questions." + "\n\n" +
+                "We are happy to welcome you to our team. Please contact us if you have any questions." + "\n\n" +
                 "Regards," + "\n" +
                 "Ocean View Hotel Team.";
     }
