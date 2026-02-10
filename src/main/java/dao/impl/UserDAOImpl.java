@@ -195,7 +195,7 @@ public class UserDAOImpl implements UserDAO {
         try {
             String searchPattern = "%" + query + "%";
             ResultSet resultSet = QueryHelper.execute(conn,
-                    "SELECT * FROM user WHERE username LIKE ? OR email LIKE ? OR CAST(user_id AS CHAR) LIKE ?", searchPattern);
+                    "SELECT * FROM user WHERE username LIKE ? OR email LIKE ? OR CAST(user_id AS CHAR) LIKE ?", searchPattern, searchPattern, searchPattern);
 
             // if result exists, it will be mapped to the User
             while (resultSet.next()) {
@@ -223,9 +223,6 @@ public class UserDAOImpl implements UserDAO {
                 .contactNumber(resultSet.getString("contact_number"))
                 .role(Role.valueOf(resultSet.getString("role")))
                 .address(resultSet.getString("address"))
-//                .createdAt(resultSet.getDate("created_at"))
-//                .updatedAt(resultSet.getDate("updated_at"))
-//                .deletedAt(resultSet.getDate("deleted_at"))
                 .build();
     }
 }

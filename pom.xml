@@ -4,7 +4,7 @@
   <groupId>org.example</groupId>
   <artifactId>ocean-view-hotel</artifactId>
   <packaging>war</packaging>
-  <version>1.5.0</version>
+  <version>1.5.2</version>
   <name>ocean-view-hotel Maven Webapp</name>
   <url>http://maven.apache.org</url>
   <dependencies>
@@ -39,8 +39,13 @@
       <artifactId>jbcrypt</artifactId>
       <version>0.4</version>
     </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>2.15.2</version>
+    </dependency>
 
-<!--    email dependency-->
+    <!--    email dependency-->
     <dependency>
       <groupId>jakarta.mail</groupId>
       <artifactId>jakarta.mail-api</artifactId>

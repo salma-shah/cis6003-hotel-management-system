@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -89,6 +90,9 @@ public class UserServlet extends HttpServlet {
                 break;
             case "/get":
                 getUserDetails(request, response);
+                break;
+            case "/search":
+                searchUsers(request, response);
                 break;
             default:
                 LOG.log(Level.SEVERE, "Unsupported path: " + path);
@@ -286,6 +290,7 @@ public class UserServlet extends HttpServlet {
             if (isDeleted)
             {
                 LOG.log(Level.INFO, "User ID:" + userId + " was deleted successfully");
+                request.getRequestDispatcher("/user-accounts.jsp").forward(request, response);
             }
             else
             {
@@ -304,14 +309,16 @@ public class UserServlet extends HttpServlet {
 
         try
         {
-            List<UserDTO> userDTO = userService.searchUsers(request.getParameter("username"));
-            if (userDTO == null) {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            List<UserDTO> users = userService.searchUsers(request.getParameter("q"));
+            if (users == null) {
+                users = Collections.emptyList();
             }
-            else
-            {
                 response.setContentType("application/json");
-            }
+                response.setCharacterEncoding("UTF-8");
+
+                String userJson = new com.google.gson.Gson().toJson(users);
+                response.getWriter().write(userJson);
+                LOG.log(Level.INFO, "Users JSON sent: " + userJson);
         }
 
         catch (Exception ex) {

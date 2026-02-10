@@ -5,111 +5,104 @@
 <head>
     <title>Manage Users</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .dashboard-layout {
+            display: flex;
+            height: 100vh;
+            background-color: #f5f7fa;
+        }
+
+        .dashboard-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            margin-left: 250px;
+        }
+
+        .content-card {
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .content-header h2 {
+            margin: 0 0 20px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        /* search */
+        .search-bar {
+            margin-bottom: 15px;
+        }
+
+        .search-bar input {
+            width: 320px;
+            padding: 10px 14px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        .user-table thead {
+            background-color: #4b86a5; /* matches sidebar */
+            color: #fff;
+        }
+
+        .user-table th,
+        .user-table td {
+            padding: 12px;
+            text-align: left;
+        }
+
+        .user-table tbody tr {
+            border-bottom: 1px solid #eee;
+        }
+
+        .user-table tbody tr:hover {
+            background-color: #f1f6fa;
+        }
+
+        /* buttons */
+        .user-table button {
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 13px;
+        }
+
+        .custom-modal {
+            display: none; /* hidden by default */
+            position: fixed;
+            z-index: 1000;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .custom-modal-content {
+            background-color: #fff;
+            margin: 10% auto;
+            padding: 20px;
+            width: 400px;
+            border-radius: 5px;
+            position: relative;
+        }
+
+        .custom-modal .close {
+            position: absolute;
+            top: 5px; right: 10px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .btn-update
+        {
+            background-color: #4CAF50 !important;
+        }
+    </style>
+
 </head>
-<style>
-    .dashboard-layout {
-        display: flex;
-        height: 100vh;
-        background-color: #f5f7fa;
-    }
 
-    .dashboard-content {
-        flex: 1;
-        padding: 30px;
-        overflow-y: auto;
-        margin-left: 250px;
-    }
-
-    .content-card {
-        background: #ffffff;
-        border-radius: 10px;
-        padding: 25px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    }
-
-    .content-header h2 {
-        margin: 0 0 20px;
-        font-weight: 600;
-        color: #2c3e50;
-    }
-
-    /* search */
-    .search-bar {
-        margin-bottom: 15px;
-    }
-
-    .search-bar input {
-        width: 320px;
-        padding: 10px 14px;
-        border-radius: 6px;
-        border: 1px solid #ccc;
-    }
-
-    /* table */
-    .user-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    .user-table thead {
-        background-color: #4b86a5; /* matches sidebar */
-        color: #fff;
-    }
-
-    .user-table th,
-    .user-table td {
-        padding: 12px;
-        text-align: left;
-    }
-
-    .user-table tbody tr {
-        border-bottom: 1px solid #eee;
-    }
-
-    .user-table tbody tr:hover {
-        background-color: #f1f6fa;
-    }
-
-    /* buttons */
-    .user-table button {
-        padding: 5px 10px;
-        border-radius: 5px;
-        font-size: 13px;
-    }
-
-    .custom-modal {
-        display: none; /* hidden by default */
-        position: fixed;
-        z-index: 1000;
-        left: 0; top: 0;
-        width: 100%; height: 100%;
-        background-color: rgba(0,0,0,0.5);
-    }
-
-    .custom-modal-content {
-        background-color: #fff;
-        margin: 10% auto;
-        padding: 20px;
-        width: 400px;
-        border-radius: 5px;
-        position: relative;
-    }
-
-    .custom-modal .close {
-        position: absolute;
-        top: 5px; right: 10px;
-        font-size: 24px;
-        cursor: pointer;
-    }
-
-    .btn-update
-    {
-        background-color: #4CAF50 !important;
-    }
-
-
-
-</style>
 <body>
 
 <div class="dashboard-layout">
@@ -144,7 +137,7 @@
     <th>Actions</th>
     </tr>
     </thead>
-    <tbody>
+    <tbody id="tableBody">
     <c:forEach var="user" items="${users}">
         <tr>
         <td>${user.userId}</td>
@@ -215,17 +208,69 @@
 </div>
 
 <script>
-    // search bar
-    document.getElementById("searchInput").addEventListener("keyup", function () {
-        const filter = this.value.toLowerCase();
-        const rows = document.querySelectorAll("#userTable tbody tr");
 
-        rows.forEach(row => {
-            const text = row.innerText.toLowerCase();
-            row.style.display = text.includes(filter) ? "" : "none";
+    // search bar
+    document.addEventListener("DOMContentLoaded", function() {
+        const searchInput = document.getElementById("searchInput");
+        const tableBody = document.getElementById("tableBody")
+       // const initialTableHTML = tableBody.innerHTML;
+        let debounceTimer;
+
+        searchInput.addEventListener("input", () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                const query = searchInput.value.trim();
+                // if (query.length === 0) {
+                //     tableBody.innerHTML = initialTableHTML;
+                //     return;
+                // }
+
+                fetch('<c:url value="/user/search" />?q=' + encodeURIComponent(query))
+                    .then(res => {
+                        if (!res.ok) throw new Error("Search failed");
+                        return res.json();
+                    })
+                    .then(users => {
+                        if (!Array.isArray(users)) {
+                            users = [users];
+                        }
+
+                        tableBody.innerHTML = "";
+
+                        if (!users || users.length === 0) {
+                            tableBody.innerHTML = `<tr><td colspan="5">No users found</td></tr>`;
+                            return;
+                        }
+
+                        users.forEach(user => {
+                            console.log(user);
+                            const tr = document.createElement("tr");
+
+                            tr.innerHTML =
+                                "<td>" + user.userId + "</td>" +
+                                "<td>" + user.username + "</td>" +
+                                "<td>" + user.email + "</td>" +
+                                "<td>" + user.role + "</td>" +
+                                "<td>" +
+                                "<a href='#' onclick=\"openViewAndEditModal('" + user.userId + "')\">View</a> | " +
+                                "<a href='#' onclick=\"openDeleteModal('" + user.userId + "')\">Delete</a>" +
+                                "</td>";
+
+                            tableBody.appendChild(tr);
+                            console.log(tableBody.children.length);
+                            tableBody.style.display = "table-row-group";
+                        });
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        tableBody.innerHTML = `<tr><td colspan="5">Search error</td></tr>`;
+                    });
+            }, 300);
         });
     });
 
+
+    // viewing modal
     function openViewAndEditModal(userId) {
         // validate userId
         userId = parseInt(userId);
@@ -234,10 +279,9 @@
             return;
         }
 
-        // this is for form submission
+        // this is for form submission to get all users
         // document.getElementById("editUserId").value = userId;
-
-        fetch('<c:url value='/user/get?id=' />' + userId)
+        fetch('<c:url value="/user/get?id=" />' + userId)
             .then(res => {
                 if (!res.ok) {
                     throw new Error("HTTP error " + res.status);
@@ -263,11 +307,13 @@
             });
     }
 
+    // opening delete modal
     function openDeleteModal(userId) {
         document.getElementById("deleteUserId").value = userId;
         document.getElementById("deleteModal").style.display = "block";
     }
 
+    // closing all modals
     function closeModal(modalId) {
         document.getElementById(modalId).style.display = "none";
     }
@@ -279,8 +325,9 @@
             if(event.target === modal) modal.style.display = "none";
         });
     }
-
 </script>
+
+
 <!-- bootstrap -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
