@@ -48,8 +48,4 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
-    @Override
-    public void logout() {
-
-    }
 }
