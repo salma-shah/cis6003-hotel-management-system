@@ -1,7 +1,7 @@
 package security;
 
 import org.mindrot.jbcrypt.BCrypt;
-import service.impl.UserServiceImpl;
+
 import java.util.logging.Logger;
 
 public class PasswordManager {

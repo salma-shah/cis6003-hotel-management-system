@@ -1,4 +1,4 @@
-package dao.helper;
+package persistence.dao.helper;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

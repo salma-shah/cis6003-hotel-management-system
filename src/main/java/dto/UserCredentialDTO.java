@@ -1,8 +1,8 @@
 package dto;
 
-public class UserCredentialDTO {
-    private String username;
-    private String password;
+public class UserCredentialDTO implements SuperDTO{
+    private final String  username;
+    private final String password;
 
     public UserCredentialDTO(String username, String password) {
         this.username = username;

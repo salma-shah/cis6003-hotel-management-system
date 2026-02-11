@@ -1,4 +1,4 @@
-package service;
+package business.service;
 
 import dto.UserCredentialDTO;
 import dto.UserDTO;

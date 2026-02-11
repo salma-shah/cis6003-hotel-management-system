@@ -138,7 +138,7 @@
             <i class="bi bi-book"></i> Reservations
         </a>
 
-        <a class="nav-link" href="rooms.jsp">
+        <a class="nav-link" href="<c:url value='/room/all'/>">
             <i class="bi bi-house-door"></i>  Rooms
         </a>
 

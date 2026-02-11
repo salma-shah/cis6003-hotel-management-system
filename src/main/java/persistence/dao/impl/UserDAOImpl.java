@@ -1,9 +1,9 @@
-package dao.impl;
+package persistence.dao.impl;
 
 import constant.Role;
 import entity.User;
-import dao.UserDAO;
-import dao.helper.QueryHelper;
+import persistence.dao.UserDAO;
+import persistence.dao.helper.QueryHelper;
 
 import java.sql.Connection;
 import java.sql.ResultSet;

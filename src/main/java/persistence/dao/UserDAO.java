@@ -1,7 +1,7 @@
-package dao;
+package persistence.dao;
 
 import entity.User;
-import dao.helper.CRUDDAO;
+import persistence.dao.helper.CRUDDAO;
 
 import java.sql.Connection;
 import java.sql.SQLException;

@@ -7,7 +7,7 @@ import mail.EmailBase;
 import mail.EmailUtility;
 import mail.factory.EmailCreator;
 import mail.factory.impl.WelcomeEmailCreator;
-import service.impl.UserServiceImpl;
+import business.service.impl.UserServiceImpl;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;

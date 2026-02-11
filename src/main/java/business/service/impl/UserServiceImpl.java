@@ -1,15 +1,15 @@
-package service.impl;
+package business.service.impl;
 
 import constant.Role;
-import dao.UserDAO;
-import dao.impl.UserDAOImpl;
+import persistence.dao.UserDAO;
+import persistence.dao.impl.UserDAOImpl;
 import db.DBConnection;
 import dto.UserCredentialDTO;
 import dto.UserDTO;
 import entity.User;
 import mapper.UserMapper;
 import security.PasswordManager;
-import service.UserService;
+import business.service.UserService;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -18,13 +18,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class UserServiceImpl implements UserService {
 
     // enabling logging in tomcat server
     private static final Logger LOG = Logger.getLogger(UserServiceImpl.class.getName());
-    private final Connection connection = DBConnection.getInstance().getConnection();
+    // private final Connection connection = DBConnection.getConnection();
     private final UserDAO userDAO;
 
     // setting up hash sets for usernames and emails
@@ -60,7 +61,7 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("Duplicate email");
         }
 
-        try {
+        try(Connection connection = DBConnection.getInstance().getConnection()) {
             // if manager is logged in
          //   if (validateManager(userDTO)) {
                 // first, generating salt and hashing password using password manager method
@@ -79,35 +80,40 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean update(UserDTO userDTO) throws SQLException {
+        try(Connection connection = DBConnection.getInstance().getConnection()) {
             // if manager is logged in
             // if (validateManager(userDTO)) {
-                // fetching existing user
-                User existingUser = userDAO.searchById(connection, userDTO.getUserId());
+            // fetching existing user
+            User existingUser = userDAO.searchById(connection, userDTO.getUserId());
 
-                // if it doesnt exist
-                if  (existingUser == null) {
-                    throw new IllegalArgumentException("User not found");
-                }
-
-                // if it exists then update the fields
-                // using mapper to update
-               return userDAO.update(connection, UserMapper.toUpdatedUser(existingUser, userDTO));
-           // }
+            // if it doesnt exist
+            if (existingUser == null) {
+                throw new IllegalArgumentException("User not found");
+            }
+            // if it exists then update the fields
+            // using mapper to update
+            return userDAO.update(connection, UserMapper.toUpdatedUser(existingUser, userDTO));
+        }
+        catch (SQLException ex) {
+            LOG.log(Level.INFO, "Something went wrong with updating the user: " + ex.getMessage(), ex);
+            throw ex;
+        }
     }
 
     @Override
     public boolean delete(int id) throws SQLException {
+        try (Connection connection = DBConnection.getInstance().getConnection()) {
         // if the user for the specific PK exists, delete the user
         if (userDAO.existsByPrimaryKey(connection, id))
         {
             return userDAO.delete(connection, id);
-        }
+        }}
         return false;
     }
 
     @Override
     public boolean existsByPrimaryKey(int primaryKey) throws SQLException {
-        try
+        try(Connection connection = DBConnection.getInstance().getConnection())
         {
             return userDAO.existsByPrimaryKey(connection, primaryKey);
         }
@@ -120,12 +126,13 @@ public class UserServiceImpl implements UserService {
     // searching methods
     @Override
     public UserDTO searchById(int id) throws SQLException {
+        Connection connection = DBConnection.getInstance().getConnection();
         return UserMapper.toUserDTO(userDAO.searchById(connection, id));
     }
 
     @Override
     public UserDTO findByUsername(String username) throws Exception {
-        try
+        try(Connection connection = DBConnection.getInstance().getConnection())
         {
             return UserMapper.toUserDTO(userDAO.findByUsername(connection, username));
         }
@@ -137,7 +144,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO findByEmail(String email) throws Exception {
-        try
+        try(Connection connection = DBConnection.getInstance().getConnection())
         {
             return UserMapper.toUserDTO(userDAO.findByEmail(connection, email));
         }
@@ -149,12 +156,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDTO> searchUsers(String query) throws Exception {
+        Connection connection = DBConnection.getInstance().getConnection();
         return UserMapper.toDTOList(userDAO.searchUsers(connection, query));
     }
 
     @Override
     public List<UserDTO> getAll(Map<String, String> searchParams) throws SQLException {
-        try
+        try(Connection connection = DBConnection.getInstance().getConnection())
         {
             return UserMapper.toDTOList(userDAO.getAll(connection, searchParams));
         }
