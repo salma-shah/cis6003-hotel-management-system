@@ -64,40 +64,39 @@
         <h4 class="form-title">
             <i class="bi bi-house-add"></i>  Create New Room
         </h4>
-
+        <form id="registerForm" action="<c:url value='/room/create' />" method="post">
         <div class="mb-3">
             <label class="form-label">Room Type</label>
             <select name="type" id="type" class="form-select" required>
                 <option value="">Select room type</option>
-                <option value="Available">Standard</option>
-                <option value="Occupied">Deluxe</option>
-                <option value="Maintenance">Suite</option>
+                <option value="Standard">Standard</option>
+                <option value="Deluxe">Deluxe</option>
+                <option value="Suite">Suite</option>
             </select>
             <div class="form-error d-none" id="typeError">Please enter the room type.</div>
         </div>
 
-        <form id="registerForm" action="<c:url value='/room/create' />" method="post">
             <div class="mb-3">
                 <label class="form-label">Description</label>
                 <input type="text" name="desc" id="desc" class="form-control" required>
-                <div class="form-error d-none" id="usernameError">Please enter a descrption for the room.</div>
+                <div class="form-error d-none" id="descError">Please enter a descrption for the room.</div>
             </div>
 
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Price Per Night</label>
                     <input type="text" name="pricePerNight" id="pricePerNight" class="form-control" required>
-                    <div class="form-error d-none" id="firstNameError">Please enter the price per night</div>
+                    <div class="form-error d-none" id="priceError">Please enter the price per night</div>
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label">Bedding</label>
                     <select name="bedding" id="bedding" class="form-select" required>
                         <option value="">Select bedding type</option>
-                        <option value="Available">Single</option>
-                        <option value="Occupied">Twin</option>
-                        <option value="Occupied">Double</option>
-                        <option value="Maintenance">King</option>
+                        <option value="Single">Single</option>
+                        <option value="Twin">Twin</option>
+                        <option value="Double">Double</option>
+                        <option value="King">King</option>
                     </select>
                 </div>
 
@@ -106,8 +105,7 @@
                     <select name="status" id="status" class="form-select" required>
                         <option value="">Select status</option>
                         <option value="Available">Available</option>
-                        <option value="Occupied">Occupied</option>
-                        <option value="Maintenance">Maintenance</option>
+                        <option value="Unavailable">Unavailable</option>
                     </select>
                     <div class="form-error d-none" id="statusError">Please select the room status.</div>
                 </div>
@@ -130,6 +128,7 @@
                 <button type="submit" class="btn enter-btn">
                     Create Room
                 </button>
+            </div>
             </div>
         </form>
     </div>
