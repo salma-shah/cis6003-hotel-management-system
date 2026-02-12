@@ -5,6 +5,7 @@ import constant.RoomStatus;
 import constant.RoomTypes;
 import entity.RoomImg;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -30,7 +31,9 @@ public class RoomDTO implements SuperDTO {
         this.floorNum = roomDTOBuilder.floorNum;
         this.createdAt = roomDTOBuilder.createdAt;
         this.updatedAt = roomDTOBuilder.updatedAt;
-        this.roomImgList = roomDTOBuilder.roomImgList;
+        this.roomImgList = roomDTOBuilder.roomImgList != null
+                ? roomDTOBuilder.roomImgList
+                : new ArrayList<>();
     }
 
     public int getRoomId() {

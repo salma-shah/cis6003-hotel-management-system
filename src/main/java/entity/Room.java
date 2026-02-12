@@ -33,7 +33,7 @@ public class Room implements SuperEntity {
         this.floorNum = floorNum;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
-        this.roomImgList = new ArrayList<>();
+        this.roomImgList = roomImgList;
     }
 
     // getters
@@ -107,7 +107,10 @@ public class Room implements SuperEntity {
         this.floorNum = builder.floorNum;
         this.createdAt = builder.createdAt;
         this.updatedAt = builder.updatedAt;
-        this.roomImgList = new ArrayList<>();
+        this.roomImgList = builder.roomImgList != null
+                ? builder.roomImgList
+                : new ArrayList<>();
+
     }
 
     // public static class builder
