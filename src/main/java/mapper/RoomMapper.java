@@ -1,7 +1,9 @@
 package mapper;
 
 import dto.RoomDTO;
+import dto.RoomImgDTO;
 import entity.Room;
+import entity.RoomImg;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -14,6 +16,8 @@ public class RoomMapper {
             return null;
         }
 
+        List<RoomImgDTO> imageDTOs = room.getRoomImgList().stream().map(RoomImgMapper::toRoomImgDTO).collect(Collectors.toList());
+
         return new RoomDTO.RoomDTOBuilder()
                 .roomId(room.getRoomId())
                 .baseDescription(room.getBaseDescription())
@@ -23,6 +27,7 @@ public class RoomMapper {
                 .bedding(room.getBedding())
                 .maxOccupancy(room.getMaxOccupancy())
                 .floorNum(room.getFloorNum())
+                .roomImgList(imageDTOs)
                 .build();
     }
 
@@ -31,6 +36,8 @@ public class RoomMapper {
         if (roomDTO == null) {
             return null;
         }
+
+        List<RoomImg> roomImg = roomDTO.getRoomImgList().stream().map(RoomImgMapper::toRoomImg).collect(Collectors.toList());
 
         return new Room.RoomBuilder()
                 .roomId(roomDTO.getRoomId())

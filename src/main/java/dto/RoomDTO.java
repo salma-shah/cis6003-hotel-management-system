@@ -3,8 +3,10 @@ package dto;
 import constant.BeddingTypes;
 import constant.RoomStatus;
 import constant.RoomTypes;
+import entity.RoomImg;
 
 import java.util.Date;
+import java.util.List;
 
 public class RoomDTO implements SuperDTO {
     private final int roomId;
@@ -15,6 +17,7 @@ public class RoomDTO implements SuperDTO {
     private final BeddingTypes bedding;
     private final int maxOccupancy, floorNum;
     private final Date createdAt, updatedAt;
+    private List<RoomImgDTO> roomImgList;
 
     public RoomDTO(RoomDTOBuilder roomDTOBuilder) {
         this.roomId = roomDTOBuilder.roomId;
@@ -27,6 +30,7 @@ public class RoomDTO implements SuperDTO {
         this.floorNum = roomDTOBuilder.floorNum;
         this.createdAt = roomDTOBuilder.createdAt;
         this.updatedAt = roomDTOBuilder.updatedAt;
+        this.roomImgList = roomDTOBuilder.roomImgList;
     }
 
     public int getRoomId() {
@@ -61,6 +65,8 @@ public class RoomDTO implements SuperDTO {
         return floorNum;
     }
 
+    public List<RoomImgDTO> getRoomImgList() { return roomImgList; }
+
     public Date getCreatedAt() {
         return createdAt;
     }
@@ -82,6 +88,7 @@ public class RoomDTO implements SuperDTO {
                 ", floorNum=" + floorNum +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
+                ", roomImgList=" + roomImgList +
                 '}';
     }
 
@@ -98,6 +105,7 @@ public class RoomDTO implements SuperDTO {
         private int floorNum;
         private Date createdAt;
         private Date updatedAt;
+        private List<RoomImgDTO> roomImgList;
 
         public RoomDTOBuilder() {
         }
@@ -112,6 +120,10 @@ public class RoomDTO implements SuperDTO {
             return this;
         }
 
+        public RoomDTO.RoomDTOBuilder roomImgList(List<RoomImgDTO> roomImgList) {
+            this.roomImgList = roomImgList;
+            return this;
+        }
         public RoomDTO.RoomDTOBuilder baseDescription(String baseDescription) {
             this.baseDescription = baseDescription;
             return this;
@@ -129,7 +141,6 @@ public class RoomDTO implements SuperDTO {
 
         public RoomDTO.RoomDTOBuilder roomStatus(RoomStatus roomStatus) {
             this.roomStatus = roomStatus;
-
             return this;
         }
 

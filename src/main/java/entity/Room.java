@@ -3,8 +3,11 @@ package entity;
 import constant.BeddingTypes;
 import constant.RoomStatus;
 import constant.RoomTypes;
+import dto.RoomImgDTO;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class Room implements SuperEntity {
     private final int roomId;
@@ -16,9 +19,10 @@ public class Room implements SuperEntity {
     private final int maxOccupancy, floorNum;
     private final Date createdAt;
     private final Date updatedAt;
+    private List<RoomImg> roomImgList;
 
     // constructor
-    public Room(int roomId, double basePricePerNight, String baseDescription, BeddingTypes bedding, RoomTypes roomType, RoomStatus roomStatus, int maxOccupancy, int floorNum, Date createdAt, Date updatedAt) {
+    public Room(int roomId, double basePricePerNight, String baseDescription, BeddingTypes bedding, RoomTypes roomType, RoomStatus roomStatus, int maxOccupancy, int floorNum, Date createdAt, Date updatedAt, List<RoomImg> roomImgList) {
         this.roomId = roomId;
         this.basePricePerNight = basePricePerNight;
         this.baseDescription = baseDescription;
@@ -29,6 +33,7 @@ public class Room implements SuperEntity {
         this.floorNum = floorNum;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.roomImgList = new ArrayList<>();
     }
 
     // getters
@@ -70,6 +75,7 @@ public class Room implements SuperEntity {
     public Date getUpdatedAt() {
         return updatedAt;
     }
+    public List<RoomImg> getRoomImgList() { return roomImgList; }
 
     @Override
     public String toString() {
@@ -84,6 +90,7 @@ public class Room implements SuperEntity {
                 ", floorNum=" + floorNum +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
+                ", roomImgList=" + roomImgList +
                 '}';
     }
 
@@ -100,6 +107,7 @@ public class Room implements SuperEntity {
         this.floorNum = builder.floorNum;
         this.createdAt = builder.createdAt;
         this.updatedAt = builder.updatedAt;
+        this.roomImgList = new ArrayList<>();
     }
 
     // public static class builder
@@ -115,6 +123,7 @@ public class Room implements SuperEntity {
         private int floorNum;
         private Date createdAt;
         private Date updatedAt;
+        private List<RoomImg>  roomImgList;
 
         public RoomBuilder(){}
         public RoomBuilder roomId(int roomId)
@@ -130,6 +139,11 @@ public class Room implements SuperEntity {
         public RoomBuilder baseDescription(String baseDescription)
         {
             this.baseDescription = baseDescription;
+            return this;
+        }
+        public RoomBuilder roomImgList(List<RoomImg> roomImgList)
+        {
+            this.roomImgList = roomImgList;
             return this;
         }
         public RoomBuilder bedding(BeddingTypes bedding)
