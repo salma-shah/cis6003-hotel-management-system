@@ -133,12 +133,6 @@ public class RoomServiceImpl implements RoomService {
         }
     }
 
-    public int getLastInsertedRoomId() throws Exception {
-        try (Connection conn = DBConnection.getInstance().getConnection()) {
-            return roomDAO.getLastInsertedId(conn);
-        }
-    }
-
 //    @Override
 //    public IRoom getRoomWithPricing(int roomId) {
 //        try(Connection connection = DBConnection.getInstance().getConnection())

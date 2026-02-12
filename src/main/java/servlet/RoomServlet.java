@@ -18,9 +18,7 @@ import javax.servlet.http.Part;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -63,9 +61,6 @@ public class RoomServlet extends HttpServlet {
 //            case "/get":
 //                getUserDetails(request, response);
 //                break;
-//            case "/search":
-//                searchUsers(request, response);
-//                break;
             default:
                 LOG.log(Level.SEVERE, "Unsupported path: " + path);
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -88,15 +83,15 @@ public class RoomServlet extends HttpServlet {
                 request.getRequestDispatcher("/create-rooms.jsp").forward(request, response);
                 break;
             case "/all":
-                request.getRequestDispatcher("/rooms.jsp").forward(request, response);
-               // getAllUsers(request, response);
+               // request.getRequestDispatcher("/rooms.jsp").forward(request, response);
+               getAllRooms(request, response);
                 break;
 //            case "/get":
 //                getUserDetails(request, response);
 //                break;
-//            case "/search":
-//                searchUsers(request, response);
-//                break;
+            case "/search":
+                searchRooms(request, response);
+                break;
             default:
                 LOG.log(Level.SEVERE, "Unsupported path: " + path);
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -168,8 +163,13 @@ public class RoomServlet extends HttpServlet {
 
                         // now saving the image
                         // for (String imagePath : imagePaths) {
-                        roomImgService.saveImg(new RoomImgDTO(roomId, "images/room-uploads/" + fileName, altText));
-                        LOG.log(Level.INFO, "Room Image has been successfully uploaded.");
+                        roomImgService.saveImg(new RoomImgDTO.RoomImgDTOBuilder()
+                                .roomId(roomId)
+                                .imgPath("images/room-uploads/" + fileName)
+                                .alt(altText)
+                                        .build());
+                               // (roomId, "images/room-uploads/" + fileName, altText));
+                        LOG.log(Level.INFO, "Room image has been successfully uploaded.");
                     }
         }
         catch (Exception ex)
@@ -182,24 +182,48 @@ public class RoomServlet extends HttpServlet {
     private void getAllRooms(HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
             LOG.log(Level.INFO, "Getting all rooms...");
-            // List<RoomDTO> rooms = roomService.getAll()
 
-            // sample from rooms
-//            request.setAttribute("users", users);
-//
-//            if (users.isEmpty())
-//            {
-//                response.sendError(HttpServletResponse.SC_NOT_FOUND);
-//            }
-//            else
-//            {
-//                LOG.log(Level.INFO, "Users found: " + users);
-//                request.getRequestDispatcher("/user-accounts.jsp").forward(request, response);
-//            }
+            Map<String, String> searchParams = new HashMap<>();
+            List<RoomDTO> rooms = roomService.getAll(searchParams);
+            request.setAttribute("rooms", rooms);
+
+            if (rooms.isEmpty())
+            {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            }
+            else
+            {
+                LOG.log(Level.INFO, "Rooms found: " + rooms.size());
+                request.getRequestDispatcher("/rooms.jsp").forward(request, response);
+            }
         }
         catch (Exception ex)
         {
             LOG.log(Level.SEVERE, ex.getMessage(), ex);
+        }
+    }
+
+    private void searchRooms(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        try
+        {
+            int roomId = Integer.parseInt(request.getParameter("roomId"));
+            RoomDTO roomDTO = roomService.searchById(roomId);
+            if (roomDTO != null) {
+                LOG.log(Level.INFO, "Room has been successfully found with ID: " + roomId);
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
+                String roomJSON = new com.google.gson.Gson().toJson(roomDTO);
+                response.getWriter().write(roomJSON);
+                LOG.log(Level.INFO, "Rooms JSON sent: " + roomJSON);
+            }
+            else {
+                LOG.log(Level.SEVERE, "Room for the ID: " + roomId + " does not exist.");
+            }
+        }
+        catch (Exception ex)
+        {
+            LOG.log(Level.SEVERE, ex.getMessage(), ex);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }
 

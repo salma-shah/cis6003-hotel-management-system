@@ -115,7 +115,6 @@
     }
 </style>
 
-
 <body>
 
 
@@ -124,7 +123,6 @@
 
     <main class="dashboard-content">
         <section class="content-card">
-
 
 <%--        this is a section only manager can view--%>
 <c:if test="${sessionScope.userRole == 'Manager'}">
@@ -137,14 +135,17 @@
 </c:if>
 
             <div class="search-filter">
-                <input type="text" id="searchInput" placeholder="Search by room name or category">
+                <input type="text" id="searchInput" placeholder="Search by room ID...">
+
+<%--                // these are the filters: --%>
+<%--                // status filter --%>
                 <select id="statusFilter">
                     <option value="">All Status</option>
                     <option value="Available">Available</option>
-                    <option value="Occupied">Occupied</option>
-                    <option value="Maintenance">Maintenance</option>
+                    <option value="Unavailable">Unavailable</option>
                 </select>
             </div>
+<%--    // amenity filters--%>
             <div class="amenities-filter">
                 <label><input type="checkbox" class="amenity" value="WiFi"> WiFi</label>
                 <label><input type="checkbox" class="amenity" value="Pool">  Pool</label>
@@ -152,7 +153,8 @@
                 <label><input type="checkbox" class="amenity" value="TV"> TV</label>
                 <label><input type="checkbox" class="amenity" value="Balcony"> Balcony</label>
             </div>
-
+    <br>
+    <br>
 
             <c:if test="${empty rooms}">
                 <p>No rooms available.</p>
@@ -162,36 +164,32 @@
             <div class="room-grid" id="roomGrid">
                 <c:forEach var="room" items="${rooms}">
                     <div class="room-card"
-                         data-name="${room.name}"
-                         data-category="${room.category}"
-                         data-amenities="${room.amenities}"
-                         data-status="${room.status}">
+                         data-category="${room.roomType}"
+                         data-amenities="${room.beddingTypes}"
+                         data-status="${room.roomStatus}"
+                         data-floor-num="${room.floorNum}">
 
-                        <img src="${room.imageUrl}" alt="Room Image">
+                        <img src="${room.roomImgList}" alt="${room.alt}">
 
                         <div class="room-body">
-                            <h5>${room.name}</h5>
-                            <div class="room-meta">Category: ${room.category}</div>
-                            <div class="room-meta">Floor: ${room.floorNumber}</div>
-                            <div class="room-meta">Rooms Left: ${room.availableCount}</div>
+                            <div class="room-meta">Category: ${room.roomType}</div>
+                            <div class="room-meta">Floor: ${room.floorNum}</div>
                             <div class="room-meta room-status
-                               ${room.status == 'Available' ? 'status-available' :
-                                 room.status == 'Occupied' ? 'status-occupied' : 'status-maintenance'}">
-                                Status: ${room.status}
+                               ${room.roomStatus == 'Available' ? 'status-available' :
+                                 room.roomStatus == 'Unavailable' ? 'status-occupied' : 'status-maintenance'}">
+                                Status: ${room.roomStatus}
                             </div>
                         </div>
 
-
                         <div class="room-footer">
-                            <a href="<c:url value='/room/view?id=${room.roomId}' />"
-                               class="btn btn-sm btn-outline-primary">
+                            <a href="<c:url value='/room/get?id=${room.roomId}' />"
+                               class="btn enter-btn">
                                 View Details
                             </a>
                         </div>
                     </div>
                 </c:forEach>
             </div>
-
         </section>
     </main>
 </div>
