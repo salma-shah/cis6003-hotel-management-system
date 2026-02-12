@@ -126,13 +126,15 @@
         <section class="content-card">
 
 
+<%--        this is a section only manager can view--%>
+<c:if test="${sessionScope.userRole == 'Manager'}">
             <div class="header-row">
                 <h2>Manage Rooms</h2>
                 <a href="<c:url value='/room/create' />" class="btn enter-btn">
                     + Create New Room
                 </a>
             </div>
-
+</c:if>
 
             <div class="search-filter">
                 <input type="text" id="searchInput" placeholder="Search by room name or category">

@@ -10,6 +10,7 @@ import persistence.dao.helper.QueryHelper;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -21,7 +22,7 @@ public class RoomDAOImpl implements RoomDAO {
     @Override
     public boolean add(Connection conn, Room entity) throws SQLException {
         try {
-            return QueryHelper.execute(conn, "INSERT INTO room (description, room_type, price_per_night, bedding_type, status, max_occupancy, floor_num) VALUES (?, ?, ?, ?, ?,?,?)",
+            return QueryHelper.execute(conn, "INSERT INTO room (description, type, price_per_night, bedding, status, max_occupancy, floor_num) VALUES (?, ?, ?, ?, ?,?,?)",
                     entity.getBaseDescription(), entity.getRoomType().toString(), entity.getBasePricePerNight(), entity.getBedding().toString(), entity.getRoomStatus().toString(), entity.getMaxOccupancy(), entity.getFloorNum());
         }
         catch (Exception ex) {
@@ -35,7 +36,7 @@ public class RoomDAOImpl implements RoomDAO {
         try
         {
             return QueryHelper.execute(conn,
-                    "UPDATE room SET description=?, price_per_night=?, bedding_type=?, status=?, floor_num, WHERE room_id=?",
+                    "UPDATE room SET description=?, price_per_night=?, bedding=?, status=?, floor_num, WHERE room_id=?",
                     entity.getBaseDescription(), entity.getBasePricePerNight(), entity.getBedding().toString(), entity.getRoomStatus().toString(), entity.getFloorNum(), entity.getRoomId());
         }
         catch (SQLException ex)
@@ -130,6 +131,18 @@ public class RoomDAOImpl implements RoomDAO {
         {
             LOG.log(Level.SEVERE, "There was an error finding the room for the PK: ", ex);
             throw new SQLException(ex.getMessage());
+        }
+    }
+
+    public int getLastInsertedId(Connection conn) throws SQLException {
+        String sql = "SELECT LAST_INSERT_ID()"; // MySQL syntax
+        try (Statement stmt = conn.createStatement();
+             ResultSet resultSet = QueryHelper.execute(conn, sql)) {
+            if (resultSet.next()) {
+                return resultSet.getInt(1);
+            } else {
+                throw new SQLException("Unable to retrieve last inserted ID");
+            }
         }
     }
 

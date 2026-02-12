@@ -1,33 +1,49 @@
 package servlet;
 
+import business.service.impl.RoomImgServiceImpl;
 import business.service.impl.RoomServiceImpl;
 import constant.BeddingTypes;
 import constant.RoomStatus;
 import constant.RoomTypes;
 import dto.RoomDTO;
-import entity.Room;
+import dto.RoomImgDTO;
 
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
+import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+// this is for uploading files ; we use it for images
+@MultipartConfig(
+        fileSizeThreshold = 1024 * 1024,
+        maxFileSize = 1024 * 1024 * 5,
+        maxRequestSize = 1024 * 1024 * 5
+)
 
 @WebServlet(name = "RoomServlet", urlPatterns = "/room/*")
 public class RoomServlet extends HttpServlet {
     // enabling logging in tomcat server
     private static final Logger LOG = Logger.getLogger(RoomServlet.class.getName());
     private RoomServiceImpl roomService;
+    private RoomImgServiceImpl roomImgService;
 
     public void init(){
         this.roomService = new RoomServiceImpl();
+        this.roomImgService = new RoomImgServiceImpl();
     }
 
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
         LOG.log(Level.INFO, "DO POST is being hit.");
         String path = request.getPathInfo();
 
@@ -55,6 +71,7 @@ public class RoomServlet extends HttpServlet {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
+
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         // debugging
         LOG.log(Level.INFO, "DO GET is being hit.");
@@ -106,13 +123,53 @@ public class RoomServlet extends HttpServlet {
                     .maxOccupancy(Integer.parseInt(request.getParameter("maxOccupancy")))
                     .build();
 
-            boolean successfulRoomCreation = roomService.add(roomDTO);
-            if (successfulRoomCreation) {
-                LOG.log(Level.INFO, "Room has been successfully created.");
-            }
-            else {
+            int roomId = roomService.addAndReturnId(roomDTO);
+            if (roomId == -1)
+            {
                 LOG.log(Level.SEVERE, "Unable to create room.");
             }
+            LOG.log(Level.INFO, "Room has been successfully created with ID: " + roomId);
+
+                // now we handle images
+                Collection<Part> parts = request.getParts();
+                List<Part> imageParts = new ArrayList<>();
+                List<String> altTexts = new ArrayList<>();
+
+                for (Part part : parts) {
+                    if (part.getName().equals("roomImgs") && part.getSize() > 0) {
+                        imageParts.add(part);
+                    } else if (part.getName().equals("alt")) {
+                        altTexts.add(new String(part.getInputStream().readAllBytes(), StandardCharsets.UTF_8));
+                    }
+                }
+
+                    // ensure we have same number of alt texts as images
+                    while (altTexts.size() < imageParts.size()) {
+                        altTexts.add(""); // default empty alt
+                    }
+
+                    for (int i = 0; i < imageParts.size(); i++) {
+                        Part filePart = imageParts.get(i);
+                        String altText = altTexts.get(i);
+
+                        String fileName = filePart.getSubmittedFileName();
+
+                        // this is where the images will be stored
+                        // we define the location
+                        String uploadPath = getServletContext().getRealPath("") + File.separator + "images/room-uploads";
+                        File uploadDir = new File(uploadPath);
+                        if (!uploadDir.exists()) {
+                            uploadDir.mkdir();
+                        }
+
+                        String fullPath = uploadPath + File.separator + fileName;
+                        filePart.write(fullPath);
+
+                        // now saving the image
+                        // for (String imagePath : imagePaths) {
+                        roomImgService.saveImg(new RoomImgDTO(roomId, "images/room-uploads/" + fileName, altText));
+                        LOG.log(Level.INFO, "Room Image has been successfully uploaded.");
+                    }
         }
         catch (Exception ex)
         {

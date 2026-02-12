@@ -64,7 +64,7 @@
         <h4 class="form-title">
             <i class="bi bi-house-add"></i>  Create New Room
         </h4>
-        <form id="registerForm" action="<c:url value='/room/create' />" method="post">
+        <form id="registerForm" action="<c:url value='/room/create' />" method="post" enctype="multipart/form-data">
         <div class="mb-3">
             <label class="form-label">Room Type</label>
             <select name="type" id="type" class="form-select" required>
@@ -123,6 +123,22 @@
                         <div class="form-error d-none" id="floorNumError">Please enter the floor number.</div>
                     </div>
                 </div>
+
+                <div class = "row">
+<%--                this part is for uplaoding room imgs--%>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Room Images</label>
+                    <input type="file" name="roomImgs" id="roomImgs" class="form-control" multiple accept="image/*" required>
+                    <div class="form-error d-none" id="roomImgError">Please upload at least one roon image.</div>
+                </div>
+            </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Alternative Text</label>
+                    <input type="text" name="alt" id="alt" class="form-control" required>
+                    <div class="form-error d-none" id="altError">Please enter the alternative text</div>
+                </div>
+            </div>
 
             <div class="d-flex justify-content-end">
                 <button type="submit" class="btn enter-btn">

@@ -44,8 +44,20 @@ public class RoomServiceImpl implements RoomService {
             LOG.severe("Error adding room: " + ex.getMessage());
             throw new SQLException(ex.getMessage());
         }
-
     }
+
+    public int addAndReturnId(RoomDTO roomDTO) throws SQLException {
+        try (Connection conn = DBConnection.getInstance().getConnection()) {
+            Room roomEntity = RoomMapper.toRoom(roomDTO);
+            boolean created = roomDAO.add(conn, roomEntity);
+            if (created) {
+                return roomDAO.getLastInsertedId(conn); // same connection
+            } else {
+                return 0; // or throw exception
+            }
+        }
+    }
+
     @Override
     public boolean update(RoomDTO roomDTO) throws SQLException {
        // checking for existing room
@@ -103,6 +115,7 @@ public class RoomServiceImpl implements RoomService {
         }
     }
 
+
     // this gets all rooms With filters
     // if no filters, it gets all rooms without filters
     @Override
@@ -117,6 +130,12 @@ public class RoomServiceImpl implements RoomService {
         catch (SQLException ex)
         {
             throw new SQLException(ex.getMessage());
+        }
+    }
+
+    public int getLastInsertedRoomId() throws Exception {
+        try (Connection conn = DBConnection.getInstance().getConnection()) {
+            return roomDAO.getLastInsertedId(conn);
         }
     }
 

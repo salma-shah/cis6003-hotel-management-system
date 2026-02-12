@@ -19,8 +19,18 @@ public class QueryHelper {
         if (sql.toLowerCase().startsWith("select") || sql.toLowerCase().startsWith("SELECT")) {
             return (T) pt.executeQuery();
         }
-        return (T) ((Boolean) (pt.executeUpdate() > 0));  // converting boolean which is primitive
-                                                          // to Boolean
-
+        return (T) ((Boolean) (pt.executeUpdate() > 0));  // converting boolean which is primitive // to Boolean
     }
+//
+//    public static ResultSet executeQuery(Connection conn, String sql, Object... args)
+//            throws SQLException {
+//
+//        PreparedStatement pt = conn.prepareStatement(sql);
+//
+//        for (int i = 0; i < args.length; i++) {
+//            pt.setObject(i + 1, args[i]);
+//        }
+//
+//        return pt.executeQuery();
+//    }
 }
