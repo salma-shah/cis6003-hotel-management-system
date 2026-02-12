@@ -156,7 +156,7 @@ public class RoomServlet extends HttpServlet {
 
                         // this is where the images will be stored
                         // we define the location
-                        String uploadPath = getServletContext().getRealPath("") + File.separator + "images/room-uploads";
+                        String uploadPath = getServletContext().getRealPath("images/room-uploads");
                         File uploadDir = new File(uploadPath);
                         if (!uploadDir.exists()) {
                             uploadDir.mkdir();
@@ -164,6 +164,7 @@ public class RoomServlet extends HttpServlet {
 
                         String fullPath = uploadPath + File.separator + fileName;
                         filePart.write(fullPath);
+                        LOG.log(Level.INFO, "Uploaded file to: " + fullPath);
 
                         // now saving the image
                         // for (String imagePath : imagePaths) {

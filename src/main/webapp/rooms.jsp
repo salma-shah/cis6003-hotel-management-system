@@ -167,9 +167,7 @@
                          data-amenities="${room.amenities}"
                          data-status="${room.status}">
 
-
                         <img src="${room.imageUrl}" alt="Room Image">
-
 
                         <div class="room-body">
                             <h5>${room.name}</h5>
@@ -193,7 +191,6 @@
                     </div>
                 </c:forEach>
             </div>
-
 
         </section>
     </main>
