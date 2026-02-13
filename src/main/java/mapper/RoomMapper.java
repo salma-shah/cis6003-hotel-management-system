@@ -27,6 +27,7 @@ public class RoomMapper {
                 .bedding(room.getBedding())
                 .maxOccupancy(room.getMaxOccupancy())
                 .floorNum(room.getFloorNum())
+                .totalRooms(room.getTotalRooms())
                 .roomImgList(imageDTOs)
                 .build();
     }
@@ -48,6 +49,7 @@ public class RoomMapper {
                 .bedding(roomDTO.getBeddingTypes())
                 .maxOccupancy(roomDTO.getMaxOccupancy())
                 .floorNum(roomDTO.getFloorNum())
+                .totalRooms(roomDTO.getTotalRooms())
               .roomImgList(roomImg)
                 .build();
     }

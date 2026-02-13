@@ -16,7 +16,7 @@ public class RoomDTO implements SuperDTO {
     private final RoomTypes roomType;
     private final RoomStatus roomStatus;
     private final BeddingTypes bedding;
-    private final int maxOccupancy, floorNum;
+    private final int maxOccupancy, floorNum, totalRooms;
     private final Date createdAt, updatedAt;
     private List<RoomImgDTO> roomImgList;
 
@@ -29,6 +29,7 @@ public class RoomDTO implements SuperDTO {
         this.bedding = roomDTOBuilder.bedding;
         this.maxOccupancy = roomDTOBuilder.maxOccupancy;
         this.floorNum = roomDTOBuilder.floorNum;
+        this.totalRooms = roomDTOBuilder.totalRooms;
         this.createdAt = roomDTOBuilder.createdAt;
         this.updatedAt = roomDTOBuilder.updatedAt;
         this.roomImgList = roomDTOBuilder.roomImgList != null
@@ -67,6 +68,7 @@ public class RoomDTO implements SuperDTO {
     public int getFloorNum() {
         return floorNum;
     }
+    public int getTotalRooms() { return totalRooms; }
 
     public List<RoomImgDTO> getRoomImgList() { return roomImgList; }
 
@@ -89,6 +91,7 @@ public class RoomDTO implements SuperDTO {
                 ", bedding=" + bedding +
                 ", maxOccupancy=" + maxOccupancy +
                 ", floorNum=" + floorNum +
+                ", totalRooms=" + totalRooms +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 ", roomImgList=" + roomImgList +
@@ -105,7 +108,7 @@ public class RoomDTO implements SuperDTO {
         private RoomTypes roomType;
         private RoomStatus roomStatus;
         private int maxOccupancy;
-        private int floorNum;
+        private int floorNum, totalRooms;
         private Date createdAt;
         private Date updatedAt;
         private List<RoomImgDTO> roomImgList;
@@ -139,6 +142,11 @@ public class RoomDTO implements SuperDTO {
 
         public RoomDTO.RoomDTOBuilder roomType(RoomTypes roomType) {
             this.roomType = roomType;
+            return this;
+        }
+
+        public RoomDTO.RoomDTOBuilder totalRooms(int totalRooms) {
+            this.totalRooms = totalRooms;
             return this;
         }
 

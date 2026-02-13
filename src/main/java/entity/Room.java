@@ -16,13 +16,13 @@ public class Room implements SuperEntity {
     private final BeddingTypes bedding;
     private final RoomTypes roomType;
     private final RoomStatus roomStatus;
-    private final int maxOccupancy, floorNum;
+    private final int maxOccupancy, floorNum, totalRooms;
     private final Date createdAt;
     private final Date updatedAt;
     private List<RoomImg> roomImgList;
 
     // constructor
-    public Room(int roomId, double basePricePerNight, String baseDescription, BeddingTypes bedding, RoomTypes roomType, RoomStatus roomStatus, int maxOccupancy, int floorNum, Date createdAt, Date updatedAt, List<RoomImg> roomImgList) {
+    public Room(int roomId, double basePricePerNight, String baseDescription, BeddingTypes bedding, RoomTypes roomType, RoomStatus roomStatus, int maxOccupancy, int totalRooms, int floorNum, Date createdAt, Date updatedAt, List<RoomImg> roomImgList) {
         this.roomId = roomId;
         this.basePricePerNight = basePricePerNight;
         this.baseDescription = baseDescription;
@@ -31,6 +31,7 @@ public class Room implements SuperEntity {
         this.roomStatus = roomStatus;
         this.maxOccupancy = maxOccupancy;
         this.floorNum = floorNum;
+        this.totalRooms = totalRooms;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.roomImgList = roomImgList;
@@ -61,6 +62,7 @@ public class Room implements SuperEntity {
     public int getFloorNum() {
         return floorNum;
     }
+    public int getTotalRooms() { return totalRooms; }
 
     public RoomStatus getRoomStatus() {
         return roomStatus;
@@ -88,6 +90,7 @@ public class Room implements SuperEntity {
                 ", roomStatus=" + roomStatus +
                 ", maxOccupancy=" + maxOccupancy +
                 ", floorNum=" + floorNum +
+                ", totalRooms=" + totalRooms +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 ", roomImgList=" + roomImgList +
@@ -103,6 +106,7 @@ public class Room implements SuperEntity {
         this.bedding = builder.bedding;
         this.roomType = builder.roomType;
         this.roomStatus = builder.roomStatus;
+        this.totalRooms = builder.totalRooms;
         this.maxOccupancy = builder.maxOccupancy;
         this.floorNum = builder.floorNum;
         this.createdAt = builder.createdAt;
@@ -123,7 +127,7 @@ public class Room implements SuperEntity {
         private RoomTypes roomType;
         private RoomStatus roomStatus;
         private int maxOccupancy;
-        private int floorNum;
+        private int floorNum, totalRooms;
         private Date createdAt;
         private Date updatedAt;
         private List<RoomImg>  roomImgList;
@@ -164,6 +168,13 @@ public class Room implements SuperEntity {
             this.roomStatus = roomStatus;
 
         return this;}
+
+        public RoomBuilder totalRooms(int totalRooms)
+        {
+            this.totalRooms = totalRooms;
+            return this;
+        }
+
         public RoomBuilder floorNum(int floorNum)
         {
             this.floorNum = floorNum;

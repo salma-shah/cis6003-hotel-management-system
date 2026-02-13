@@ -15,6 +15,7 @@ import java.sql.Statement;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class RoomDAOImpl implements RoomDAO {
     // enabling logging in tomcat server
@@ -82,11 +83,11 @@ public class RoomDAOImpl implements RoomDAO {
     @Override
     public List<Room> getAll(Connection conn, Map<String, String> searchParams) throws SQLException {
         List<Room> rooms = new ArrayList<>();
-        StringBuilder sql = new StringBuilder("SELECT r.room_id, r.bedding, r.type, r.status, r.description, r.price_per_night, r.floor_num, r.max_occupancy," +
-                " ri.image_id, ri.room_id, ri.alt, ri.image_path" +
-                " FROM room r" +
-                " LEFT JOIN room_image ri ON r.room_id=ri.room_id" +
-                " WHERE 1=1 ");
+        StringBuilder sql = new StringBuilder(
+                "SELECT r.room_id, r.bedding, r.type, r.status, r.description, r.price_per_night, " +
+                        "r.floor_num, r.max_occupancy, COUNT(r.room_id) OVER(PARTITION BY r.type, r.bedding, r.max_occupancy) AS total_rooms " +
+                        "FROM room r WHERE 1=1 "
+        );
 
         // this section is for search part
         // this is for the search parameters
@@ -135,17 +136,32 @@ public class RoomDAOImpl implements RoomDAO {
                     roomMap.put(roomId, room);
                 }
 
-            // int imageId =  resultSet.getInt("image_id");
-            if (!resultSet.wasNull())
-            {
-                RoomImg roomImg = mapResultSetToRoomImg(resultSet);
-                room.getRoomImgList().add(roomImg);
+                // int imageId =  resultSet.getInt("image_id");
+                if (!resultSet.wasNull()) {
+                    StringBuilder imgSql = new StringBuilder(
+                            "SELECT ri.image_id, ri.room_id, ri.alt, ri.image_path" +
+                                    "FROM room_image ri WHERE ri.room_id IN ("
+                    );
+
+                    String placeholders = roomMap.keySet().stream().map(k -> "?").collect(Collectors.joining(","));
+                    imgSql.append(placeholders).append(")");
+
+                    List<Object> imgParams = new ArrayList<>(roomMap.keySet());
+                    ResultSet imageResultSet = QueryHelper.execute(conn, imgSql.toString(), imgParams.toArray());
+
+                    while (imageResultSet.next()) {
+                        int imgRoomId = imageResultSet.getInt("room_id");
+                        RoomImg roomImg = mapResultSetToRoomImg(imageResultSet);
+                        room = roomMap.get(imgRoomId);
+                        if (room != null) {
+                            room.getRoomImgList().add(roomImg);
+                        }
+                    }
+                }
             }
-            }
-            return new ArrayList<>(roomMap.values());  // returning the list of rooms that fit into necessary search parameters with the images
-        }
-        catch (SQLException ex)
-        {
+                return new ArrayList<>(roomMap.values());  // returning the list of rooms that fit into necessary search parameters with the images
+
+        } catch (SQLException ex) {
             LOG.log(Level.SEVERE, "There was an error searching the room: ", ex);
             throw new SQLException(ex.getMessage());
         }
@@ -185,6 +201,7 @@ public class RoomDAOImpl implements RoomDAO {
                 .baseDescription(resultSet.getString("description"))
                 .bedding(BeddingTypes.valueOf(resultSet.getString("bedding")))
                 .roomType(RoomTypes.valueOf(resultSet.getString("type")))
+                .totalRooms(resultSet.getInt("total_rooms"))
                 .roomStatus(RoomStatus.valueOf(resultSet.getString("status")))
                 .maxOccupancy(resultSet.getInt("max_occupancy"))
                 .floorNum(resultSet.getInt("floor_num"))

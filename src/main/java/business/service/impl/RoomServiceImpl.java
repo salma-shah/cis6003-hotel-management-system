@@ -50,7 +50,7 @@ public class RoomServiceImpl implements RoomService {
             Room roomEntity = RoomMapper.toRoom(roomDTO);
             boolean created = roomDAO.add(conn, roomEntity);
             if (created) {
-                return roomDAO.getLastInsertedId(conn); // same connection
+                return roomDAO.getLastInsertedId(conn); // same connection so no error
             } else {
                 return 0; // or throw exception
             }
@@ -63,20 +63,15 @@ public class RoomServiceImpl implements RoomService {
 
         // if total guests itself is higher than the max occupancy for a room, not eligible
         if (totalGuests > roomDTO.getMaxOccupancy())
-        {
-            return false;
-        }
+        {return false;}
 
         // then for children, they can only stay in rooms with a double or king bed
         if (children > 0)
         {
             String bedding = roomDTO.getBeddingTypes().toString();
             if (!bedding.contains("Double") && !bedding.contains("King"))
-            {
-                return false;
-            }
+            {return false;}
         }
-
         // if all room eligibity if fulfiled, return true
         return true;
     }
