@@ -24,6 +24,8 @@ A hotel management system that assists staff with handling resort room reservati
 ## Contribution
 
 ## Contact
+Email: salma.shah.0516@gmail.com
+LinkedIn: www.linkedin.com/in/salma-shah-0b499724a
 
 ## Acknowledgement
 * I appreciate Cardiff Metropolitan University for providing us with the sources to access the Ultimate IntelliJ IDEA 2025.3.2.
