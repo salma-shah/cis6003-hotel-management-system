@@ -54,10 +54,6 @@ public class RoomServlet extends HttpServlet {
             case "/create":
                 createRoom(request, response);
                 break;
-//            case "/all":
-//                request.getRequestDispatcher("/rooms.jsp").forward(request, response);
-//                // getAllUsers(request, response);
-//                break;
 //            case "/get":
 //                getUserDetails(request, response);
 //                break;
@@ -83,15 +79,11 @@ public class RoomServlet extends HttpServlet {
                 request.getRequestDispatcher("/create-rooms.jsp").forward(request, response);
                 break;
             case "/all":
-               // request.getRequestDispatcher("/rooms.jsp").forward(request, response);
                getAllRooms(request, response);
                 break;
 //            case "/get":
 //                getUserDetails(request, response);
 //                break;
-            case "/search":
-                searchRooms(request, response);
-                break;
             default:
                 LOG.log(Level.SEVERE, "Unsupported path: " + path);
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -154,7 +146,7 @@ public class RoomServlet extends HttpServlet {
                         String uploadPath = getServletContext().getRealPath("images/room-uploads");
                         File uploadDir = new File(uploadPath);
                         if (!uploadDir.exists()) {
-                            uploadDir.mkdir();
+                            uploadDir.mkdirs();
                         }
 
                         String fullPath = uploadPath + File.separator + fileName;
@@ -163,12 +155,7 @@ public class RoomServlet extends HttpServlet {
 
                         // now saving the image
                         // for (String imagePath : imagePaths) {
-                        roomImgService.saveImg(new RoomImgDTO.RoomImgDTOBuilder()
-                                .roomId(roomId)
-                                .imgPath("images/room-uploads/" + fileName)
-                                .alt(altText)
-                                        .build());
-                               // (roomId, "images/room-uploads/" + fileName, altText));
+                        roomImgService.saveImg(new RoomImgDTO(0, roomId, "images/room-uploads/" + fileName, altText));
                         LOG.log(Level.INFO, "Room image has been successfully uploaded.");
                     }
         }
@@ -184,46 +171,45 @@ public class RoomServlet extends HttpServlet {
             LOG.log(Level.INFO, "Getting all rooms...");
 
             Map<String, String> searchParams = new HashMap<>();
+
+            // first we check if any search parameters exist
+            String floorParam = request.getParameter("floorNum");
+            String statusParam = request.getParameter("status");
+
+            // if id parameter exists, we will add id to the search params
+            if (floorParam != null &&  ! floorParam.isEmpty())
+            {
+                int floorNum = Integer.parseInt(request.getParameter("floorNum"));
+                searchParams.put("floor_num", String.valueOf(floorNum));  // search by floor number
+                LOG.log(Level.INFO, "Searching for floor: " + floorParam);
+            }
+
+            if (statusParam != null && !statusParam.isEmpty()) {
+                searchParams.put("status", statusParam);  // filter by status
+                LOG.log(Level.INFO, "Searching for status: " + statusParam);
+            }
+
             List<RoomDTO> rooms = roomService.getAll(searchParams);
-            request.setAttribute("rooms", rooms);
+            LOG.log(Level.INFO, "Rooms for these params are: " + searchParams);
 
-            if (rooms.isEmpty())
-            {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
-            }
-            else
-            {
-                LOG.log(Level.INFO, "Rooms found: " + rooms.size());
-                request.getRequestDispatcher("/rooms.jsp").forward(request, response);
-            }
-        }
-        catch (Exception ex)
-        {
-            LOG.log(Level.SEVERE, ex.getMessage(), ex);
-        }
-    }
-
-    private void searchRooms(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        try
-        {
-            int roomId = Integer.parseInt(request.getParameter("roomId"));
-            RoomDTO roomDTO = roomService.searchById(roomId);
-            if (roomDTO != null) {
-                LOG.log(Level.INFO, "Room has been successfully found with ID: " + roomId);
+            // this is if JS sends a search request
+            if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
+                    String roomJSON = new com.google.gson.Gson().toJson(rooms);
                 response.setContentType("application/json");
                 response.setCharacterEncoding("UTF-8");
-                String roomJSON = new com.google.gson.Gson().toJson(roomDTO);
-                response.getWriter().write(roomJSON);
-                LOG.log(Level.INFO, "Rooms JSON sent: " + roomJSON);
-            }
-            else {
-                LOG.log(Level.SEVERE, "Room for the ID: " + roomId + " does not exist.");
-            }
+                    response.getWriter().write(roomJSON);
+                    LOG.log(Level.INFO, "Rooms JSON sent: " + roomJSON);
+                    return;
+                }
+
+            // if no search req, then just the rooms will be populated
+                request.setAttribute("rooms", rooms);
+                request.getRequestDispatcher("/rooms.jsp").forward(request, response);
+
         }
         catch (Exception ex)
         {
             LOG.log(Level.SEVERE, ex.getMessage(), ex);
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }
 

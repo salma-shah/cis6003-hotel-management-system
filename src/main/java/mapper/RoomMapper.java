@@ -48,6 +48,7 @@ public class RoomMapper {
                 .bedding(roomDTO.getBeddingTypes())
                 .maxOccupancy(roomDTO.getMaxOccupancy())
                 .floorNum(roomDTO.getFloorNum())
+              .roomImgList(roomImg)
                 .build();
     }
 

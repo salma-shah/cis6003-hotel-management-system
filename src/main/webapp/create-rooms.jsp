@@ -106,6 +106,7 @@
                         <option value="">Select status</option>
                         <option value="Available">Available</option>
                         <option value="Unavailable">Unavailable</option>
+                        <option value="Maintenance">Maintenance</option>
                     </select>
                     <div class="form-error d-none" id="statusError">Please select the room status.</div>
                 </div>

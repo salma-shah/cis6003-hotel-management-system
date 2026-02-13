@@ -135,18 +135,18 @@
 </c:if>
 
             <div class="search-filter">
-                <input type="text" id="searchInput" placeholder="Search by room ID...">
+                <input type="number" id="searchInput" placeholder="Search by floor number...">
 
 <%--                // these are the filters: --%>
 <%--                // status filter --%>
-                <select id="statusFilter">
+                <select id="statusFilter" name="status">
                     <option value="">All Status</option>
                     <option value="Available">Available</option>
                     <option value="Unavailable">Unavailable</option>
                 </select>
             </div>
 <%--    // amenity filters--%>
-            <div class="amenities-filter">
+            <div class="amenities-filter" name="amenities">
                 <label><input type="checkbox" class="amenity" value="WiFi"> WiFi</label>
                 <label><input type="checkbox" class="amenity" value="Pool">  Pool</label>
                 <label><input type="checkbox" class="amenity" value="AC"> AC</label>
@@ -160,16 +160,20 @@
                 <p>No rooms available.</p>
             </c:if>
 
-
+    <p id="noRoomsMessage" style="display:none;">No rooms available.</p>
             <div class="room-grid" id="roomGrid">
                 <c:forEach var="room" items="${rooms}">
                     <div class="room-card"
+                         data-room-id="${room.roomId}"
                          data-category="${room.roomType}"
                          data-amenities="${room.beddingTypes}"
                          data-status="${room.roomStatus}"
                          data-floor-num="${room.floorNum}">
 
-                        <img src="${room.roomImgList}" alt="${room.alt}">
+                        <c:if test="${not empty room.roomImgList}">
+                            <img src="${pageContext.request.contextPath}/${room.roomImgList[0].imgPath}"
+                                 alt = "${room.roomImgList[0].alt}">
+                        </c:if>
 
                         <div class="room-body">
                             <div class="room-meta">Category: ${room.roomType}</div>
@@ -194,64 +198,117 @@
     </main>
 </div>
 
-
 <script>
-    const searchInput = document.getElementById("searchInput");
-    const statusFilter = document.getElementById("statusFilter");
-    const amenityCheckboxes = document.querySelectorAll(".amenity");
-    const roomCards = document.querySelectorAll(".room-card");
+    document.addEventListener("DOMContentLoaded", function() {
+        const searchInput = document.getElementById("searchInput");
+        const roomGrid = document.getElementById("roomGrid");
+        const noRoomsMessage = document.getElementById("noRoomsMessage");
+        let debounceTimer;
 
+        searchInput.addEventListener("input", () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                const floorNum = searchInput.value.trim();
+                const allCards = roomGrid.querySelectorAll(".room-card");
 
-    function getSelectedAmenities() {
-        return Array.from(amenityCheckboxes)
-            .filter(cb => cb.checked)
-            .map(cb => cb.value.toLowerCase());
-    }
+                // if no input, usual room grid will display
+                if (!floorNum)
+                {
+                    allCards.forEach((card) => {card.style.display = "";});
+                    noRoomsMessage.style.display = "none";
+                    return;
+                }
 
+                fetch('<c:url value="/room/all" />?floorNum=' + encodeURIComponent(floorNum),
+                    {
+                        headers: {
+                            "X-Requested-With": "XMLHttpRequest"
+                        }
+                    })
+                    .then(res => {
+                        if (!res.ok) throw new Error("Search failed");
+                        return res.json();
+                    })
+                    .then(rooms => {
+                        const allCards = roomGrid.querySelectorAll(".room-card");
+                        allCards.forEach((card) => {card.style.display = "none";});
+                        noRoomsMessage.style.display = "none";
 
-    function filterRooms() {
-        const searchText = searchInput.value.toLowerCase();
-        const status = statusFilter.value;
-        const selectedAmenities = getSelectedAmenities();
+                        if (!rooms || rooms.length === 0) {
+                            noRoomsMessage.style.display = "block";
+                            return;  // if no rooms, no rooms avaialble msg displayed
+                        }
 
-
-        roomCards.forEach(card => {
-            const name = card.dataset.name.toLowerCase();
-            const category = card.dataset.category.toLowerCase();
-            const roomStatus = card.dataset.status;
-            const amenities = card.dataset.amenities
-                .toLowerCase()
-                .split(",");
-
-
-            const matchesSearch =
-                name.includes(searchText) ||
-                category.includes(searchText);
-
-
-            const matchesStatus =
-                !status || roomStatus === status;
-
-
-            // AND logic: room must contain ALL selected amenities
-            const matchesAmenities =
-                selectedAmenities.length === 0 ||
-                selectedAmenities.every(a => amenities.includes(a));
-
-
-            card.style.display =
-                (matchesSearch && matchesStatus && matchesAmenities)
-                    ? "block"
-                    : "none";
+                        rooms.forEach(room => {
+                            console.log(room);
+                            const card = roomGrid.querySelector(".room-card[data-room-id='" + room.roomId + "']");
+                            if (card) card.style.display = "";
+                        });
+                    })
+                    .catch(err => {
+                        console.error(err);
+                    });
+            }, 300);
         });
-    }
+    });
 
 
-    searchInput.addEventListener("keyup", filterRooms);
-    statusFilter.addEventListener("change", filterRooms);
-    amenityCheckboxes.forEach(cb =>
-        cb.addEventListener("change", filterRooms)
-    );
+    // const statusFilter = document.getElementById("statusFilter");
+    // const amenityCheckboxes = document.querySelectorAll(".amenity");
+    // const roomCards = document.querySelectorAll(".room-card");
+    //
+    //
+    // function getSelectedAmenities() {
+    //     return Array.from(amenityCheckboxes)
+    //         .filter(cb => cb.checked)
+    //         .map(cb => cb.value.toLowerCase());
+    // }
+
+
+    // function filterRooms() {
+    //     const searchText = searchInput.value.toLowerCase();
+    //     const status = statusFilter.value;
+    //     const selectedAmenities = getSelectedAmenities();
+    //
+    //
+    //     roomCards.forEach(card => {
+    //         // const name = card.dataset.name.toLowerCase();
+    //        //  const category = card.dataset.category.toLowerCase();
+    //         const roomStatus = card.dataset.status;
+    //        // const amenities = card.dataset.amenities
+    //             .toLowerCase()
+    //             .split(",");
+    //
+    //
+    //         const matchesSearch =
+    //           //  name.includes(searchText) ||
+    //             category.includes(searchText);
+    //
+    //
+    //         const matchesStatus =
+    //             !status || roomStatus === status;
+    //
+    //
+    //         // AND logic: room must contain ALL selected amenities
+    //         const matchesAmenities =
+    //             selectedAmenities.length === 0 ||
+    //             selectedAmenities.every(a => amenities.includes(a));
+    //
+    //
+    //         card.style.display =
+    //             (matchesSearch && matchesStatus && matchesAmenities)
+    //                 ? "block"
+    //                 : "none";
+    //     });
+    // }
+    //
+    //
+    // searchInput.addEventListener("keyup", filterRooms);
+    // statusFilter.addEventListener("change", filterRooms);
+    // amenityCheckboxes.forEach(cb =>
+    //     cb.addEventListener("change", filterRooms)
+    // );
+
 </script>
 
 

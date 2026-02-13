@@ -9,11 +9,7 @@ public class RoomImgMapper {
             return null;
         }
 
-        return new RoomImgDTO.RoomImgDTOBuilder()
-                .roomId(roomImg.getRoomId())
-                .imgPath(roomImg.getImgPath())
-                .alt(roomImg.getAlt())
-                .build();
+        return new RoomImgDTO(roomImg.getImageId(), roomImg.getRoomId(), roomImg.getImgPath(), roomImg.getAlt());
     }
 
     public static RoomImg toRoomImg(RoomImgDTO roomImgDTO){
@@ -21,5 +17,5 @@ public class RoomImgMapper {
             return null;
         }
 
-        return new RoomImg.RoomImgBuilder().roomId(roomImgDTO.getRoomId()).imgPath(roomImgDTO.getImgPath()).alt(roomImgDTO.getAlt()).build(); }
+        return new RoomImg(roomImgDTO.getImageId(),roomImgDTO.getRoomId(),roomImgDTO.getImgPath(), roomImgDTO.getAlt()); }
 }
