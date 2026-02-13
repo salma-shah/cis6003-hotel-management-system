@@ -139,7 +139,7 @@ public class RoomDAOImpl implements RoomDAO {
                 // int imageId =  resultSet.getInt("image_id");
                 if (!resultSet.wasNull()) {
                     StringBuilder imgSql = new StringBuilder(
-                            "SELECT ri.image_id, ri.room_id, ri.alt, ri.image_path" +
+                            "SELECT ri.image_id, ri.room_id, ri.alt, ri.image_path " +
                                     "FROM room_image ri WHERE ri.room_id IN ("
                     );
 
