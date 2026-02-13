@@ -21,7 +21,6 @@ public class RoomServiceImpl implements RoomService {
     private final RoomDAO roomDAO;
     private final List<Room> rooms = new ArrayList<>();
     private static final Logger LOG = Logger.getLogger(RoomServiceImpl.class.getName());
-    // private final Connection connection = DBConnection.getInstance().getConnection();
 
     public RoomServiceImpl() {
         this.roomDAO = new RoomDAOImpl();
@@ -56,6 +55,30 @@ public class RoomServiceImpl implements RoomService {
                 return 0; // or throw exception
             }
         }
+    }
+
+    @Override
+    public boolean isRoomEligible(RoomDTO roomDTO, int adults, int children) throws SQLException {
+        int totalGuests = adults + children;
+
+        // if total guests itself is higher than the max occupancy for a room, not eligible
+        if (totalGuests > roomDTO.getMaxOccupancy())
+        {
+            return false;
+        }
+
+        // then for children, they can only stay in rooms with a double or king bed
+        if (children > 0)
+        {
+            String bedding = roomDTO.getBeddingTypes().toString();
+            if (!bedding.contains("Double") && !bedding.contains("King"))
+            {
+                return false;
+            }
+        }
+
+        // if all room eligibity if fulfiled, return true
+        return true;
     }
 
     @Override
