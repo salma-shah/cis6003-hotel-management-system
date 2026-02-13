@@ -25,6 +25,7 @@ A hotel management system that assists staff with handling resort room reservati
 
 ## Contact
 Email: salma.shah.0516@gmail.com
+<br>
 LinkedIn: www.linkedin.com/in/salma-shah-0b499724a
 
 ## Acknowledgement
