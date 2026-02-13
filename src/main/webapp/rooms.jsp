@@ -5,6 +5,7 @@
 <head>
     <title>Manage Rooms</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"/>
 </head>
 
 <style>
@@ -173,11 +174,14 @@
     <br>
     <br>
 
+<%--    no rooms avaialbale message as a fallback--%>
             <c:if test="${empty rooms}">
                 <p>No rooms available.</p>
             </c:if>
 
+<%--    // this is if there are no search results--%>
     <p id="noRoomsMessage" style="display:none;">No rooms available.</p>
+
             <div class="room-grid" id="roomGrid">
                 <c:forEach var="room" items="${rooms}">
                     <div class="room-card"
@@ -193,8 +197,9 @@
                         </c:if>
 
                         <div class="room-body">
-                            <div class="room-meta">Category: ${room.roomType}</div>
+                            <div class="room-meta">Room Type: ${room.roomType}</div>
                             <div class="room-meta">Floor: ${room.floorNum}</div>
+                            <div class="room-meta"><i class="bi bi-person-fill-check"></i>: ${room.maxOccupancy}</div>
                             <div class="room-meta room-status
                                ${room.roomStatus == 'Available' ? 'status-available' :
                                  room.roomStatus == 'Unavailable' ? 'status-occupied' : 'status-maintenance'}">
@@ -203,7 +208,8 @@
                         </div>
 
                         <div class="room-footer">
-                            <a href="<c:url value='/room/get?id=${room.roomId}' />"
+<%--                            <a href="<c:url value='/room/get?id=${room.roomId}' />"--%>
+                        <a href="javascript:void(0)" onclick="openViewAndEditModal('${room.roomId}')"
                                class="btn enter-btn">
                                 View Details
                             </a>

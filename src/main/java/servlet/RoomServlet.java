@@ -197,7 +197,6 @@ public class RoomServlet extends HttpServlet {
             LOG.log(Level.INFO, "Rooms for these params are: " + searchParams);
 
             // since filtering for max occupancy involves using another service layer logic
-
             int adults = ((guestsAdultsParam != null) && !guestsAdultsParam.isEmpty()) ? Integer.parseInt(guestsAdultsParam) : 0;
             int children = ((guestsChildsParam != null && !guestsChildsParam.isEmpty()) ? Integer.parseInt(guestsChildsParam) : 0);
 
