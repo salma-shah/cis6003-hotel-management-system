@@ -208,11 +208,6 @@
                         </div>
 
                         <div class="room-footer">
-<%--                            <a href="<c:url value='/room/get?id=${room.roomId}' />"--%>
-                        <a href="javascript:void(0)" onclick="openViewAndEditModal('${room.roomId}')"
-                               class="btn enter-btn">
-                                View Details
-                            </a>
                         </div>
                     </div>
                 </c:forEach>
