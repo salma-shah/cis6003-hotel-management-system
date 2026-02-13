@@ -105,23 +105,23 @@ public class RoomDAOImpl implements RoomDAO {
                 String key = entry.getKey();
                 String value = entry.getValue();
 
-                // since floor num is numeric, it will be using = , not LIKE
+                // since floor num and max occuapancy is numeric
+                // we'll parse the int value
                 if (key.equals("floor_num") || key.equals("max_occupancy")) {
                     sql.append(" AND ").append(key).append(" = ?");
                     params.add(Integer.parseInt(value));
+                }
 
                 // only using the allowed params
                 if (allowedParams.contains(key)) {
-                    sql.append(" AND ").append(key).append(" LIKE ? ");
-                    params.add("%" + value + "%");
+                    sql.append(" AND ").append(key).append(" = ? ");
+                    params.add(value);
                 }
             }
-        }
         }
 
         // this section is for retrieving rooms with their images
         try {
-            LOG.log(Level.INFO, "Executing SQL: " + sql.toString() + " with params: " + params);
             ResultSet resultSet = QueryHelper.execute(conn, sql.toString(), params.toArray());
             Map<Integer, Room> roomMap = new HashMap<>();
             while (resultSet.next()) {

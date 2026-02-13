@@ -18,6 +18,7 @@ import javax.servlet.http.Part;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -36,7 +37,7 @@ public class RoomServlet extends HttpServlet {
     private RoomServiceImpl roomService;
     private RoomImgServiceImpl roomImgService;
 
-    public void init(){
+    public void init() {
         this.roomService = new RoomServiceImpl();
         this.roomImgService = new RoomImgServiceImpl();
     }
@@ -79,7 +80,7 @@ public class RoomServlet extends HttpServlet {
                 request.getRequestDispatcher("/create-rooms.jsp").forward(request, response);
                 break;
             case "/all":
-               getAllRooms(request, response);
+                getAllRooms(request, response);
                 break;
 //            case "/get":
 //                getUserDetails(request, response);
@@ -91,10 +92,9 @@ public class RoomServlet extends HttpServlet {
     }
 
     private void createRoom(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        try
-        {
+        try {
             LOG.log(Level.INFO, "Creating room...");
-            
+
             // ensuring all fields are filled
             // do validation
 
@@ -111,56 +111,53 @@ public class RoomServlet extends HttpServlet {
                     .build();
 
             int roomId = roomService.addAndReturnId(roomDTO);
-            if (roomId == -1)
-            {
+            if (roomId == -1) {
                 LOG.log(Level.SEVERE, "Unable to create room.");
             }
             LOG.log(Level.INFO, "Room has been successfully created with ID: " + roomId);
 
-                // now we handle images
-                Collection<Part> parts = request.getParts();
-                List<Part> imageParts = new ArrayList<>();
-                List<String> altTexts = new ArrayList<>();
+            // now we handle images
+            Collection<Part> parts = request.getParts();
+            List<Part> imageParts = new ArrayList<>();
+            List<String> altTexts = new ArrayList<>();
 
-                for (Part part : parts) {
-                    if (part.getName().equals("roomImgs") && part.getSize() > 0) {
-                        imageParts.add(part);
-                    } else if (part.getName().equals("alt")) {
-                        altTexts.add(new String(part.getInputStream().readAllBytes(), StandardCharsets.UTF_8));
-                    }
+            for (Part part : parts) {
+                if (part.getName().equals("roomImgs") && part.getSize() > 0) {
+                    imageParts.add(part);
+                } else if (part.getName().equals("alt")) {
+                    altTexts.add(new String(part.getInputStream().readAllBytes(), StandardCharsets.UTF_8));
+                }
+            }
+
+            // ensure we have same number of alt texts as images
+            while (altTexts.size() < imageParts.size()) {
+                altTexts.add(""); // default empty alt
+            }
+
+            for (int i = 0; i < imageParts.size(); i++) {
+                Part filePart = imageParts.get(i);
+                String altText = altTexts.get(i);
+
+                String fileName = filePart.getSubmittedFileName();
+
+                // this is where the images will be stored
+                // we define the location
+                String uploadPath = getServletContext().getRealPath("images/room-uploads");
+                File uploadDir = new File(uploadPath);
+                if (!uploadDir.exists()) {
+                    uploadDir.mkdirs();
                 }
 
-                    // ensure we have same number of alt texts as images
-                    while (altTexts.size() < imageParts.size()) {
-                        altTexts.add(""); // default empty alt
-                    }
+                String fullPath = uploadPath + File.separator + fileName;
+                filePart.write(fullPath);
+                LOG.log(Level.INFO, "Uploaded file to: " + fullPath);
 
-                    for (int i = 0; i < imageParts.size(); i++) {
-                        Part filePart = imageParts.get(i);
-                        String altText = altTexts.get(i);
-
-                        String fileName = filePart.getSubmittedFileName();
-
-                        // this is where the images will be stored
-                        // we define the location
-                        String uploadPath = getServletContext().getRealPath("images/room-uploads");
-                        File uploadDir = new File(uploadPath);
-                        if (!uploadDir.exists()) {
-                            uploadDir.mkdirs();
-                        }
-
-                        String fullPath = uploadPath + File.separator + fileName;
-                        filePart.write(fullPath);
-                        LOG.log(Level.INFO, "Uploaded file to: " + fullPath);
-
-                        // now saving the image
-                        // for (String imagePath : imagePaths) {
-                        roomImgService.saveImg(new RoomImgDTO(0, roomId, "images/room-uploads/" + fileName, altText));
-                        LOG.log(Level.INFO, "Room image has been successfully uploaded.");
-                    }
-        }
-        catch (Exception ex)
-        {
+                // now saving the image
+                // for (String imagePath : imagePaths) {
+                roomImgService.saveImg(new RoomImgDTO(0, roomId, "images/room-uploads/" + fileName, altText));
+                LOG.log(Level.INFO, "Room image has been successfully uploaded.");
+            }
+        } catch (Exception ex) {
             LOG.log(Level.SEVERE, ex.getMessage(), ex);
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
@@ -174,11 +171,13 @@ public class RoomServlet extends HttpServlet {
 
             // first we check if any search parameters exist
             String floorParam = request.getParameter("floorNum");
-            String statusParam = request.getParameter("status");
+            String statusParam = request.getParameter("statusFilter");
+            String beddingParam = request.getParameter("beddingFilter");
+            String guestsAdultsParam = request.getParameter("guestsAdultsFilter");
+            String guestsChildsParam = request.getParameter("guestsChildrenFilter");
 
-            // if id parameter exists, we will add id to the search params
-            if (floorParam != null &&  ! floorParam.isEmpty())
-            {
+            // if floor num parameter exists, we will add it to the search params
+            if (floorParam != null && !floorParam.isEmpty()) {
                 int floorNum = Integer.parseInt(request.getParameter("floorNum"));
                 searchParams.put("floor_num", String.valueOf(floorNum));  // search by floor number
                 LOG.log(Level.INFO, "Searching for floor: " + floorParam);
@@ -189,29 +188,54 @@ public class RoomServlet extends HttpServlet {
                 LOG.log(Level.INFO, "Searching for status: " + statusParam);
             }
 
+            if (beddingParam != null && !beddingParam.isEmpty()) {
+                searchParams.put("bedding", beddingParam);  // filter by bedding type
+                LOG.log(Level.INFO, "Searching for bedding type: " + beddingParam);
+            }
+
             List<RoomDTO> rooms = roomService.getAll(searchParams);
             LOG.log(Level.INFO, "Rooms for these params are: " + searchParams);
 
+            // since filtering for max occupancy involves using another service layer logic
+
+            int adults = ((guestsAdultsParam != null) && !guestsAdultsParam.isEmpty()) ? Integer.parseInt(guestsAdultsParam) : 0;
+            int children = ((guestsChildsParam != null && !guestsChildsParam.isEmpty()) ? Integer.parseInt(guestsChildsParam) : 0);
+
+            if (adults > 0 || children > 0) {
+
+                // now we filter the rooms by max occupancy method
+                rooms = rooms.stream()
+                        .filter(room -> {
+                            try {
+                                LOG.log(Level.INFO, "Searching for room with guests: " + adults + " and " + children);
+                                return roomService.isRoomEligible(room, adults, children);
+                            } catch (SQLException ex) {
+                                LOG.log(Level.INFO, "Eligible rooms could not be checked: " + ex);
+                                return false;
+                            }
+                        })
+                        .toList();
+            }
+
             // this is if JS sends a search request
             if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
-                    String roomJSON = new com.google.gson.Gson().toJson(rooms);
+                String roomJSON = new com.google.gson.Gson().toJson(rooms);
                 response.setContentType("application/json");
                 response.setCharacterEncoding("UTF-8");
-                    response.getWriter().write(roomJSON);
-                    LOG.log(Level.INFO, "Rooms JSON sent: " + roomJSON);
-                    return;
-                }
+                response.getWriter().write(roomJSON);
+                LOG.log(Level.INFO, "Rooms JSON sent: " + roomJSON);
+                return;
+            }
 
             // if no search req, then just the rooms will be populated
-                request.setAttribute("rooms", rooms);
-                request.getRequestDispatcher("/rooms.jsp").forward(request, response);
-
+            request.setAttribute("rooms", rooms);
+            request.getRequestDispatcher("/rooms.jsp").forward(request, response);
         }
-        catch (Exception ex)
-        {
-            LOG.log(Level.SEVERE, ex.getMessage(), ex);
+        catch(Exception ex)
+            {
+                LOG.log(Level.SEVERE, ex.getMessage(), ex);
+            }
         }
-    }
 
     // deleting a room method
     private void deleteRoom(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

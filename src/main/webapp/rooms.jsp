@@ -35,15 +35,15 @@
         margin-bottom: 20px;
     }
 
-    .search-filter {
+    .number-filter {
         display: flex;
         gap: 15px;
         margin-bottom: 20px;
     }
 
-    .search-filter input,
-    .search-filter select {
-        width: 250px;
+    .number-filter input,
+    .number-filter select {
+        width: 185px;
         padding: 10px;
         border-radius: 6px;
         border: 1px solid #ccc;
@@ -134,7 +134,7 @@
             </div>
 </c:if>
 
-            <div class="search-filter">
+            <div class="number-filter">
                 <input type="number" id="searchInput" placeholder="Search by floor number...">
 
 <%--                // these are the filters: --%>
@@ -143,7 +143,21 @@
                     <option value="">All Status</option>
                     <option value="Available">Available</option>
                     <option value="Unavailable">Unavailable</option>
+                    <option value="Maintenance">Maintenance</option>
                 </select>
+
+                <select id="beddingInput" name="bedding">
+                    <option value="">All Bedding Types</option>
+                    <option value="Single">Single</option>
+                    <option value="Twin">Twin</option>
+                    <option value="Double">Double</option>
+                    <option value="King">King</option>
+                </select>
+
+<%--                filter for max occupancy--%>
+                <input type="number" placeholder="Number of Adults" name="guestsAdults" id="guestsAdults" step="1" min="11" required>
+                <input type="number" placeholder="Number of Children" name="guestsChildren" id="guestsChildren" step="1" min="0">
+
             </div>
 <%--    // amenity filters--%>
             <div class="amenities-filter" name="amenities">
@@ -153,6 +167,9 @@
                 <label><input type="checkbox" class="amenity" value="TV"> TV</label>
                 <label><input type="checkbox" class="amenity" value="Balcony"> Balcony</label>
             </div>
+
+<%--    you also need a section to filter by dates--%>
+
     <br>
     <br>
 
@@ -200,114 +217,99 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
+        // filter fields
         const searchInput = document.getElementById("searchInput");
+        const statusInput = document.getElementById("statusFilter");
+        const beddingInput = document.getElementById("beddingInput");
+        const guestsAdultInput = document.getElementById("guestsAdults");
+        const guestsChildrenInput = document.getElementById("guestsChildren");
+
+        // room grid variables
         const roomGrid = document.getElementById("roomGrid");
         const noRoomsMessage = document.getElementById("noRoomsMessage");
         let debounceTimer;
 
+        function performSearch() {
+            const floorNum = searchInput.value.trim();
+            const statusFilter = statusInput.value.trim();
+            const beddingFilter = beddingInput.value.trim();
+            const guestsAdultsFilter = guestsAdultInput.value.trim();
+            const guestsChildrenFilter = guestsChildrenInput.value.trim();
+            const allCards = roomGrid.querySelectorAll(".room-card");
+
+            // if no input, usual room grid will display
+            if (!floorNum && !statusFilter && !beddingFilter && !guestsAdultsFilter) {
+                allCards.forEach((card) => {
+                    card.style.display = "";
+                });
+                noRoomsMessage.style.display = "none";
+                return;
+            }
+
+            const params = new URLSearchParams();
+            if (floorNum) params.append("floorNum", floorNum);
+            if (statusFilter) params.append("statusFilter", statusFilter);
+            if (beddingFilter) params.append("beddingFilter", beddingFilter);
+            if (guestsAdultsFilter !== "") params.append("guestsAdultsFilter", guestsAdultsFilter);
+            if (guestsChildrenFilter !== "") params.append("guestsChildrenFilter", guestsChildrenFilter);
+
+
+            fetch('<c:url value="/room/all" />?' + params.toString(),
+                {
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest"
+                    }
+                })
+                .then(res => {
+                    if (!res.ok) throw new Error("Search failed");
+                    return res.json();
+                })
+                .then(rooms => {
+                    const allCards = roomGrid.querySelectorAll(".room-card");
+                    allCards.forEach((card) => {
+                        card.style.display = "none";
+                    });
+                    noRoomsMessage.style.display = "none";
+
+                    if (!rooms || rooms.length === 0) {
+                        noRoomsMessage.style.display = "block";
+                        return;  // if no rooms, no rooms avaialble msg displayed
+                    }
+
+                    rooms.forEach(room => {
+                        console.log(room);
+                        const card = roomGrid.querySelector(".room-card[data-room-id='" + room.roomId + "']");
+                        if (card) card.style.display = "";
+                    });
+                })
+                .catch(err => console.error(err));
+
+    }
+
+        // floor filter
         searchInput.addEventListener("input", () => {
             clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(() => {
-                const floorNum = searchInput.value.trim();
-                const allCards = roomGrid.querySelectorAll(".room-card");
-
-                // if no input, usual room grid will display
-                if (!floorNum)
-                {
-                    allCards.forEach((card) => {card.style.display = "";});
-                    noRoomsMessage.style.display = "none";
-                    return;
-                }
-
-                fetch('<c:url value="/room/all" />?floorNum=' + encodeURIComponent(floorNum),
-                    {
-                        headers: {
-                            "X-Requested-With": "XMLHttpRequest"
-                        }
-                    })
-                    .then(res => {
-                        if (!res.ok) throw new Error("Search failed");
-                        return res.json();
-                    })
-                    .then(rooms => {
-                        const allCards = roomGrid.querySelectorAll(".room-card");
-                        allCards.forEach((card) => {card.style.display = "none";});
-                        noRoomsMessage.style.display = "none";
-
-                        if (!rooms || rooms.length === 0) {
-                            noRoomsMessage.style.display = "block";
-                            return;  // if no rooms, no rooms avaialble msg displayed
-                        }
-
-                        rooms.forEach(room => {
-                            console.log(room);
-                            const card = roomGrid.querySelector(".room-card[data-room-id='" + room.roomId + "']");
-                            if (card) card.style.display = "";
-                        });
-                    })
-                    .catch(err => {
-                        console.error(err);
-                    });
-            }, 300);
+            debounceTimer = setTimeout(performSearch, 300);
         });
+
+        // status filter
+        statusInput.addEventListener("change", performSearch);
+
+    // bedding input filter
+    beddingInput.addEventListener("change", performSearch);
+
+    // number of adults and guests
+    guestsAdultInput.addEventListener("input", () => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(performSearch, 300);
     });
 
+        guestsChildrenInput.addEventListener("input", () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(performSearch, 300);
+        });
 
-    // const statusFilter = document.getElementById("statusFilter");
-    // const amenityCheckboxes = document.querySelectorAll(".amenity");
-    // const roomCards = document.querySelectorAll(".room-card");
-    //
-    //
-    // function getSelectedAmenities() {
-    //     return Array.from(amenityCheckboxes)
-    //         .filter(cb => cb.checked)
-    //         .map(cb => cb.value.toLowerCase());
-    // }
-
-
-    // function filterRooms() {
-    //     const searchText = searchInput.value.toLowerCase();
-    //     const status = statusFilter.value;
-    //     const selectedAmenities = getSelectedAmenities();
-    //
-    //
-    //     roomCards.forEach(card => {
-    //         // const name = card.dataset.name.toLowerCase();
-    //        //  const category = card.dataset.category.toLowerCase();
-    //         const roomStatus = card.dataset.status;
-    //        // const amenities = card.dataset.amenities
-    //             .toLowerCase()
-    //             .split(",");
-    //
-    //
-    //         const matchesSearch =
-    //           //  name.includes(searchText) ||
-    //             category.includes(searchText);
-    //
-    //
-    //         const matchesStatus =
-    //             !status || roomStatus === status;
-    //
-    //
-    //         // AND logic: room must contain ALL selected amenities
-    //         const matchesAmenities =
-    //             selectedAmenities.length === 0 ||
-    //             selectedAmenities.every(a => amenities.includes(a));
-    //
-    //
-    //         card.style.display =
-    //             (matchesSearch && matchesStatus && matchesAmenities)
-    //                 ? "block"
-    //                 : "none";
-    //     });
-    // }
-    //
-    //
-    // searchInput.addEventListener("keyup", filterRooms);
-    // statusFilter.addEventListener("change", filterRooms);
-    // amenityCheckboxes.forEach(cb =>
-    //     cb.addEventListener("change", filterRooms)
-    // );
+    })
 
 </script>
 
