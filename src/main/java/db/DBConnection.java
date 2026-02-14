@@ -11,7 +11,7 @@ public class DBConnection {
     private static final String DB_URL = "jdbc:mysql://localhost:3306/ocean_view_hotel_db?useSSL=false&serverTimezone=UTC";
     private static final String USER = "root";
     private static final String PASSWORD = "admin12345678";
-    private static DBConnection  instance;  // private static field
+    private static volatile DBConnection instance;  // private static field
 
     // private constructor
     private DBConnection() {
@@ -26,18 +26,23 @@ public class DBConnection {
     // public method to return the instance
     public static DBConnection getInstance() {
         if (instance == null) {
+            // we make it synchorinzied
+            // thread safe
+            synchronized (DBConnection.class) {
+                if (instance == null) {}
             instance = new DBConnection();
+        }
         }
         return instance;
     }
 
-    // method to access the jdbc connection instance
+    // method to establish the connection to the database
     public Connection getConnection() throws SQLException {
         try {
             return DriverManager.getConnection(DB_URL, USER, PASSWORD);
         }
         catch (SQLException ex) {
-            throw ex;
+            throw new SQLException("Error getting connection to database" + ex.getMessage());
         }
     }
 
