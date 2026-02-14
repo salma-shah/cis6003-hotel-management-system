@@ -15,7 +15,7 @@
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 
-    <!-- creating custom css for rounded corners and edges-->
+    <!-- creating custom CSS for rounded corners and edges-->
     <style>
         body {
             min-height: 100vh;
