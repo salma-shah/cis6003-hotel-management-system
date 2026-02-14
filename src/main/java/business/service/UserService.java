@@ -1,8 +1,7 @@
-package service;
+package business.service;
 
 import dto.UserDTO;
-import entity.User;
-import service.helper.CRUDService;
+import business.service.helper.CRUDService;
 
 import java.util.List;
 

@@ -4,7 +4,7 @@
   <groupId>org.example</groupId>
   <artifactId>ocean-view-hotel</artifactId>
   <packaging>war</packaging>
-  <version>1.5.2</version>
+  <version>1.5.4</version>
   <name>ocean-view-hotel Maven Webapp</name>
   <url>http://maven.apache.org</url>
   <dependencies>
@@ -53,5 +53,15 @@
   </dependencies>
   <build>
     <finalName>ocean-view-hotel</finalName>
+      <plugins>
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-compiler-plugin</artifactId>
+              <configuration>
+                  <source>16</source>
+                  <target>16</target>
+              </configuration>
+          </plugin>
+      </plugins>
   </build>
 </project>

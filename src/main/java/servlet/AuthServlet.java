@@ -2,9 +2,8 @@ package servlet;
 
 import dto.UserCredentialDTO;
 import dto.UserDTO;
-import security.PasswordManager;
-import service.AuthService;
-import service.impl.AuthServiceImpl;
+import business.service.AuthService;
+import business.service.impl.AuthServiceImpl;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;

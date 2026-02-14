@@ -1,4 +1,4 @@
-package dao.helper;
+package persistence.dao.helper;
 
 import entity.SuperEntity;
 

@@ -1,21 +1,16 @@
-package service.impl;
+package business.service.impl;
 
-import dao.UserDAO;
-import dao.impl.UserDAOImpl;
+import persistence.dao.impl.UserDAOImpl;
 import db.DBConnection;
 import dto.UserCredentialDTO;
 import dto.UserDTO;
 import entity.User;
 import mapper.UserMapper;
 import security.PasswordManager;
-import service.AuthService;
+import business.service.AuthService;
 
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionContext;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 public class AuthServiceImpl implements AuthService {

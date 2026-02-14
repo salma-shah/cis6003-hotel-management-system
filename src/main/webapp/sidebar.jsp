@@ -1,7 +1,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@page isELIgnored="false"%>
 <head>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"/>
 </head>
 <style>
     body {
@@ -138,7 +138,7 @@
             <i class="bi bi-book"></i> Reservations
         </a>
 
-        <a class="nav-link" href="rooms.jsp">
+        <a class="nav-link" href="<c:url value='/room/all'/>">
             <i class="bi bi-house-door"></i>  Rooms
         </a>
 

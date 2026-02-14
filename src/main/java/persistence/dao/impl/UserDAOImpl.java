@@ -1,9 +1,9 @@
-package dao.impl;
+package persistence.dao.impl;
 
 import constant.Role;
 import entity.User;
-import dao.UserDAO;
-import dao.helper.QueryHelper;
+import persistence.dao.UserDAO;
+import persistence.dao.helper.QueryHelper;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -85,7 +85,7 @@ public class UserDAOImpl implements UserDAO {
     @Override
     public List<User> getAll(Connection conn, Map<String, String> searchParams) throws SQLException {
         try {
-            ResultSet resultSet = QueryHelper.execute(conn, "SELECT user_id, username, password, email, address, first_name, last_name, role, contact_number FROM user ");
+            ResultSet resultSet = QueryHelper.execute(conn, "SELECT user_id, username, password, email, address, first_name, last_name, role, contact_number FROM user");
             List<User> users = new ArrayList<>();
             while (resultSet.next()) {
                 users.add(mapResultSetToUser(resultSet));
