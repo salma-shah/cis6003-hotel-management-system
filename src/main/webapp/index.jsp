@@ -1,5 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@page isELIgnored="false"%>
 <head>
     <meta charset="UTF-8">
     <title>Ocean View Hotel</title>
@@ -60,7 +60,7 @@
     <h1>Ocean View Hotel</h1>
     <p><b>Comfort</b> 𓆝 <b>Galle</b>  𓆝<b>Experience</b></p>
 
-    <a href="login.jsp" class="btn enter-btn">
+    <a class="btn enter-btn" href="<c:url value='/auth/login' />" >
         Enter
     </a>
 </div>

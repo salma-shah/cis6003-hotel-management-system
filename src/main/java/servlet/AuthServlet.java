@@ -24,7 +24,7 @@ public class AuthServlet extends HttpServlet {
 
     @Override
     public void init() {
-        this.authService = new AuthServiceImpl(); // or via factory
+        this.authService = new AuthServiceImpl();
     }
 
     @Override
@@ -39,8 +39,13 @@ public class AuthServlet extends HttpServlet {
             path = "/";
         }
 
-        if  (path.equals("/logout")) {
-            logout(request, response);
+        switch (path) {
+            case "/logout":
+                logout(request, response);
+                break;
+            case  "/login":
+               request.getRequestDispatcher("/login.jsp").forward(request, response);
+               break;
         }
 
     }
