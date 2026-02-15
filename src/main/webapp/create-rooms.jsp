@@ -1,8 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<!DOCTYPE html>
-<html>
 <head>
     <title>Create Room</title>
 
@@ -125,6 +123,19 @@
                     </div>
                 </div>
 
+                <div class="row">
+                    <%--    adding amenity filters--%>
+                    <div class="amenities-filter" name="amenities">
+                        <label><input type="checkbox" name="amenities" class="amenity" value="1"> WiFi</label>
+                        <label><input type="checkbox" name="amenities" class="amenity" value="2">  Swimming Pool</label>
+                        <label><input type="checkbox" name="amenities" class="amenity" value="7"> Ironing Board</label>
+                        <label><input type="checkbox" name="amenities" class="amenity" value="9"> Minibar</label>
+                        <label><input type="checkbox" name="amenities" class="amenity" value="5"> Bed & Breakfast</label>
+                    </div>
+                </div>
+
+                <br>
+
                 <div class = "row">
 <%--                this part is for uplaoding room imgs--%>
                 <div class="col-md-6 mb-3">
@@ -145,7 +156,6 @@
                 <button type="submit" class="btn enter-btn">
                     Create Room
                 </button>
-            </div>
             </div>
         </form>
     </div>

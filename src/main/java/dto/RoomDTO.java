@@ -19,6 +19,7 @@ public class RoomDTO implements SuperDTO {
     private final int maxOccupancy, floorNum, totalRooms;
     private final Date createdAt, updatedAt;
     private List<RoomImgDTO> roomImgList;
+    private List<AmenityDTO> amenityList;
 
     public RoomDTO(RoomDTOBuilder roomDTOBuilder) {
         this.roomId = roomDTOBuilder.roomId;
@@ -34,6 +35,9 @@ public class RoomDTO implements SuperDTO {
         this.updatedAt = roomDTOBuilder.updatedAt;
         this.roomImgList = roomDTOBuilder.roomImgList != null
                 ? roomDTOBuilder.roomImgList
+                : new ArrayList<>();
+        this.amenityList = roomDTOBuilder.amenityList != null
+                ? roomDTOBuilder.amenityList
                 : new ArrayList<>();
     }
 
@@ -71,6 +75,7 @@ public class RoomDTO implements SuperDTO {
     public int getTotalRooms() { return totalRooms; }
 
     public List<RoomImgDTO> getRoomImgList() { return roomImgList; }
+    public List<AmenityDTO> getAmenityList() { return amenityList; }
 
     public Date getCreatedAt() {
         return createdAt;
@@ -112,6 +117,7 @@ public class RoomDTO implements SuperDTO {
         private Date createdAt;
         private Date updatedAt;
         private List<RoomImgDTO> roomImgList;
+        private  List<AmenityDTO> amenityList;
 
         public RoomDTOBuilder() {
         }
@@ -137,6 +143,10 @@ public class RoomDTO implements SuperDTO {
 
         public RoomDTO.RoomDTOBuilder bedding(BeddingTypes bedding) {
             this.bedding = bedding;
+            return this;
+        }
+        public RoomDTO.RoomDTOBuilder amenityList(List<AmenityDTO> amenityList) {
+            this.amenityList = amenityList;
             return this;
         }
 

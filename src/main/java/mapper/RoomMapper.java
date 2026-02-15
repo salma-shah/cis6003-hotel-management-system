@@ -1,7 +1,9 @@
 package mapper;
 
+import dto.AmenityDTO;
 import dto.RoomDTO;
 import dto.RoomImgDTO;
+import entity.Amenity;
 import entity.Room;
 import entity.RoomImg;
 
@@ -17,7 +19,7 @@ public class RoomMapper {
         }
 
         List<RoomImgDTO> imageDTOs = room.getRoomImgList().stream().map(RoomImgMapper::toRoomImgDTO).collect(Collectors.toList());
-
+        List<AmenityDTO> amenityDTOS = room.getAmenityList().stream().map(AmenityMapper::toAmenityDTO).toList();
         return new RoomDTO.RoomDTOBuilder()
                 .roomId(room.getRoomId())
                 .baseDescription(room.getBaseDescription())
@@ -29,6 +31,7 @@ public class RoomMapper {
                 .floorNum(room.getFloorNum())
                 .totalRooms(room.getTotalRooms())
                 .roomImgList(imageDTOs)
+                .amenityList(amenityDTOS)
                 .build();
     }
 
@@ -39,7 +42,7 @@ public class RoomMapper {
         }
 
         List<RoomImg> roomImg = roomDTO.getRoomImgList().stream().map(RoomImgMapper::toRoomImg).collect(Collectors.toList());
-
+        List<Amenity> amenities = roomDTO.getAmenityList().stream().map(AmenityMapper::toAmenity).toList();
         return new Room.RoomBuilder()
                 .roomId(roomDTO.getRoomId())
                 .baseDescription(roomDTO.getDescription())
@@ -50,7 +53,8 @@ public class RoomMapper {
                 .maxOccupancy(roomDTO.getMaxOccupancy())
                 .floorNum(roomDTO.getFloorNum())
                 .totalRooms(roomDTO.getTotalRooms())
-              .roomImgList(roomImg)
+                .roomImgList(roomImg)
+                .amenityList(amenities)
                 .build();
     }
 

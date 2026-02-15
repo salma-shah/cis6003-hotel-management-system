@@ -3,6 +3,7 @@ package persistence.dao.impl;
 import constant.BeddingTypes;
 import constant.RoomStatus;
 import constant.RoomTypes;
+import entity.Amenity;
 import entity.Room;
 import entity.RoomImg;
 import persistence.dao.RoomDAO;
@@ -83,6 +84,7 @@ public class RoomDAOImpl implements RoomDAO {
     @Override
     public List<Room> getAll(Connection conn, Map<String, String> searchParams) throws SQLException {
         List<Room> rooms = new ArrayList<>();
+        Map<Integer, Room> roomMap = new HashMap<>();
         StringBuilder sql = new StringBuilder(
                 "SELECT r.room_id, r.bedding, r.type, r.status, r.description, r.price_per_night, " +
                         "r.floor_num, r.max_occupancy, COUNT(r.room_id) OVER(PARTITION BY r.type, r.bedding, r.max_occupancy) AS total_rooms " +
@@ -124,7 +126,6 @@ public class RoomDAOImpl implements RoomDAO {
         // this section is for retrieving rooms with their images
         try {
             ResultSet resultSet = QueryHelper.execute(conn, sql.toString(), params.toArray());
-            Map<Integer, Room> roomMap = new HashMap<>();
             while (resultSet.next()) {
                 int roomId = resultSet.getInt("room_id");
 
@@ -132,22 +133,21 @@ public class RoomDAOImpl implements RoomDAO {
                 Room room = roomMap.get(roomId);
 
                 if (room == null) {
-                    room = mapResultSetToRoom(resultSet);
-                    roomMap.put(roomId, room);
+                    roomMap.put(roomId, mapResultSetToRoom(resultSet));
                 }
 
-                // int imageId =  resultSet.getInt("image_id");
-                if (!resultSet.wasNull()) {
-                    StringBuilder imgSql = new StringBuilder(
-                            "SELECT ri.image_id, ri.room_id, ri.alt, ri.image_path " +
-                                    "FROM room_image ri WHERE ri.room_id IN ("
-                    );
+                if (roomMap.isEmpty()) {
+                    return Collections.emptyList();
+                }
 
-                    String placeholders = roomMap.keySet().stream().map(k -> "?").collect(Collectors.joining(","));
-                    imgSql.append(placeholders).append(")");
+                // we prepare these general placeholders only once
+                String placeholders = roomMap.keySet().stream().map(k -> "?").collect(Collectors.joining(","));
+                List<Object> idParams = new ArrayList<>(roomMap.keySet());
 
-                    List<Object> imgParams = new ArrayList<>(roomMap.keySet());
-                    ResultSet imageResultSet = QueryHelper.execute(conn, imgSql.toString(), imgParams.toArray());
+                    // images section
+                    String imgSql = "SELECT ri.image_id, ri.room_id, ri.alt, ri.image_path " +
+                                    "FROM room_image ri WHERE ri.room_id IN (" + placeholders + ")";
+                    ResultSet imageResultSet = QueryHelper.execute(conn, imgSql, idParams.toArray());
 
                     while (imageResultSet.next()) {
                         int imgRoomId = imageResultSet.getInt("room_id");
@@ -157,8 +157,22 @@ public class RoomDAOImpl implements RoomDAO {
                             room.getRoomImgList().add(roomImg);
                         }
                     }
+
+                    // now amenities
+                String amenitySql = "SELECT ra.room_id, a.amenity_id, a.name, a.cost " +
+                        "FROM amenity a " +
+                        "INNER JOIN room_amenity ra ON ra.amenity_id = a.amenity_id " +
+                        "WHERE ra.room_id IN (" + placeholders + ")";
+
+                    ResultSet amenityResultSet = QueryHelper.execute(conn, amenitySql, idParams.toArray());
+                    while (amenityResultSet.next()) {
+                        int roomAmenityId =  amenityResultSet.getInt("room_id");
+                        room = roomMap.get(roomAmenityId);
+                        if (room != null) {
+                            room.getAmenityList().add(mapResultSetToAmenity(amenityResultSet));
+                        }
+                    }
                 }
-            }
                 return new ArrayList<>(roomMap.values());  // returning the list of rooms that fit into necessary search parameters with the images
 
         } catch (SQLException ex) {
@@ -166,6 +180,7 @@ public class RoomDAOImpl implements RoomDAO {
             throw new SQLException(ex.getMessage());
         }
     }
+
 
     @Override
     public boolean existsByPrimaryKey(Connection conn, int primaryKey) throws SQLException {
@@ -193,6 +208,19 @@ public class RoomDAOImpl implements RoomDAO {
         }
     }
 
+    @Override
+    public List<Amenity> getAmenitiesByRoomID(Connection conn, int roomID) throws SQLException {
+        List<Amenity> amenities = new ArrayList<>();
+        ResultSet resultSet = QueryHelper.execute(conn, "SELECT a.id, a.name " +
+                "FROM amenity a " +
+                "INNER JOIN room_amenity ra ON ra.amenity_id = a.id " +
+                "WHERE ra.room_id = ? ", roomID);
+        while (resultSet.next()) {
+           amenities.add(mapResultSetToAmenity(resultSet));
+        }
+        return amenities;
+    }
+
     // this is the mapping to room, based on table's column names
     private Room mapResultSetToRoom(ResultSet resultSet) throws SQLException {
         return new Room.RoomBuilder()
@@ -214,5 +242,11 @@ public class RoomDAOImpl implements RoomDAO {
                 resultSet.getInt("room_id"),
                 resultSet.getString("image_path"),
                 resultSet.getString("alt"));
+    }
+
+    private Amenity mapResultSetToAmenity(ResultSet resultSet) throws SQLException {
+        return new Amenity(resultSet.getInt("amenity_id"),
+                resultSet.getString("name"),
+                resultSet.getDouble("cost"));
     }
 }

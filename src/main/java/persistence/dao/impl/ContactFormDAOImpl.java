@@ -14,7 +14,6 @@ public class ContactFormDAOImpl implements ContactFormDAO {
 
     @Override
     public boolean saveForm(Connection connection, ContactForm contactForm) throws SQLException {
-
         try
         {
             return QueryHelper.execute(connection, "INSERT INTO contact_form (user_id, message) VALUES (?, ?)", contactForm.getUserId(), contactForm.getMessage());

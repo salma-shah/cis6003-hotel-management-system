@@ -2,6 +2,7 @@ package persistence.dao.helper;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class QueryHelper {
@@ -19,7 +20,7 @@ public class QueryHelper {
         if (sql.toLowerCase().startsWith("select") || sql.toLowerCase().startsWith("SELECT")) {
             return (T) pt.executeQuery();
         }
-        return (T) ((Boolean) (pt.executeUpdate() > 0));  // converting boolean which is primitive // to Boolean
+        return (T) ((Boolean) (pt.executeUpdate() > 0));  // this is for update
     }
 //
 //    public static ResultSet executeQuery(Connection conn, String sql, Object... args)

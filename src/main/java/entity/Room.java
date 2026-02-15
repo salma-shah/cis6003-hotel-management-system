@@ -20,25 +20,8 @@ public class Room implements SuperEntity {
     private final Date createdAt;
     private final Date updatedAt;
     private List<RoomImg> roomImgList;
+    private List<Amenity> amenityList;
 
-    // constructor
-    public Room(int roomId, double basePricePerNight, String baseDescription, BeddingTypes bedding, RoomTypes roomType, RoomStatus roomStatus, int maxOccupancy, int totalRooms, int floorNum, Date createdAt, Date updatedAt, List<RoomImg> roomImgList) {
-        this.roomId = roomId;
-        this.basePricePerNight = basePricePerNight;
-        this.baseDescription = baseDescription;
-        this.bedding = bedding;
-        this.roomType = roomType;
-        this.roomStatus = roomStatus;
-        this.maxOccupancy = maxOccupancy;
-        this.floorNum = floorNum;
-        this.totalRooms = totalRooms;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.roomImgList = roomImgList;
-    }
-
-    // getters
-    // we  apply the builder pattern
     public int getRoomId() {
         return roomId;
     }
@@ -51,18 +34,13 @@ public class Room implements SuperEntity {
         return baseDescription;
     }
 
-    public RoomTypes getRoomType() {
-        return roomType;
-    }
-
     public BeddingTypes getBedding() {
         return bedding;
     }
 
-    public int getFloorNum() {
-        return floorNum;
+    public RoomTypes getRoomType() {
+        return roomType;
     }
-    public int getTotalRooms() { return totalRooms; }
 
     public RoomStatus getRoomStatus() {
         return roomStatus;
@@ -71,13 +49,47 @@ public class Room implements SuperEntity {
     public int getMaxOccupancy() {
         return maxOccupancy;
     }
+
+    public int getFloorNum() {
+        return floorNum;
+    }
+
+    public int getTotalRooms() {
+        return totalRooms;
+    }
+
     public Date getCreatedAt() {
         return createdAt;
     }
+
     public Date getUpdatedAt() {
         return updatedAt;
     }
-    public List<RoomImg> getRoomImgList() { return roomImgList; }
+
+    public List<RoomImg> getRoomImgList() {
+        return roomImgList;
+    }
+
+    public List<Amenity> getAmenityList() {
+        return amenityList;
+    }
+
+    // constructor
+    public Room(int roomId, double basePricePerNight, String baseDescription, BeddingTypes bedding, RoomTypes roomType, RoomStatus roomStatus, int maxOccupancy, int totalRooms, int floorNum, Date createdAt, Date updatedAt, List<RoomImg> roomImgList, List<Amenity> amenityList) {
+        this.roomId = roomId;
+        this.basePricePerNight = basePricePerNight;
+        this.baseDescription = baseDescription;
+        this.bedding = bedding;
+        this.roomType = roomType;
+        this.roomStatus = roomStatus;
+        this.maxOccupancy = maxOccupancy;
+        this.floorNum = floorNum;
+        this.totalRooms = totalRooms;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.roomImgList = roomImgList;
+        this.amenityList = amenityList;
+    }
 
     @Override
     public String toString() {
@@ -94,6 +106,7 @@ public class Room implements SuperEntity {
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 ", roomImgList=" + roomImgList +
+                ", amenityList=" + amenityList +
                 '}';
     }
 
@@ -114,9 +127,13 @@ public class Room implements SuperEntity {
         this.roomImgList = builder.roomImgList != null
                 ? builder.roomImgList
                 : new ArrayList<>();
+        this.amenityList = builder.amenityList != null
+                ? builder.amenityList
+                : new ArrayList<>();
 
     }
 
+    // we  apply the builder pattern
     // public static class builder
     public static class RoomBuilder
     {
@@ -131,6 +148,7 @@ public class Room implements SuperEntity {
         private Date createdAt;
         private Date updatedAt;
         private List<RoomImg>  roomImgList;
+        private  List<Amenity> amenityList;
 
         public RoomBuilder(){}
         public RoomBuilder roomId(int roomId)
@@ -151,6 +169,12 @@ public class Room implements SuperEntity {
         public RoomBuilder roomImgList(List<RoomImg> roomImgList)
         {
             this.roomImgList = roomImgList;
+            return this;
+        }
+
+        public RoomBuilder amenityList(List<Amenity>  amenityList)
+        {
+            this.amenityList = amenityList;
             return this;
         }
         public RoomBuilder bedding(BeddingTypes bedding)

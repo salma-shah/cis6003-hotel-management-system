@@ -1,5 +1,9 @@
 package servlet;
 
+import business.service.AmenityService;
+import business.service.RoomImgService;
+import business.service.RoomService;
+import business.service.impl.AmenityServiceImpl;
 import business.service.impl.RoomImgServiceImpl;
 import business.service.impl.RoomServiceImpl;
 import constant.BeddingTypes;
@@ -34,12 +38,14 @@ import java.util.logging.Logger;
 public class RoomServlet extends HttpServlet {
     // enabling logging in tomcat server
     private static final Logger LOG = Logger.getLogger(RoomServlet.class.getName());
-    private RoomServiceImpl roomService;
-    private RoomImgServiceImpl roomImgService;
+    private RoomService roomService;
+    private RoomImgService roomImgService;
+    private AmenityService amenityService;
 
     public void init() {
         this.roomService = new RoomServiceImpl();
         this.roomImgService = new RoomImgServiceImpl();
+        this.amenityService = new AmenityServiceImpl();
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -156,6 +162,30 @@ public class RoomServlet extends HttpServlet {
                 // for (String imagePath : imagePaths) {
                 roomImgService.saveImg(new RoomImgDTO(0, roomId, "images/room-uploads/" + fileName, altText));
                 LOG.log(Level.INFO, "Room image has been successfully uploaded.");
+
+
+                // now we add the amenities
+                String[] amenities = request.getParameterValues("amenities");
+                LOG.log(Level.INFO, "Amenities are: " + Arrays.toString(amenities));
+                if (amenities != null) {
+                    for (String amenity : amenities) {
+                        if (amenity == null) {
+                            continue;
+                        }
+                        try {
+                            int amenityId = Integer.parseInt(amenity.trim());
+                            boolean addedAmenity = amenityService.addAmenityToRoom(roomId, amenityId);
+
+                            if (!addedAmenity) {
+                                LOG.log(Level.SEVERE, "Amenity for ID: " + amenityId + "could not be added.");
+                            }
+
+                            LOG.log(Level.INFO, "Amenity has been successfully added: " + amenityId);
+                        } catch (NumberFormatException nx) {
+                            LOG.log(Level.SEVERE, "Invalid amenity parameters.");
+                        }
+                    }
+                }
             }
         } catch (Exception ex) {
             LOG.log(Level.SEVERE, ex.getMessage(), ex);
@@ -175,6 +205,8 @@ public class RoomServlet extends HttpServlet {
             String beddingParam = request.getParameter("beddingFilter");
             String guestsAdultsParam = request.getParameter("guestsAdultsFilter");
             String guestsChildsParam = request.getParameter("guestsChildrenFilter");
+            String[] amenitiesParam = request.getParameterValues("amenitiesFilter");
+            String roomTypeParam  = request.getParameter("roomTypeFilter");
 
             // if floor num parameter exists, we will add it to the search params
             if (floorParam != null && !floorParam.isEmpty()) {
@@ -188,9 +220,20 @@ public class RoomServlet extends HttpServlet {
                 LOG.log(Level.INFO, "Searching for status: " + statusParam);
             }
 
+            if (roomTypeParam != null && !roomTypeParam.isEmpty()) {
+                searchParams.put("type", roomTypeParam);  // filter by room type
+                LOG.log(Level.INFO, "Searching for room type: " + roomTypeParam);
+            }
+
             if (beddingParam != null && !beddingParam.isEmpty()) {
                 searchParams.put("bedding", beddingParam);  // filter by bedding type
                 LOG.log(Level.INFO, "Searching for bedding type: " + beddingParam);
+            }
+
+            if (amenitiesParam != null && amenitiesParam.length > 0) {
+                String amenitiesCSV =  String.join(",", amenitiesParam);
+                    searchParams.put("amenityId", amenitiesCSV);
+                    LOG.log(Level.INFO, "Searching for amenities: " + amenitiesCSV);
             }
 
             List<RoomDTO> rooms = roomService.getAll(searchParams);

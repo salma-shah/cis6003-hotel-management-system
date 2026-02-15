@@ -2,6 +2,7 @@ package business.service.impl;
 
 import business.service.RoomService;
 import db.DBConnection;
+import dto.AmenityDTO;
 import dto.RoomDTO;
 import entity.Room;
 import mapper.RoomMapper;
@@ -10,12 +11,10 @@ import persistence.dao.impl.RoomDAOImpl;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class RoomServiceImpl implements RoomService {
     private final RoomDAO roomDAO;
@@ -143,7 +142,27 @@ public class RoomServiceImpl implements RoomService {
             // room parameters
             Map<String, String> filters = (searchParams!= null) ? new HashMap<>(searchParams) : new HashMap<>();
 
-            return RoomMapper.toRoomDTOList(roomDAO.getAll(connection, filters));
+            List<RoomDTO> rooms= RoomMapper.toRoomDTOList(roomDAO.getAll(connection, filters));
+
+            if (filters.containsKey("amenityId"))
+            {
+                String[] amenityIds = filters.get("amenityId").split(",");
+                Set<String> amenities = new HashSet<>(Arrays.asList(amenityIds));
+                rooms = rooms.stream().filter(room -> {
+                            List<AmenityDTO> roomAmenities = room.getAmenityList();
+                            if (roomAmenities == null || roomAmenities.isEmpty()) return false;
+
+                            Set<String> roomAmenityIds = new HashSet<>();
+                            for (AmenityDTO a : roomAmenities) {
+                                roomAmenityIds.add(String.valueOf(a.getId()));
+                            }
+
+                            // return true only if all selected amenities exist in this room
+                            return roomAmenityIds.containsAll(amenities);
+                        })
+                        .collect(Collectors.toList());
+            }
+            return rooms;
        }
         catch (SQLException ex)
         {

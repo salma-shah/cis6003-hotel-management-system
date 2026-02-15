@@ -147,6 +147,15 @@
                     <option value="Maintenance">Maintenance</option>
                 </select>
 
+<%--                room type filter--%>
+                <select id="typeFilter" name="type">
+                    <option value="">All Room Types</option>
+                    <option value="Standard">Standard</option>
+                    <option value="Deluxe">Deluxe</option>
+                    <option value="Suite">Suite</option>
+                </select>
+
+<%--                // bedding type filter--%>
                 <select id="beddingInput" name="bedding">
                     <option value="">All Bedding Types</option>
                     <option value="Single">Single</option>
@@ -161,13 +170,13 @@
 
             </div>
 <%--    // amenity filters--%>
-            <div class="amenities-filter" name="amenities">
-                <label><input type="checkbox" class="amenity" value="WiFi"> WiFi</label>
-                <label><input type="checkbox" class="amenity" value="Pool">  Pool</label>
-                <label><input type="checkbox" class="amenity" value="AC"> AC</label>
-                <label><input type="checkbox" class="amenity" value="TV"> TV</label>
-                <label><input type="checkbox" class="amenity" value="Balcony"> Balcony</label>
-            </div>
+    <div class="amenities-filter" name="amenities">
+        <label><input type="checkbox"  name="amenities" class="amenity-checked" value="1"> WiFi</label>
+        <label><input type="checkbox"  name="amenities" class="amenity-checked" value="2">  Swimming Pool</label>
+        <label><input type="checkbox"  name="amenities" class="amenity-checked" value="7"> Ironing Board</label>
+        <label><input type="checkbox"  name="amenities" class="amenity-checked" value="9"> Minibar</label>
+        <label><input type="checkbox"  name="amenities" class="amenity-checked" value="5"> Bed & Breakfast</label>
+    </div>
 
 <%--    you also need a section to filter by dates--%>
 
@@ -224,6 +233,8 @@
         const beddingInput = document.getElementById("beddingInput");
         const guestsAdultInput = document.getElementById("guestsAdults");
         const guestsChildrenInput = document.getElementById("guestsChildren");
+        const roomTypeInput = document.getElementById("typeFilter");
+        const amenitiesCheckbox = document.querySelectorAll(".amenity-checked");
 
         // room grid variables
         const roomGrid = document.getElementById("roomGrid");
@@ -234,12 +245,15 @@
             const floorNum = searchInput.value.trim();
             const statusFilter = statusInput.value.trim();
             const beddingFilter = beddingInput.value.trim();
+            const roomTypeFilter = roomTypeInput.value.trim();
             const guestsAdultsFilter = guestsAdultInput.value.trim();
             const guestsChildrenFilter = guestsChildrenInput.value.trim();
+            const checkedAmenities = Array.from(amenitiesCheckbox)
+                .filter(cb => cb.checked).map(cb => cb.value);
             const allCards = roomGrid.querySelectorAll(".room-card");
 
-            // if no input, usual room grid will display
-            if (!floorNum && !statusFilter && !beddingFilter && !guestsAdultsFilter) {
+            // if no input for filters, usual room grid will display
+            if (!floorNum && !statusFilter && !roomTypeFilter && !beddingFilter && !guestsAdultsFilter && checkedAmenities.length === 0) {
                 allCards.forEach((card) => {
                     card.style.display = "";
                 });
@@ -250,10 +264,16 @@
             const params = new URLSearchParams();
             if (floorNum) params.append("floorNum", floorNum);
             if (statusFilter) params.append("statusFilter", statusFilter);
+            if (roomTypeFilter) params.append("roomTypeFilter", roomTypeFilter);
             if (beddingFilter) params.append("beddingFilter", beddingFilter);
             if (guestsAdultsFilter !== "") params.append("guestsAdultsFilter", guestsAdultsFilter);
             if (guestsChildrenFilter !== "") params.append("guestsChildrenFilter", guestsChildrenFilter);
 
+            // passing only only the checked amentiies
+            params.delete("amenitiesFilter");
+            checkedAmenities.forEach(id => {
+                params.append("amenitiesFilter", id);
+            });
 
             fetch('<c:url value="/room/all" />?' + params.toString(),
                 {
@@ -266,7 +286,6 @@
                     return res.json();
                 })
                 .then(rooms => {
-                    const allCards = roomGrid.querySelectorAll(".room-card");
                     allCards.forEach((card) => {
                         card.style.display = "none";
                     });
@@ -284,31 +303,35 @@
                     });
                 })
                 .catch(err => console.error(err));
-
     }
 
-        // floor filter
-        searchInput.addEventListener("input", () => {
+    // this debounce is for the search function
+        // to ensure that the request is called only every 300 miliseconds
+    const debounceSearchTimer = () => {
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(performSearch, 300);
-        });
+    };
 
-        // status filter
-        statusInput.addEventListener("change", performSearch);
+        // floor filter
+        searchInput.addEventListener("input", debounceSearchTimer);
 
-    // bedding input filter
-    beddingInput.addEventListener("change", performSearch);
+      // status filter
+        statusInput.addEventListener("change", debounceSearchTimer);
+
+        // bedding input filter
+        beddingInput.addEventListener("change", debounceSearchTimer);
+
+         // room type input filter
+        roomTypeInput.addEventListener("change", debounceSearchTimer);
 
     // number of adults and guests
-    guestsAdultInput.addEventListener("input", () => {
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(performSearch, 300);
-    });
+    guestsAdultInput.addEventListener("input", debounceSearchTimer);
 
-        guestsChildrenInput.addEventListener("input", () => {
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(performSearch, 300);
-        });
+        guestsChildrenInput.addEventListener("input", debounceSearchTimer);
+
+        // amentiies filter input
+        amenitiesCheckbox.forEach(cb => cb.addEventListener("change", debounceSearchTimer));
+
 
     })
 
