@@ -76,7 +76,7 @@ public class GuestServlet extends HttpServlet {
 
         // setting the methods based on the paths
         switch (path) {
-            case "/register":
+            case "/":
                 // showing registration form
                 request.getRequestDispatcher("/register-guest.jsp").forward(request, response);
                 break;

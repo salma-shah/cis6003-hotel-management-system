@@ -135,7 +135,7 @@
 
                     <div class="form-group">
                         <label for="nic">NIC</label>
-                        <input type="text" id="nic" name="nic" placeholder="Enter NIC" required>
+                        <input type="text" id="nic" name="nic" placeholder="Enter NIC">
                         <div class="error-message" id="nicError"></div>
                     </div>
 
@@ -172,14 +172,22 @@
             const dob = document.getElementById("dob").value;
 
             // nic validation
-            if (!/^\d{9,12}[vV]?$/.test(nic)) {
-                document.getElementById("nicError").textContent = "Invalid NIC number";
-                valid = false;
+            if (nic) {
+                if (!/^\d{9,12}[vV]?$/.test(nic)) {
+                    document.getElementById("nicError").textContent = "Invalid NIC number";
+                    valid = false;
+                }
             }
 
             // passport validation
             if (passport && !/^[A-Za-z0-9]{6,9}$/.test(passport)) {
                 document.getElementById("passportError").textContent = "Invalid passport number";
+                valid = false;
+            }
+
+            if (!nic && !passport) {
+                document.getElementById("nicError").textContent = "NIC or Passport Number required";
+                document.getElementById("passportError").textContent = "NIC or Passport Number required";
                 valid = false;
             }
 
