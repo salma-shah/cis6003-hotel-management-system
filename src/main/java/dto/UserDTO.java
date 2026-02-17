@@ -1,7 +1,6 @@
 package dto;
 
 import constant.Role;
-import entity.SuperEntity;
 
 import java.util.Date;
 
@@ -187,7 +186,7 @@ public class UserDTO implements SuperDTO {
             return this;
         }
 
-        // this creates the instance of the DTO class
+        // this returns the instance of the DTO class
         public UserDTO build() {
             return new UserDTO(this);
         }

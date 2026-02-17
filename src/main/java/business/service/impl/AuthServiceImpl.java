@@ -1,7 +1,6 @@
 package business.service.impl;
 
 import persistence.dao.impl.UserDAOImpl;
-import db.DBConnection;
 import dto.UserCredentialDTO;
 import dto.UserDTO;
 import entity.User;
@@ -9,8 +8,8 @@ import mapper.UserMapper;
 import security.PasswordManager;
 import business.service.AuthService;
 
-import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class AuthServiceImpl implements AuthService {
@@ -25,8 +24,8 @@ public class AuthServiceImpl implements AuthService {
             return null;
         }
 
-        try (Connection connection = DBConnection.getInstance().getConnection()) {
-            User user = userDAO.findByUsername(connection, credentials.getUsername());
+        try {
+            User user = userDAO.findByUsername( credentials.getUsername());
 
             if (user == null) {
                 return null;
@@ -41,6 +40,13 @@ public class AuthServiceImpl implements AuthService {
             // mapping entity to DTO
             return UserMapper.toUserDTO(user);
         }
+        catch (
+                SQLException ex
+        )
+            {
+            LOG.log(Level.SEVERE, "Login failed", ex);
+            throw new SQLException(ex.getMessage());
+            }
     }
 
 }

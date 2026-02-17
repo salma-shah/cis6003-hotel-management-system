@@ -4,7 +4,7 @@
   <groupId>org.example</groupId>
   <artifactId>ocean-view-hotel</artifactId>
   <packaging>war</packaging>
-  <version>1.5.4</version>
+  <version>1.6.1</version>
   <name>ocean-view-hotel Maven Webapp</name>
   <url>http://maven.apache.org</url>
   <dependencies>
@@ -22,7 +22,7 @@
     <dependency>
       <groupId>com.mysql</groupId>
       <artifactId>mysql-connector-j</artifactId>
-      <version>8.0.33</version>
+      <version>9.3.0</version>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>

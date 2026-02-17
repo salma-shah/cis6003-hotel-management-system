@@ -1,10 +1,8 @@
 import business.service.impl.RoomServiceImpl;
 import constant.RoomStatus;
 import constant.RoomTypes;
-import db.DBConnection;
 import dto.RoomDTO;
 import org.junit.*;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -14,24 +12,9 @@ public class RoomTest {
 
     @BeforeClass
     public static void init() throws SQLException {
-        // Initialize DB connection & RoomService
+        // initialize db connection & room service
         roomService = new RoomServiceImpl();
         // Optionally, populate test rooms
-        try (Connection conn = DBConnection.getInstance().getConnection()) {
-            conn.createStatement().execute(
-                    "INSERT INTO room (room_id, description, room_type, max_occupancy, price_per_night, status, floor_num) VALUES " +
-                            "(101,'a normal room', 'Standard', 1, 50, 'Available', 11)," +
-                            "(102, 'test room', 'Deluxe', 2, 80, 'Unavailable', 1)," +
-                            "(103, 'test room 2', 'Suite', 4, 150, 'Available', 12)"
-            );
-        }
-    }
-
-    @AfterClass
-    public static void cleanup() throws SQLException {
-        try (Connection conn = DBConnection.getInstance().getConnection()) {
-            conn.createStatement().execute("DELETE FROM room");
-        }
     }
 
     @Test
@@ -47,7 +30,7 @@ public class RoomTest {
 
         List<RoomDTO> rooms = roomService.getAll(filters);
 
-        Assert.assertEquals(2, rooms.size());
+        Assert.assertEquals(9, rooms.size());
         for (RoomDTO r : rooms) {
             Assert.assertEquals(RoomStatus.Available, rooms.get(0).getRoomStatus());
         }

@@ -3,10 +3,8 @@ package entity;
 import constant.BeddingTypes;
 import constant.RoomStatus;
 import constant.RoomTypes;
-import dto.RoomImgDTO;
-
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class Room implements SuperEntity {
@@ -17,10 +15,10 @@ public class Room implements SuperEntity {
     private final RoomTypes roomType;
     private final RoomStatus roomStatus;
     private final int maxOccupancy, floorNum, totalRooms;
-    private final Date createdAt;
-    private final Date updatedAt;
-    private List<RoomImg> roomImgList;
-    private List<Amenity> amenityList;
+    private final LocalDateTime createdAt;
+    private final LocalDateTime updatedAt;
+    private final List<RoomImg> roomImgList;
+    private final List<Amenity> amenityList;
 
     public int getRoomId() {
         return roomId;
@@ -58,11 +56,11 @@ public class Room implements SuperEntity {
         return totalRooms;
     }
 
-    public Date getCreatedAt() {
+    public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public Date getUpdatedAt() {
+    public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
 
@@ -75,7 +73,7 @@ public class Room implements SuperEntity {
     }
 
     // constructor
-    public Room(int roomId, double basePricePerNight, String baseDescription, BeddingTypes bedding, RoomTypes roomType, RoomStatus roomStatus, int maxOccupancy, int totalRooms, int floorNum, Date createdAt, Date updatedAt, List<RoomImg> roomImgList, List<Amenity> amenityList) {
+    public Room(int roomId, double basePricePerNight, String baseDescription, BeddingTypes bedding, RoomTypes roomType, RoomStatus roomStatus, int maxOccupancy, int totalRooms, int floorNum, LocalDateTime createdAt, LocalDateTime updatedAt, List<RoomImg> roomImgList, List<Amenity> amenityList) {
         this.roomId = roomId;
         this.basePricePerNight = basePricePerNight;
         this.baseDescription = baseDescription;
@@ -145,8 +143,8 @@ public class Room implements SuperEntity {
         private RoomStatus roomStatus;
         private int maxOccupancy;
         private int floorNum, totalRooms;
-        private Date createdAt;
-        private Date updatedAt;
+        private LocalDateTime createdAt;
+        private LocalDateTime updatedAt;
         private List<RoomImg>  roomImgList;
         private  List<Amenity> amenityList;
 
@@ -209,12 +207,12 @@ public class Room implements SuperEntity {
             this.maxOccupancy = maxOccupancy;
             return this;
         }
-        public RoomBuilder createdAt(Date createdAt)
+        public RoomBuilder createdAt(LocalDateTime createdAt)
         {
             this.createdAt = createdAt;
             return this;
         }
-        public RoomBuilder updatedAt(Date updatedAt)
+        public RoomBuilder updatedAt(LocalDateTime updatedAt)
         {
             this.updatedAt = updatedAt;
             return this;

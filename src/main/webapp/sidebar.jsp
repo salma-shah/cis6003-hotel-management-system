@@ -1,8 +1,11 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@page isELIgnored="false"%>
+
 <head>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"/>
+    <title>Sidebar</title>
 </head>
+
 <style>
     body {
         margin: 0;
@@ -140,6 +143,10 @@
 
         <a class="nav-link" href="<c:url value='/room/all'/>">
             <i class="bi bi-house-door"></i>  Rooms
+        </a>
+
+        <a class="nav-link" href="<c:url value='/guest/all'/>">
+            <i class="bi bi-person-badge"></i> Guests
         </a>
 
     <%--        this is a section only manager can view--%>

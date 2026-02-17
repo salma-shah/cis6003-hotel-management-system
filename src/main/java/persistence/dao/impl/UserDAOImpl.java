@@ -1,6 +1,7 @@
 package persistence.dao.impl;
 
 import constant.Role;
+import db.DBConnection;
 import entity.User;
 import persistence.dao.UserDAO;
 import persistence.dao.helper.QueryHelper;
@@ -20,8 +21,8 @@ public class UserDAOImpl implements UserDAO {
 
     // inserting a new user into the table  = working
     @Override
-    public boolean add(Connection conn, User entity) throws SQLException {
-        try
+    public boolean add(User entity) throws SQLException {
+        try(Connection conn = DBConnection.getInstance().getConnection())
         {
             return QueryHelper.execute(conn,
                     "INSERT INTO user (username, password, first_name, last_name, contact_number, email, role, address) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
@@ -34,8 +35,8 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
-    public boolean update(Connection conn, User entity) throws SQLException {
-        try
+    public boolean update( User entity) throws SQLException {
+        try(Connection conn = DBConnection.getInstance().getConnection())
         {
             return QueryHelper.execute(conn,
                     "UPDATE user SET first_name=?, last_name=?, contact_number=?, address=? WHERE user_id=?",
@@ -49,8 +50,8 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
-    public boolean delete(Connection conn, int id) throws SQLException {
-        try
+    public boolean delete( int id) throws SQLException {
+        try(Connection conn = DBConnection.getInstance().getConnection())
         {
             return QueryHelper.execute(conn,
                     "DELETE FROM user WHERE user_id=?", id);
@@ -63,8 +64,8 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
-    public User searchById(Connection conn, int id) throws SQLException {
-        try
+    public User searchById( int id) throws SQLException {
+        try(Connection conn = DBConnection.getInstance().getConnection())
         {
             ResultSet resultSet =  QueryHelper.execute(conn, "SELECT * FROM user WHERE user_id=?", id);
             if (!  resultSet.next())
@@ -83,8 +84,8 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
-    public List<User> getAll(Connection conn, Map<String, String> searchParams) throws SQLException {
-        try {
+    public List<User> getAll(Map<String, String> searchParams) throws SQLException {
+        try (Connection conn = DBConnection.getInstance().getConnection()) {
             ResultSet resultSet = QueryHelper.execute(conn, "SELECT user_id, username, password, email, address, first_name, last_name, role, contact_number FROM user");
             List<User> users = new ArrayList<>();
             while (resultSet.next()) {
@@ -100,8 +101,8 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
-    public boolean existsByPrimaryKey(Connection conn, int primaryKey) throws SQLException {
-        try
+    public boolean existsByPrimaryKey( int primaryKey) throws SQLException {
+        try(Connection conn = DBConnection.getInstance().getConnection())
         {
             ResultSet resultSet =  QueryHelper.execute(conn, "SELECT * FROM user WHERE user_id=?", primaryKey);
             return resultSet.next();
@@ -115,8 +116,8 @@ public class UserDAOImpl implements UserDAO {
 
     // these are custom existing/finding by username and email
     @Override
-    public boolean existByUsername(Connection conn, String username) throws SQLException {
-        try
+    public boolean existByUsername(String username) throws SQLException {
+        try(Connection conn = DBConnection.getInstance().getConnection())
         {
             // selecting the users where the same username exists
            ResultSet resultSet = QueryHelper.execute(conn,
@@ -132,8 +133,8 @@ public class UserDAOImpl implements UserDAO {
 
     // same concept as above, except it is with email instead
     @Override
-    public boolean existByEmail(Connection conn, String email) throws SQLException {
-        try
+    public boolean existByEmail(String email) throws SQLException {
+        try(Connection conn = DBConnection.getInstance().getConnection())
         {
             ResultSet resultSet = QueryHelper.execute(conn,
                     "SELECT * FROM user WHERE email=?", email);
@@ -148,8 +149,8 @@ public class UserDAOImpl implements UserDAO {
 
     // finding by username
     @Override
-    public User findByUsername(Connection conn, String username) throws SQLException {
-        try
+    public User findByUsername( String username) throws SQLException {
+        try(Connection conn = DBConnection.getInstance().getConnection())
         {
             ResultSet resultSet = QueryHelper.execute(conn,
                     "SELECT * FROM user WHERE username=?", username);
@@ -168,8 +169,8 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
-    public User findByEmail(Connection conn, String email) throws SQLException {
-        try
+    public User findByEmail( String email) throws SQLException {
+        try(Connection conn = DBConnection.getInstance().getConnection())
         {
             ResultSet resultSet = QueryHelper.execute(conn,
                     "SELECT * FROM user WHERE email=?", email);
@@ -188,27 +189,27 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
-    public List<User> searchUsers(Connection conn, String query) throws SQLException {
-        // using a list since db returns a list
-        List<User> users = new ArrayList<>();
+    public List<User> searchUsers(String query) throws SQLException {
+        try (Connection conn = DBConnection.getInstance().getConnection()) {
+            // using a list since db returns a list
+            List<User> users = new ArrayList<>();
 
-        try {
-            String searchPattern = "%" + query + "%";
-            ResultSet resultSet = QueryHelper.execute(conn,
-                    "SELECT * FROM user WHERE username LIKE ? OR email LIKE ? OR CAST(user_id AS CHAR) LIKE ?", searchPattern, searchPattern, searchPattern);
+            try {
+                String searchPattern = "%" + query + "%";
+                ResultSet resultSet = QueryHelper.execute(conn,
+                        "SELECT * FROM user WHERE username LIKE ? OR email LIKE ? OR CAST(user_id AS CHAR) LIKE ?", searchPattern, searchPattern, searchPattern);
 
-            // if result exists, it will be mapped to the User
-            while (resultSet.next()) {
+                // if result exists, it will be mapped to the User
+                while (resultSet.next()) {
                     users.add(mapResultSetToUser(resultSet));
+                }
+            } catch (SQLException ex) {
+                LOG.log(Level.SEVERE, "There was an error searching the user: ", ex);
+                throw new SQLException(ex.getMessage());
             }
+            LOG.log(Level.INFO, "There are " + users.size() + " users in the database");
+            return users;
         }
-        catch (SQLException ex)
-            {
-            LOG.log(Level.SEVERE, "There was an error searching the user: ", ex);
-            throw new SQLException(ex.getMessage());
-            }
-        LOG.log(Level.INFO, "There are " + users.size() + " users in the database");
-        return users;
     }
 
     // this is the mapping to User, based on table's column names

@@ -2,7 +2,7 @@ package entity;
 
 import constant.Role;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 public class User implements SuperEntity {
     private final String userId;
@@ -14,12 +14,12 @@ public class User implements SuperEntity {
     private final String contactNumber;
     private final Role role;
     private final String address;
-    private final Date createdAt;
-    private final Date updatedAt;
-    private final Date deletedAt;
+    private final LocalDateTime createdAt;
+    private final LocalDateTime updatedAt;
+    private final LocalDateTime deletedAt;
 
     // getters
-    // no setters because when using builder pattern, the class becomes immutable
+    // no setters because when using builder pattern, the attributes becomes immutable
     public String getUserId() {
         return userId;
     }
@@ -55,15 +55,15 @@ public class User implements SuperEntity {
         return address;
     }
 
-    public Date getCreatedAt() {
+    public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public Date getUpdatedAt() {
+    public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
 
-    public Date getDeletedAt() {
+    public LocalDateTime getDeletedAt() {
         return deletedAt;
     }
 
@@ -114,9 +114,9 @@ public class User implements SuperEntity {
         private String contactNumber;
         private Role role;
         private String address;
-        private Date createdAt;
-        private Date updatedAt;
-        private Date deletedAt;
+        private LocalDateTime createdAt;
+        private LocalDateTime updatedAt;
+        private LocalDateTime deletedAt;
 
         public UserBuilder() {}
 
@@ -174,19 +174,19 @@ public class User implements SuperEntity {
             return this;
         }
 
-        public UserBuilder createdAt(Date createdAt)
+        public UserBuilder createdAt(LocalDateTime createdAt)
         {
             this.createdAt = createdAt;
             return this;
         }
 
-        public UserBuilder updatedAt(Date updatedAt)
+        public UserBuilder updatedAt(LocalDateTime updatedAt)
         {
             this.updatedAt = updatedAt;
             return this;
         }
 
-        public UserBuilder deletedAt(Date deletedAt)
+        public UserBuilder deletedAt(LocalDateTime deletedAt)
         {
             this.deletedAt = deletedAt;
             return this;

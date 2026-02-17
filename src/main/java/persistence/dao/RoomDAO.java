@@ -10,6 +10,6 @@ import java.util.List;
 
 public interface RoomDAO extends CRUDDAO<Room> {
     int getLastInsertedId(Connection conn) throws SQLException;
-    List<Amenity> getAmenitiesByRoomID(Connection conn, int roomID) throws SQLException;
+    List<Amenity> getAmenitiesByRoomID(int roomID) throws SQLException;
 // all methods are extended from CRUD
 }

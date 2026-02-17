@@ -1,5 +1,6 @@
 package persistence.dao.impl;
 
+import db.DBConnection;
 import entity.ContactForm;
 import persistence.dao.ContactFormDAO;
 import persistence.dao.helper.QueryHelper;
@@ -13,10 +14,10 @@ public class ContactFormDAOImpl implements ContactFormDAO {
     private static final Logger LOG = Logger.getLogger(ContactFormDAOImpl.class.getName());
 
     @Override
-    public boolean saveForm(Connection connection, ContactForm contactForm) throws SQLException {
-        try
+    public boolean saveForm(ContactForm contactForm) throws SQLException {
+        try(Connection conn = DBConnection.getInstance().getConnection())
         {
-            return QueryHelper.execute(connection, "INSERT INTO contact_form (user_id, message) VALUES (?, ?)", contactForm.getUserId(), contactForm.getMessage());
+            return QueryHelper.execute(conn, "INSERT INTO contact_form (user_id, message) VALUES (?, ?)", contactForm.getUserId(), contactForm.getMessage());
         }
         catch(SQLException ex)
         {

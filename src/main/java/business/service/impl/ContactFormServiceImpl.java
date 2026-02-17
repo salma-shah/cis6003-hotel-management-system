@@ -1,14 +1,12 @@
 package business.service.impl;
 
 import business.service.ContactFormService;
-import db.DBConnection;
 import dto.ContactFormDTO;
 import entity.ContactForm;
 import mapper.ContactFormMapper;
 import persistence.dao.ContactFormDAO;
 import persistence.dao.impl.ContactFormDAOImpl;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,9 +23,9 @@ public class ContactFormServiceImpl implements ContactFormService {
 
     @Override
     public boolean saveForm(ContactFormDTO contactFormDTO) throws SQLException {
-        try(Connection conn = DBConnection.getInstance().getConnection()) {
+        try {
             ContactForm contactForm = ContactFormMapper.toContactForm(contactFormDTO);
-            return contactFormDAO.saveForm(conn, contactForm);
+            return contactFormDAO.saveForm(contactForm);
         }
         catch (SQLException ex) {
             LOG.log(Level.SEVERE, "There was an error saving the form in the service layer: ");

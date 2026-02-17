@@ -1,13 +1,12 @@
 package servlet;
 
-import business.service.UserService;
 import constant.Role;
 import dto.UserCredentialDTO;
 import dto.UserDTO;
 import mail.EmailBase;
 import mail.EmailUtility;
-import mail.factory.EmailCreator;
-import mail.factory.impl.WelcomeEmailCreator;
+import mail.factory.EmailFactory;
+import mail.factory.impl.WelcomeEmailFactory;
 import business.service.impl.UserServiceImpl;
 
 import javax.servlet.ServletException;
@@ -153,10 +152,10 @@ public class UserServlet extends HttpServlet {
 
                // sending the email
                // using the creator method for welcoming user email
-               EmailCreator emailCreator = new WelcomeEmailCreator((userDTO.getFirstName() + " " + userDTO.getLastName()), userDTO.getEmail(), userDTO.getUsername(), userCredentialDTO.getPassword());
+               EmailFactory emailFactory = new WelcomeEmailFactory((userDTO.getFirstName() + " " + userDTO.getLastName()), userDTO.getEmail(), userDTO.getUsername(), userCredentialDTO.getPassword());
 
                // then using the base interface
-               EmailBase emailBase = emailCreator.createEmail();
+               EmailBase emailBase = emailFactory.createEmail();
 
                // then finally the send mail utility
                EmailUtility.sendMail(emailBase.getReceiver(), emailBase.getSubject(), emailBase.getBody());

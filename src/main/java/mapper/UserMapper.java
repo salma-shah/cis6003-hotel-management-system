@@ -4,13 +4,12 @@ import dto.UserCredentialDTO;
 import dto.UserDTO;
 import entity.User;
 
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class UserMapper {
 
-    // converting dto to entity
+    // converting to dto
     public static UserDTO toUserDTO(User user) {
 
         if (user == null) {
@@ -30,7 +29,7 @@ public class UserMapper {
                 .build();
     }
 
-    // converting from entity to dto now
+    // converting  to entity now
     public static User toUser(UserDTO userDTO, UserCredentialDTO userCredentialDTO, String hashedPassword) {
         if (userDTO == null) {
             return null;

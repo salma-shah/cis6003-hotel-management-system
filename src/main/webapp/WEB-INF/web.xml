@@ -9,5 +9,32 @@
   <welcome-file-list>
     <welcome-file>index.jsp</welcome-file>
   </welcome-file-list>
+  
+  <security-constraint>
+    <web-resource-collection>
+      <web-resource-name>/room/*</web-resource-name>
+    </web-resource-collection>
+    <auth-constraint>
+      <description>These users can access all web pages but need to log in</description>
+      <role-name>User</role-name>
+      <role-name>Manager</role-name>
+    </auth-constraint>
+  </security-constraint>
 
+
+  <login-config>
+    <auth-method>FORM</auth-method>
+    <form-login-config>
+      <form-login-page>/auth</form-login-page>
+      <form-error-page>/index.jsp</form-error-page>
+    </form-login-config>
+  </login-config>
+
+<security-role>
+  <role-name>User</role-name>
+</security-role>
+
+  <security-role>
+    <role-name>Manager</role-name>
+  </security-role>
 </web-app>

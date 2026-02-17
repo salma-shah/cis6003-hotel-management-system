@@ -10,7 +10,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class AmenityDAOImpl implements AmenityDAO {
-    private static final Logger LOG = Logger.getLogger(RoomDAOImpl.class.getName());
+    private static final Logger LOG = Logger.getLogger(AmenityDAOImpl.class.getName());
 
 
     @Override

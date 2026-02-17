@@ -43,7 +43,7 @@ public class AuthServlet extends HttpServlet {
             case "/logout":
                 logout(request, response);
                 break;
-            case  "/login":
+            case  "/":
                request.getRequestDispatcher("/login.jsp").forward(request, response);
                break;
         }

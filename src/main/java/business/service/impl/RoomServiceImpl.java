@@ -26,16 +26,16 @@ public class RoomServiceImpl implements RoomService {
     }
 
     public boolean add(RoomDTO roomDTO) throws SQLException {
-        try(Connection connection = DBConnection.getInstance().getConnection())
+        try
         {
-            if (roomDAO.existsByPrimaryKey(connection, roomDTO.getRoomId()))
+            if (roomDAO.existsByPrimaryKey( roomDTO.getRoomId()))
             {
                 return false; // room already exists
             }
             // otherwise, room will be added
             Room roomEntity = RoomMapper.toRoom(roomDTO);
             LOG.log(Level.INFO, "The room : " + roomEntity + " was successfully added.");
-            return roomDAO.add(connection, roomEntity);
+            return roomDAO.add(roomEntity);
         }
         catch(SQLException ex)
         {
@@ -45,9 +45,9 @@ public class RoomServiceImpl implements RoomService {
     }
 
     public int addAndReturnId(RoomDTO roomDTO) throws SQLException {
-        try (Connection conn = DBConnection.getInstance().getConnection()) {
+        try(Connection conn = DBConnection.getInstance().getConnection()) {
             Room roomEntity = RoomMapper.toRoom(roomDTO);
-            boolean created = roomDAO.add(conn, roomEntity);
+            boolean created = roomDAO.add(roomEntity);
             if (created) {
                 return roomDAO.getLastInsertedId(conn); // same connection so no error
             } else {
@@ -78,15 +78,15 @@ public class RoomServiceImpl implements RoomService {
     @Override
     public boolean update(RoomDTO roomDTO) throws SQLException {
        // checking for existing room
-        try (Connection conn = DBConnection.getInstance().getConnection()) {
+        try {
 
-            if (!roomDAO.existsByPrimaryKey(conn, roomDTO.getRoomId())) {
+            if (!roomDAO.existsByPrimaryKey(roomDTO.getRoomId())) {
                 return false;
             }
 
             Room room = RoomMapper.toRoom(roomDTO);
 
-            return roomDAO.update(conn, room);
+            return roomDAO.update(room);
         }
         catch (SQLException ex)
         {
@@ -97,21 +97,22 @@ public class RoomServiceImpl implements RoomService {
 
     @Override
     public boolean delete(int id) throws SQLException {
-        try (Connection connection = DBConnection.getInstance().getConnection()) {
+        try {
             // if the user for the specific PK exists, delete the user
-            if (roomDAO.existsByPrimaryKey(connection, id))
+            if (roomDAO.existsByPrimaryKey( id))
             {
-                return roomDAO.delete(connection, id);
+                return roomDAO.delete(id);
             }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
         return false;
     }
 
     @Override
     public RoomDTO searchById(int id) throws SQLException {
-        try(Connection connection = DBConnection.getInstance().getConnection())
-        {
-            return RoomMapper.toRoomDTO(roomDAO.searchById(connection, id));
+        try{
+            return RoomMapper.toRoomDTO(roomDAO.searchById(id));
         }
         catch (SQLException ex)
         {
@@ -122,9 +123,9 @@ public class RoomServiceImpl implements RoomService {
 
     @Override
     public boolean existsByPrimaryKey(int primaryKey) throws SQLException {
-        try(Connection connection = DBConnection.getInstance().getConnection())
+        try
         {
-            return roomDAO.existsByPrimaryKey(connection, primaryKey);
+            return roomDAO.existsByPrimaryKey( primaryKey);
         }
         catch (Exception ex)
         {
@@ -137,12 +138,12 @@ public class RoomServiceImpl implements RoomService {
     // if no filters, it gets all rooms without filters
     @Override
     public List<RoomDTO> getAll(Map<String, String> searchParams) throws SQLException {
-        try(Connection connection = DBConnection.getInstance().getConnection())
+        try
         {
             // room parameters
             Map<String, String> filters = (searchParams!= null) ? new HashMap<>(searchParams) : new HashMap<>();
 
-            List<RoomDTO> rooms= RoomMapper.toRoomDTOList(roomDAO.getAll(connection, filters));
+            List<RoomDTO> rooms= RoomMapper.toRoomDTOList(roomDAO.getAll(filters));
 
             if (filters.containsKey("amenityId"))
             {
