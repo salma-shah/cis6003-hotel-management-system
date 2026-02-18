@@ -114,6 +114,13 @@
         font-size: 14px;
         color: white;
     }
+
+    .header-row h2 {
+        margin: 0 0 20px;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
 </style>
 
 <body>
