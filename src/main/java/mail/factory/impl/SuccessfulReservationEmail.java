@@ -1,21 +1,11 @@
 package mail.factory.impl;
 
 import mail.EmailBase;
+import mail.factory.EmailFactory;
 
-public class SuccessfulReservationEmail implements EmailBase {
-
+public class SuccessfulReservationEmail extends EmailFactory {
     @Override
-    public String getReceiver() {
-        return "";
-    }
-
-    @Override
-    public String getSubject() {
-        return "";
-    }
-
-    @Override
-    public String getBody() {
-        return "";
+    public EmailBase createEmail() {
+        return null;
     }
 }
