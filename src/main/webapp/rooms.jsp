@@ -131,16 +131,15 @@
 
     <main class="dashboard-content">
         <section class="content-card">
-
-<%--        this is a section only manager can view--%>
-<c:if test="${sessionScope.userRole == 'Manager'}">
             <div class="header-row">
                 <h2>Manage Rooms</h2>
+<%--        this is a section only manager can view--%>
+<c:if test="${sessionScope.userRole == 'Manager'}">
                 <a href="<c:url value='/room/create' />" class="btn enter-btn">
                     + Create New Room
                 </a>
-            </div>
 </c:if>
+            </div>
 
             <div class="number-filter">
                 <input type="number" id="searchInput" placeholder="Search by floor number...">

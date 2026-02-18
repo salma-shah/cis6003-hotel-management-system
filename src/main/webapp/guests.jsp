@@ -118,16 +118,15 @@
 
     <main class="dashboard-content">
         <div class="content-card">
-
+            <div class="header-row">
+                <h2>Guest Profiles</h2>
                 <%--        this is a section only manager can view--%>
                 <c:if test="${sessionScope.userRole == 'Manager'}">
-                    <div class="header-row">
-                        <h2>Guest Profiles</h2>
                         <a href="<c:url value='/guest/register' />" class="btn enter-btn">
                             + Register Guest
                         </a>
-                    </div>
                 </c:if>
+            </div>
 
             <div class="search-filter">
                 <input type="text" id="regSearchInput" placeholder="Search by registration number...">
@@ -169,10 +168,12 @@
                                 <a href="javascript:void(0)" onclick="openHistoryModal('${guest.id}')">
                                     History
                                 </a>
-                                |
+                                <c:if test="${sessionScope.userRole == 'Manager'}">
+                                    |
                                 <a href="javascript:void(0)" onclick="openDeleteModal('${guest.id}')">
                                     Delete
                                 </a>
+                                </c:if>
                             </td>
                         </tr>
                     </c:forEach>
