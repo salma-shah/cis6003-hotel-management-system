@@ -131,12 +131,10 @@ public class RoomDAOImpl implements RoomDAO {
                 while (resultSet.next()) {
                     int roomId = resultSet.getInt("room_id");
 
-                    // checking if room already exists
-                    Room room = roomMap.get(roomId);
-
-                    if (room == null) {
+                    if (!roomMap.containsKey(roomId)) {
                         roomMap.put(roomId, mapResultSetToRoom(resultSet));
                     }
+                }
 
                     if (roomMap.isEmpty()) {
                         return Collections.emptyList();
@@ -154,7 +152,7 @@ public class RoomDAOImpl implements RoomDAO {
                     while (imageResultSet.next()) {
                         int imgRoomId = imageResultSet.getInt("room_id");
                         RoomImg roomImg = mapResultSetToRoomImg(imageResultSet);
-                        room = roomMap.get(imgRoomId);
+                        Room room = roomMap.get(imgRoomId);
                         if (room != null) {
                             room.getRoomImgList().add(roomImg);
                         }
@@ -169,12 +167,11 @@ public class RoomDAOImpl implements RoomDAO {
                     ResultSet amenityResultSet = QueryHelper.execute(conn, amenitySql, idParams.toArray());
                     while (amenityResultSet.next()) {
                         int roomAmenityId = amenityResultSet.getInt("room_id");
-                        room = roomMap.get(roomAmenityId);
+                        Room room = roomMap.get(roomAmenityId);
                         if (room != null) {
                             room.getAmenityList().add(mapResultSetToAmenity(amenityResultSet));
                         }
                     }
-                }
                 return new ArrayList<>(roomMap.values());  // returning the list of rooms that fit into necessary search parameters with the images
 
             } catch (SQLException ex) {
@@ -200,7 +197,7 @@ public class RoomDAOImpl implements RoomDAO {
     }
 
     public int getLastInsertedId(Connection conn) throws SQLException {
-        String sql = "SELECT LAST_INSERT_ID()"; // MySQL syntax
+        String sql = "SELECT LAST_INSERT_ID()"; // mysql syntax
         try (Statement stmt = conn.createStatement();
              ResultSet resultSet = QueryHelper.execute(conn, sql)) {
             if (resultSet.next()) {
