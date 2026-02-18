@@ -2,12 +2,15 @@ package business.service.impl;
 
 import business.service.GuestService;
 import dto.GuestDTO;
+import dto.RoomDTO;
 import entity.Guest;
 import mapper.GuestMapper;
+import mapper.RoomMapper;
 import persistence.dao.GuestDAO;
 import persistence.dao.impl.GuestDAOImpl;
 
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -18,7 +21,6 @@ public class GuestServiceImpl implements GuestService {
     private final GuestDAO guestDAO;
 
     public GuestServiceImpl() {
-
         this.guestDAO = new GuestDAOImpl();
     }
 
@@ -55,7 +57,9 @@ public class GuestServiceImpl implements GuestService {
     @Override
     public List<GuestDTO> getAll(Map<String, String> searchParams) throws SQLException {
         try {
-            return GuestMapper.toGuestDTOList(guestDAO.getAll(searchParams));
+            Map<String, String> filters = (searchParams!= null) ? new HashMap<>(searchParams) : new HashMap<>();
+
+            return GuestMapper.toGuestDTOList(guestDAO.getAll(filters));
         }
         catch (SQLException e)
         {

@@ -38,11 +38,12 @@ public class GuestMapper {
     public static Guest toUpdatedGuest(GuestDTO guestDTO) {
 
         return new Guest.GuestBuilder()
-                .passportNumber(guestDTO.getPassportNumber())
-                .contactNumber(guestDTO.getContactNumber())
+                .id(guestDTO.getId())
                 .firstName(guestDTO.getFirstName())
                 .lastName(guestDTO.getLastName())
                 .address(guestDTO.getAddress())
+                .contactNumber(guestDTO.getContactNumber())
+                .passportNumber(guestDTO.getPassportNumber())
                 .build();
     }
 
