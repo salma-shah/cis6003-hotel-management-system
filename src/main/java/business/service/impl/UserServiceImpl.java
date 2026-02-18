@@ -1,6 +1,10 @@
 package business.service.impl;
 
 import constant.Role;
+import mail.EmailBase;
+import mail.EmailUtility;
+import mail.factory.EmailFactory;
+import mail.factory.impl.WelcomeEmailFactory;
 import persistence.dao.UserDAO;
 import persistence.dao.impl.UserDAOImpl;
 import dto.UserCredentialDTO;
@@ -61,14 +65,29 @@ public class UserServiceImpl implements UserService {
 
         try {
             // if manager is logged in
-         //   if (validateManager(userDTO)) {
-                // first, generating salt and hashing password using password manager method
-                String hashedPassword = PasswordManager.saltAndHashPassword(userCredentialDTO.getPassword());
-                // will make user to entity using user mapper
-                User userEntity = UserMapper.toUser(userDTO, userCredentialDTO, hashedPassword);
-                return userDAO.add( userEntity);
+            //   if (validateManager(userDTO)) {
+            // first, generating salt and hashing password using password manager method
+            String hashedPassword = PasswordManager.saltAndHashPassword(userCredentialDTO.getPassword());
+            // will make user to entity using user mapper
+            User userEntity = UserMapper.toUser(userDTO, userCredentialDTO, hashedPassword);
+            boolean savedUser = userDAO.add(userEntity);
+            if (!savedUser) {
+                usernames.remove(username);
+                emails.remove(email);
+                return false;
             }
-       // }
+                // sending email
+                // sending the email
+                // using the creator method for welcoming user email
+                EmailFactory emailFactory = new WelcomeEmailFactory((userDTO.getFirstName() + " " + userDTO.getLastName()), userDTO.getEmail(), userDTO.getUsername(), userCredentialDTO.getPassword());
+
+                // then using the base interface
+                EmailBase emailBase = emailFactory.createEmail();
+
+                // then finally the send mail utility
+                EmailUtility.sendMail(emailBase.getReceiver(), emailBase.getSubject(), emailBase.getBody());
+                return true;
+        }
         catch (SQLException ex) {
             usernames.remove(username);
             emails.remove(email);

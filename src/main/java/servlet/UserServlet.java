@@ -149,17 +149,6 @@ public class UserServlet extends HttpServlet {
            if (successRegistration)
            {
                LOG.log(Level.INFO, "User registered successfully.");
-
-               // sending the email
-               // using the creator method for welcoming user email
-               EmailFactory emailFactory = new WelcomeEmailFactory((userDTO.getFirstName() + " " + userDTO.getLastName()), userDTO.getEmail(), userDTO.getUsername(), userCredentialDTO.getPassword());
-
-               // then using the base interface
-               EmailBase emailBase = emailFactory.createEmail();
-
-               // then finally the send mail utility
-               EmailUtility.sendMail(emailBase.getReceiver(), emailBase.getSubject(), emailBase.getBody());
-
                LOG.log(Level.INFO, "Email sent successfully.");
 
                // response.sendRedirect(request.getContextPath() + "/user/register?success=true");
