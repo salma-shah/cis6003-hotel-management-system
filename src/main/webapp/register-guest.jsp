@@ -145,6 +145,12 @@
                         <div class="error-message" id="passportError"></div>
                     </div>
 
+                <div class="form-group">
+                    <label for="passportNumber">Nationality</label>
+                    <input type="text" id="nationality" name="nationality" placeholder="Enter nationality">
+                    <div class="error-message" id="nationError"></div>
+                </div>
+
                     <div class="form-group">
                         <label for="dob">Date of Birth</label>
                         <input type="date" id="dob" name="dob" required>

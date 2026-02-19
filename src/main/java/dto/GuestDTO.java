@@ -12,7 +12,7 @@ public class GuestDTO implements SuperDTO
     private final String lastName;
     private final String contactNumber;
     private final String address;
-    private final String email;
+    private final String email, nationality;
     private final String nic, passportNumber;
     private final Date dob;
     private final LocalDateTime createdAt, updatedAt;
@@ -31,6 +31,10 @@ public class GuestDTO implements SuperDTO
 
     public String getLastName() {
         return lastName;
+    }
+
+    public String getNationality() {
+        return nationality;
     }
 
     public String getContactNumber() {
@@ -78,6 +82,7 @@ public class GuestDTO implements SuperDTO
                 ", nic=" + nic +
                 ", passportNumber=" + passportNumber +
                 ", dob=" + dob +
+                ", nationality='" + nationality + '\'' +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 '}';
@@ -97,6 +102,7 @@ public class GuestDTO implements SuperDTO
         this.nic = builder.nic;
         this.passportNumber = builder.passportNumber;
         this.dob = builder.dob;
+        this.nationality = builder.nationality;
         this.createdAt = builder.createdAt;
         this.updatedAt = builder.updatedAt;
     }
@@ -105,7 +111,7 @@ public class GuestDTO implements SuperDTO
         private int id;
         private String registrationNumber;
         private String firstName, lastName, contactNumber, address, email;
-        private String nic;
+        private String nic, nationality;
         private String passportNumber;
         private Date dob;
         private LocalDateTime createdAt;
@@ -150,6 +156,10 @@ public class GuestDTO implements SuperDTO
         }
         public GuestDTO.GuestDTOBuilder dob(Date dob) {
             this.dob = dob;
+            return this;
+        }
+        public GuestDTO.GuestDTOBuilder nationality(String nationality) {
+            this.nationality = nationality;
             return this;
         }
         public GuestDTO.GuestDTOBuilder createdAt(LocalDateTime createdAt) {

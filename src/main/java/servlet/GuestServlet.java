@@ -50,7 +50,7 @@ public class GuestServlet extends HttpServlet {
             case "/register":   // this is for registering guests
                 registerGuest(request, response);
                 break;
-            case "/delete":   // this is for deleting a guest ; since html forms dont have DELETE,
+            case "/delete":   // this is for deleting a guest
                 deleteGuest(request, response);   // we access it using POST method
                 break;
             case "/update":
@@ -111,8 +111,9 @@ public class GuestServlet extends HttpServlet {
             String passportNumber = request.getParameter("passportNumber");
             String registrationNumber = request.getParameter("registrationNumber");
             String dateOfBirth = request.getParameter("dob");
+            String nationality = request.getParameter("nationality");
 
-            // covnerting dob to dto
+            // converting dob to dto
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
             Date dob = sdf.parse(dateOfBirth);
 
@@ -122,7 +123,7 @@ public class GuestServlet extends HttpServlet {
             // creating
             GuestDTO guestDTO = new GuestDTO.GuestDTOBuilder().firstName(firstName).lastName(lastName)
                     .address(address).contactNumber(contactNumber).email(email).nic(nic).passportNumber(passportNumber)
-                    .registrationNumber(registrationNumber).dob(dob).build();
+                    .registrationNumber(registrationNumber).dob(dob).nationality(nationality).build();
 
             boolean successfulReg = guestService.add(guestDTO);
             if (successfulReg) {
@@ -142,7 +143,7 @@ public class GuestServlet extends HttpServlet {
             LOG.log(Level.INFO, "Getting all guests");
             Map<String, String> searchParams = new HashMap<>();
 
-            // checking if aprams are passed
+            // checking if params are passed
             String nicOrPassportNumber = request.getParameter("nicOrPPSearchText");
             String registrationNumber = request.getParameter("regSearchText");
             String status = request.getParameter("statusText");
@@ -175,7 +176,7 @@ public class GuestServlet extends HttpServlet {
 
             List<GuestDTO> guests = guestService.getAll(searchParams);
 //
-//            // converting dob into being serialisable
+//            // converting dob into being serializable
             Gson gson = new GsonBuilder()
                     .registerTypeAdapter(Date.class, (JsonSerializer<Date>) (src, typeOfSrc, context) ->
                             new JsonPrimitive(new SimpleDateFormat("yyyy-MM-dd").format(src)))
@@ -230,11 +231,11 @@ public class GuestServlet extends HttpServlet {
                 return;
             }
 
-            // converting user to JSON for javascript to recognize
+            // converting user to JSON for JavaScript to recognize
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
 
-            // converting dob into being serialisable
+            // converting dob into being serializable
             Gson gson = new GsonBuilder()
                     .registerTypeAdapter(Date.class, (JsonSerializer<Date>) (src, typeOfSrc, context) ->
                             new JsonPrimitive(new SimpleDateFormat("yyyy-MM-dd").format(src)))
@@ -290,7 +291,7 @@ public class GuestServlet extends HttpServlet {
 
     }
 
-    // deketing guest
+    // deleting guest
     private void deleteGuest(HttpServletRequest request, HttpServletResponse response) throws IOException {
         LOG.log(Level.INFO, "Deleting guest method reached...");
         try

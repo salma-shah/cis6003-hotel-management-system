@@ -49,8 +49,8 @@ public class GuestDAOImpl implements GuestDAO {
         try(Connection conn = DBConnection.getInstance().getConnection())
         {
             return QueryHelper.execute(conn, "INSERT INTO guest (registration_number, first_name, last_name, contact_number, " +
-                    "address, email, nic, passport_number, dob) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", entity.getRegistrationNumber(),entity.getFirstName(), entity.getLastName(), entity.getContactNumber(),
-                    entity.getAddress(), entity.getEmail(), entity.getNic(), entity.getPassportNumber(), entity.getDob());
+                    "address, email, nic, passport_number, dob, nationality) VALUES (?, ?,?, ?, ?, ?, ?, ?, ?, ?)", entity.getRegistrationNumber(),entity.getFirstName(), entity.getLastName(), entity.getContactNumber(),
+                    entity.getAddress(), entity.getEmail(), entity.getNic(), entity.getPassportNumber(), entity.getDob(), entity.getNationalty());
         }
         catch (SQLException ex)
         {

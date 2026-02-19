@@ -10,7 +10,7 @@ public class Guest implements SuperEntity {
     private final String lastName;
     private final String contactNumber;
     private final String address;
-    private final String email;
+    private final String email, nationality  ;
     private final String nic, passportNumber;
     private final Date dob;
     private final LocalDateTime createdAt, updatedAt;
@@ -55,6 +55,10 @@ public class Guest implements SuperEntity {
         return dob;
     }
 
+    public String getNationalty() {
+        return nationality;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -76,6 +80,7 @@ public class Guest implements SuperEntity {
                 ", nic=" + nic +
                 ", passportNumber=" + passportNumber +
                 ", dob=" + dob +
+                ", nationality=" + nationality +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 '}';
@@ -95,6 +100,7 @@ public class Guest implements SuperEntity {
         this.nic = builder.nic;
         this.passportNumber = builder.passportNumber;
         this.dob = builder.dob;
+        this.nationality = builder.nationality;
         this.createdAt = builder.createdAt;
         this.updatedAt = builder.updatedAt;
     }
@@ -104,7 +110,7 @@ public class Guest implements SuperEntity {
         private String registrationNumber;
         private String firstName, lastName, contactNumber, address, email;
         private String nic;
-        private String passportNumber;
+        private String passportNumber, nationality;
         private Date dob;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
@@ -128,6 +134,10 @@ public class Guest implements SuperEntity {
         }
         public GuestBuilder contactNumber(String contactNumber) {
             this.contactNumber = contactNumber;
+            return this;
+        }
+        public GuestBuilder nationality(String nationality) {
+            this.nationality = nationality;
             return this;
         }
         public GuestBuilder address(String address) {

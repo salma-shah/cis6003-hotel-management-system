@@ -17,7 +17,7 @@ public class GuestMapper {
         return new GuestDTO.GuestDTOBuilder().id(guest.getId()).registrationNumber(guest.getRegistrationNumber())
                         .firstName(guest.getFirstName()).lastName(guest.getLastName()).email(guest.getEmail())
                         .contactNumber(guest.getContactNumber()).address(guest.getAddress())
-                        .nic(guest.getNic()).passportNumber(guest.getPassportNumber())
+                        .nic(guest.getNic()).passportNumber(guest.getPassportNumber()).nationality(guest.getNationalty())
                         .dob(guest.getDob()).build();
 
     }
@@ -31,7 +31,8 @@ public class GuestMapper {
         return new Guest.GuestBuilder().id(guestDTO.getId()).registrationNumber(guestDTO.getRegistrationNumber())
                 .firstName(guestDTO.getFirstName()).lastName(guestDTO.getLastName()).email(guestDTO.getEmail())
                 .contactNumber(guestDTO.getContactNumber()).address(guestDTO.getAddress()).nic(guestDTO.getNic())
-                .passportNumber(guestDTO.getPassportNumber()).dob(guestDTO.getDob()).build();
+                .passportNumber(guestDTO.getPassportNumber()).dob(guestDTO.getDob())
+                .nationality(guestDTO.getNationality()).build();
     }
 
     // updated guest fields only

@@ -120,12 +120,9 @@
         <div class="content-card">
             <div class="header-row">
                 <h2>Guest Profiles</h2>
-                <%--        this is a section only manager can view--%>
-                <c:if test="${sessionScope.userRole == 'Manager'}">
                         <a href="<c:url value='/guest/register' />" class="btn enter-btn">
                             + Register Guest
                         </a>
-                </c:if>
             </div>
 
             <div class="search-filter">
@@ -206,6 +203,8 @@
             <input class="form-control" name="nic" id="nic" readonly>
             <label class="mt-2">Passport Number</label>
             <input class="form-control" name="passportNumber" id="editPassportNum">
+            <label class="mt-2">Nationality</label>
+            <input class="form-control" name="nationality" id="editNationality">
             <label class="mt-2">Address</label>
             <input class="form-control" name="address" id="editAddress">
             <label class="mt-2">Date of Birth</label>
@@ -340,6 +339,7 @@
                 document.getElementById('editPassportNum').value = guest.passportNumber  ?? 'No Passport provided';
                 document.getElementById('editAddress').value = guest.address ?? 'No Address provided';
                 document.getElementById('dob').value = guest.dob ?? 'No Date of Birth Provided';
+                document.getElementById('editNationality').value = guest.nationality ?? 'No Nationality provided';
                 console.log("Guest ID passed :", guest.id);
                 // Show the modal
                 document.getElementById('viewAndEditModal').style.display = 'block';

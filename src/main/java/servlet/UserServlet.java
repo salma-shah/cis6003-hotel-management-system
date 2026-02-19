@@ -3,10 +3,6 @@ package servlet;
 import constant.Role;
 import dto.UserCredentialDTO;
 import dto.UserDTO;
-import mail.EmailBase;
-import mail.EmailUtility;
-import mail.factory.EmailFactory;
-import mail.factory.impl.WelcomeEmailFactory;
 import business.service.impl.UserServiceImpl;
 
 import javax.servlet.ServletException;
