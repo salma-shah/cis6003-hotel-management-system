@@ -202,19 +202,20 @@
                     <div class="room-card"
                          data-room-id="${room.roomId}"
                          data-category="${room.roomType}"
-                         data-amenities="${room.beddingTypes}"
+                         data-amenities="${room.roomType.bedding}"
                          data-status="${room.roomStatus}"
                          data-floor-num="${room.floorNum}">
 
-                        <c:if test="${not empty room.roomImgList}">
-                            <img src="${pageContext.request.contextPath}/${room.roomImgList[0].imgPath}"
-                                 alt = "${room.roomImgList[0].alt}">
+                        <c:if test="${not empty room.roomType.roomImgList}">
+                            <img src="${pageContext.request.contextPath}/${room.roomType.roomImgList[0].imgPath}"
+                                 alt = "${room.roomType.roomImgList[0].alt}">
                         </c:if>
 
                         <div class="room-body">
-                            <div class="room-meta">Room Type: ${room.roomType}</div>
+                            <div class="room-meta">Room Type: ${room.roomType.roomTypeName}</div>
+                            <div class="room-meta">Room Number: ${room.roomNum}</div>
                             <div class="room-meta">Floor: ${room.floorNum}</div>
-                            <div class="room-meta"><i class="bi bi-person-fill-check"></i>: ${room.maxOccupancy}</div>
+                            <div class="room-meta"><i class="bi bi-person-fill-check"></i>: ${room.roomType.maxOccupancy}</div>
                             <div class="room-meta room-status
                                ${room.roomStatus == 'Available' ? 'status-available' :
                                  room.roomStatus == 'Unavailable' ? 'status-occupied' : 'status-maintenance'}">

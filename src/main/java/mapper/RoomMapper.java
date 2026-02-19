@@ -1,11 +1,8 @@
 package mapper;
 
-import dto.AmenityDTO;
 import dto.RoomDTO;
-import dto.RoomImgDTO;
-import entity.Amenity;
 import entity.Room;
-import entity.RoomImg;
+import entity.RoomType;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,20 +15,12 @@ public class RoomMapper {
             return null;
         }
 
-        List<RoomImgDTO> imageDTOs = room.getRoomImgList().stream().map(RoomImgMapper::toRoomImgDTO).collect(Collectors.toList());
-        List<AmenityDTO> amenityDTOS = room.getAmenityList().stream().map(AmenityMapper::toAmenityDTO).toList();
         return new RoomDTO.RoomDTOBuilder()
                 .roomId(room.getRoomId())
-                .baseDescription(room.getBaseDescription())
-                .basePricePerNight(room.getBasePricePerNight())
-                .roomType(room.getRoomType())
+                .roomNum(room.getRoomNum())
+                .roomType(RoomTypeMapper.toRoomTypeDTO(room.getRoomType()))
                 .roomStatus(room.getRoomStatus())
-                .bedding(room.getBedding())
-                .maxOccupancy(room.getMaxOccupancy())
                 .floorNum(room.getFloorNum())
-                .totalRooms(room.getTotalRooms())
-                .roomImgList(imageDTOs)
-                .amenityList(amenityDTOS)
                 .build();
     }
 
@@ -41,21 +30,13 @@ public class RoomMapper {
             return null;
         }
 
-        List<RoomImg> roomImg = roomDTO.getRoomImgList().stream().map(RoomImgMapper::toRoomImg).collect(Collectors.toList());
-        List<Amenity> amenities = roomDTO.getAmenityList().stream().map(AmenityMapper::toAmenity).toList();
+        RoomType roomType = new RoomType.RoomTypeBuilder().roomTypeId(roomDTO.getRoomType().getRoomTypeId()).build();
         return new Room.RoomBuilder()
                 .roomId(roomDTO.getRoomId())
-                .baseDescription(roomDTO.getDescription())
-                .basePricePerNight(roomDTO.getPricePerNight())
-                .roomType(roomDTO.getRoomType())
+                .roomNum(roomDTO.getRoomNum())
+                .roomType(roomType)
                 .roomStatus(roomDTO.getRoomStatus())
-                .bedding(roomDTO.getBeddingTypes())
-                .maxOccupancy(roomDTO.getMaxOccupancy())
-                .floorNum(roomDTO.getFloorNum())
-                .totalRooms(roomDTO.getTotalRooms())
-                .roomImgList(roomImg)
-                .amenityList(amenities)
-                .build();
+                .floorNum(roomDTO.getFloorNum()).build();
     }
 
     // converting to a DTO List

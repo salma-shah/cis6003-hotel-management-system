@@ -4,12 +4,11 @@ import entity.Amenity;
 import entity.Room;
 import persistence.dao.helper.CRUDDAO;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
 public interface RoomDAO extends CRUDDAO<Room> {
-    int getLastInsertedId(Connection conn) throws SQLException;
+     int getLastInsertedId() throws SQLException;
     List<Amenity> getAmenitiesByRoomID(int roomID) throws SQLException;
 // all methods are extended from CRUD
 }

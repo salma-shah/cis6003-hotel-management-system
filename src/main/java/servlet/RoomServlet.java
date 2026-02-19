@@ -6,11 +6,15 @@ import business.service.RoomService;
 import business.service.impl.AmenityServiceImpl;
 import business.service.impl.RoomImgServiceImpl;
 import business.service.impl.RoomServiceImpl;
-import constant.BeddingTypes;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializer;
 import constant.RoomStatus;
-import constant.RoomTypes;
 import dto.RoomDTO;
 import dto.RoomImgDTO;
+import dto.RoomTypeDTO;
+import entity.RoomType;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -23,6 +27,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -106,87 +112,89 @@ public class RoomServlet extends HttpServlet {
 
 
             // if everything correct, we save the room
+            // setting room TYPE first
+            RoomTypeDTO roomTypeDTO = new RoomTypeDTO.Builder().roomTypeId(Integer.parseInt(request.getParameter("roomTypeId"))).build();
+
             RoomDTO roomDTO = new RoomDTO.RoomDTOBuilder()
-                    .roomType(RoomTypes.valueOf(request.getParameter("type")))
-                    .baseDescription(request.getParameter("desc"))
-                    .basePricePerNight(Double.parseDouble(request.getParameter("pricePerNight")))
-                    .bedding(BeddingTypes.valueOf(request.getParameter("bedding")))
-                    .roomStatus(RoomStatus.valueOf(request.getParameter("status")))
                     .floorNum(Integer.parseInt(request.getParameter("floorNum")))
-                    .maxOccupancy(Integer.parseInt(request.getParameter("maxOccupancy")))
+                    .roomNum((request.getParameter("roomNum")))
+                    .roomStatus(RoomStatus.valueOf(request.getParameter("status")))
+                    .roomType(roomTypeDTO)
                     .build();
 
-            int roomId = roomService.addAndReturnId(roomDTO);
-            if (roomId == -1) {
-                LOG.log(Level.SEVERE, "Unable to create room.");
+            boolean createdRoom = roomService.add(roomDTO);
+            if (createdRoom) {
+                LOG.log(Level.INFO, "Room created successfully!");
             }
-            LOG.log(Level.INFO, "Room has been successfully created with ID: " + roomId);
+            else {
+                LOG.log(Level.SEVERE, "Failed to create room!");
+            }
 
             // now we handle images
-            Collection<Part> parts = request.getParts();
-            List<Part> imageParts = new ArrayList<>();
-            List<String> altTexts = new ArrayList<>();
-
-            for (Part part : parts) {
-                if (part.getName().equals("roomImgs") && part.getSize() > 0) {
-                    imageParts.add(part);
-                } else if (part.getName().equals("alt")) {
-                    altTexts.add(new String(part.getInputStream().readAllBytes(), StandardCharsets.UTF_8));
-                }
-            }
-
-            // ensure we have same number of alt texts as images
-            while (altTexts.size() < imageParts.size()) {
-                altTexts.add(""); // default empty alt
-            }
-
-            for (int i = 0; i < imageParts.size(); i++) {
-                Part filePart = imageParts.get(i);
-                String altText = altTexts.get(i);
-
-                String fileName = filePart.getSubmittedFileName();
-
-                // this is where the images will be stored
-                // we define the location
-                String uploadPath = getServletContext().getRealPath("images/room-uploads");
-                File uploadDir = new File(uploadPath);
-                if (!uploadDir.exists()) {
-                    uploadDir.mkdirs();
-                }
-
-                String fullPath = uploadPath + File.separator + fileName;
-                filePart.write(fullPath);
-                LOG.log(Level.INFO, "Uploaded file to: " + fullPath);
-
-                // now saving the image
-                // for (String imagePath : imagePaths) {
-                roomImgService.saveImg(new RoomImgDTO(0, roomId, "images/room-uploads/" + fileName, altText));
-                LOG.log(Level.INFO, "Room image has been successfully uploaded.");
-
-
-                // now we add the amenities
-                String[] amenities = request.getParameterValues("amenities");
-                LOG.log(Level.INFO, "Amenities are: " + Arrays.toString(amenities));
-                if (amenities != null) {
-                    for (String amenity : amenities) {
-                        if (amenity == null) {
-                            continue;
-                        }
-                        try {
-                            int amenityId = Integer.parseInt(amenity.trim());
-                            boolean addedAmenity = amenityService.addAmenityToRoom(roomId, amenityId);
-
-                            if (!addedAmenity) {
-                                LOG.log(Level.SEVERE, "Amenity for ID: " + amenityId + "could not be added.");
-                            }
-
-                            LOG.log(Level.INFO, "Amenity has been successfully added: " + amenityId);
-                        } catch (NumberFormatException nx) {
-                            LOG.log(Level.SEVERE, "Invalid amenity parameters.");
-                        }
-                    }
-                }
-            }
+//            Collection<Part> parts = request.getParts();
+//            List<Part> imageParts = new ArrayList<>();
+//            List<String> altTexts = new ArrayList<>();
+//
+//            for (Part part : parts) {
+//                if (part.getName().equals("roomImgs") && part.getSize() > 0) {
+//                    imageParts.add(part);
+//                } else if (part.getName().equals("alt")) {
+//                    altTexts.add(new String(part.getInputStream().readAllBytes(), StandardCharsets.UTF_8));
+//                }
+//            }
+//
+//            // ensure we have same number of alt texts as images
+//            while (altTexts.size() < imageParts.size()) {
+//                altTexts.add(""); // default empty alt
+//            }
+//
+//            for (int i = 0; i < imageParts.size(); i++) {
+//                Part filePart = imageParts.get(i);
+//                String altText = altTexts.get(i);
+//
+//                String fileName = filePart.getSubmittedFileName();
+//
+//                // this is where the images will be stored
+//                // we define the location
+//                String uploadPath = getServletContext().getRealPath("images/room-uploads");
+//                File uploadDir = new File(uploadPath);
+//                if (!uploadDir.exists()) {
+//                    uploadDir.mkdirs();
+//                }
+//
+//                String fullPath = uploadPath + File.separator + fileName;
+//                filePart.write(fullPath);
+//                LOG.log(Level.INFO, "Uploaded file to: " + fullPath);
+//
+//                // now saving the image
+//                // for (String imagePath : imagePaths) {
+//                roomImgService.saveImg(new RoomImgDTO(0, roomId, "images/room-uploads/" + fileName, altText));
+//                LOG.log(Level.INFO, "Room image has been successfully uploaded.");
+//
+//
+//                // now we add the amenities
+//                String[] amenities = request.getParameterValues("amenities");
+//                LOG.log(Level.INFO, "Amenities are: " + Arrays.toString(amenities));
+//                if (amenities != null) {
+//                    for (String amenity : amenities) {
+//                        if (amenity == null) {
+//                            continue;
+//                        }
+//                        try {
+//                            int amenityId = Integer.parseInt(amenity.trim());
+//                            boolean addedAmenity = amenityService.addAmenityToRoom(roomId, amenityId);
+//
+//                            if (!addedAmenity) {
+//                                LOG.log(Level.SEVERE, "Amenity for ID: " + amenityId + "could not be added.");
+//                            }
+//
+//                            LOG.log(Level.INFO, "Amenity has been successfully added: " + amenityId);
+//                        } catch (NumberFormatException nx) {
+//                            LOG.log(Level.SEVERE, "Invalid amenity parameters.");
+//                        }
+//                    }
+//                }
+//            }
         } catch (Exception ex) {
             LOG.log(Level.SEVERE, ex.getMessage(), ex);
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -221,7 +229,7 @@ public class RoomServlet extends HttpServlet {
             }
 
             if (roomTypeParam != null && !roomTypeParam.isEmpty()) {
-                searchParams.put("type", roomTypeParam);  // filter by room type
+                searchParams.put("name", roomTypeParam);  // filter by room type
                 LOG.log(Level.INFO, "Searching for room type: " + roomTypeParam);
             }
 
@@ -259,9 +267,18 @@ public class RoomServlet extends HttpServlet {
                         .toList();
             }
 
+
+//            // converting dob into being serializable
+            Gson gson = new GsonBuilder()
+                    .registerTypeAdapter(Date.class, (JsonSerializer<Date>) (src, typeOfSrc, context) ->
+                            new JsonPrimitive(new SimpleDateFormat("yyyy-MM-dd").format(src)))
+                    .registerTypeAdapter(LocalDateTime.class, (JsonSerializer<LocalDateTime>) (src, typeOfSrc, context) ->
+                            new JsonPrimitive(src.toString()))
+                    .create();
+
             // this is if JS sends a search request
             if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
-                String roomJSON = new com.google.gson.Gson().toJson(rooms);
+                String roomJSON = gson.toJson(rooms);
                 response.setContentType("application/json");
                 response.setCharacterEncoding("UTF-8");
                 response.getWriter().write(roomJSON);

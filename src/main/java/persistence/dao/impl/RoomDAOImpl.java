@@ -2,12 +2,13 @@ package persistence.dao.impl;
 
 import constant.BeddingTypes;
 import constant.RoomStatus;
-import constant.RoomTypes;
 import db.DBConnection;
 import entity.Amenity;
 import entity.Room;
 import entity.RoomImg;
+import entity.RoomType;
 import persistence.dao.RoomDAO;
+import persistence.dao.RoomTypeDAO;
 import persistence.dao.helper.QueryHelper;
 
 import java.sql.Connection;
@@ -22,12 +23,17 @@ import java.util.stream.Collectors;
 public class RoomDAOImpl implements RoomDAO {
     // enabling logging in tomcat server
     private static final Logger LOG = Logger.getLogger(RoomDAOImpl.class.getName());
+    private final RoomTypeDAO roomTypeDAO ;
+
+    public RoomDAOImpl() {
+        this.roomTypeDAO = new  RoomTypeDAOImpl();
+    }
 
     @Override
     public boolean add(Room entity) throws SQLException {
         try (Connection conn = DBConnection.getInstance().getConnection()){
-            return QueryHelper.execute(conn, "INSERT INTO room (description, type, price_per_night, bedding, status, max_occupancy, floor_num) VALUES (?, ?, ?, ?, ?,?,?)",
-                    entity.getBaseDescription(), entity.getRoomType().toString(), entity.getBasePricePerNight(), entity.getBedding().toString(), entity.getRoomStatus().toString(), entity.getMaxOccupancy(), entity.getFloorNum());
+            return QueryHelper.execute(conn, "INSERT INTO room (room_number, room_type_id, floor_num, room_status) VALUES (?, ?, ?, ?)",
+                   entity.getRoomNum(), entity.getRoomType().getRoomTypeId(), entity.getFloorNum(), entity.getRoomStatus().name());
         }
         catch (Exception ex) {
             LOG.log(Level.SEVERE, "There was an error saving the room: ", ex);
@@ -40,12 +46,12 @@ public class RoomDAOImpl implements RoomDAO {
         try(Connection conn = DBConnection.getInstance().getConnection())
         {
             return QueryHelper.execute(conn,
-                    "UPDATE room SET description=?, price_per_night=?, bedding=?, status=?, floor_num, WHERE room_id=?",
-                    entity.getBaseDescription(), entity.getBasePricePerNight(), entity.getBedding().toString(), entity.getRoomStatus().toString(), entity.getFloorNum(), entity.getRoomId());
+                    "UPDATE room SET room_status WHERE room_id=?", entity.getRoomStatus(), entity.getRoomId());
+
         }
         catch (SQLException ex)
         {
-            LOG.log(Level.SEVERE, "There was an error updating the room: ", ex);
+            LOG.log(Level.SEVERE, "There was an error updating the room status: ", ex);
             throw new SQLException(ex.getMessage());
         }
     }
@@ -69,7 +75,7 @@ public class RoomDAOImpl implements RoomDAO {
         try(Connection conn = DBConnection.getInstance().getConnection())
         {
             ResultSet resultSet = QueryHelper.execute(conn, "SELECT * FROM room WHERE room_id =?", id);
-            if (! resultSet.next())
+            if (!resultSet.next())
             {
                 return null;
             }
@@ -87,23 +93,18 @@ public class RoomDAOImpl implements RoomDAO {
         try (Connection conn = DBConnection.getInstance().getConnection()) {
             List<Room> rooms = new ArrayList<>();
             Map<Integer, Room> roomMap = new HashMap<>();
-            StringBuilder sql = new StringBuilder(
-                    "SELECT r.room_id, r.bedding, r.type, r.status, r.description, r.price_per_night, " +
-                            "r.floor_num, r.max_occupancy, COUNT(r.room_id) OVER(PARTITION BY r.type, r.bedding, r.max_occupancy) AS total_rooms " +
-                            "FROM room r WHERE 1=1 "
+            Map<Integer, RoomType> roomTypeMap = new HashMap<>();
+
+            // this is to retrieve all rooms based on room types
+            StringBuilder roomSql = new StringBuilder(
+                    "SELECT r.*, rt.* " +
+                            "FROM room r JOIN room_type rt ON r.room_type_id = rt.room_type_id " +
+                            "WHERE 1=1"
             );
 
             // this section is for search part
             // this is for the search parameters
             List<Object> params = new ArrayList<>();
-
-            // we declare the allowed parameter keys
-            Set<String> allowedParams = new HashSet<>();
-            allowedParams.add("status");
-            allowedParams.add("type");
-            allowedParams.add("max_occupancy");
-            allowedParams.add("bedding");
-            allowedParams.add("floor_num");
 
             if (searchParams != null && !searchParams.isEmpty()) {
                 for (Map.Entry<String, String> entry : searchParams.entrySet()) {
@@ -112,64 +113,85 @@ public class RoomDAOImpl implements RoomDAO {
 
                     // since floor num and max occuapancy is numeric
                     // we'll parse the int value
-                    if (key.equals("floor_num") || key.equals("max_occupancy")) {
-                        sql.append(" AND ").append(key).append(" = ?");
-                        params.add(Integer.parseInt(value));
-                    }
-
-                    // only using the allowed params
-                    if (allowedParams.contains(key)) {
-                        sql.append(" AND ").append(key).append(" = ? ");
-                        params.add(value);
+                    switch (key) {
+                        case "status"-> {
+                            roomSql.append(" AND r.room_status=? ");   // appending room status to the sql string builder
+                            params.add(value);  // adding status as a parameter
+                        }
+                        // we do the same for everything else
+                        case "name"-> {
+                            roomSql.append(" AND rt.name=? ");
+                            params.add(value);
+                        }
+                        case "max_occupancy"-> {
+                            roomSql.append(" AND rt.max_occupancy=? ");
+                            params.add(value);
+                        }
+                        case "bedding"-> {
+                            roomSql.append(" AND rt.bedding=? ");
+                            params.add(value);
+                        }
+                        case "floor_num"-> {
+                            roomSql.append(" AND r.floor_num=? ");
+                            params.add(value);
+                        }
                     }
                 }
             }
 
             // this section is for retrieving rooms with their images
             try {
-                ResultSet resultSet = QueryHelper.execute(conn, sql.toString(), params.toArray());
+                // first we execute the room query and return a result set to it
+                ResultSet resultSet = QueryHelper.execute(conn, roomSql.toString(), params.toArray());
                 while (resultSet.next()) {
-                    int roomId = resultSet.getInt("room_id");
+                    int roomTypeId = resultSet.getInt("room_type_id");
+                    RoomType roomType = roomTypeMap.get(roomTypeId);
 
-                    if (!roomMap.containsKey(roomId)) {
-                        roomMap.put(roomId, mapResultSetToRoom(resultSet));
+                    // mapping the value to room type
+                    if (roomType == null) {
+                        roomType = mapResultSetToRoomType(resultSet);
+                        roomTypeMap.put(roomTypeId, roomType);
                     }
-                }
 
+                    // mapping to room map
+                    Room room = new Room.RoomBuilder().roomId(resultSet.getInt("room_id"))
+                                    .roomNum(resultSet.getString("room_number")).floorNum(resultSet.getInt("floor_num"))
+                                    .roomStatus(RoomStatus.valueOf(resultSet.getString("room_status"))).roomType(roomType).build();
+                    roomMap.put(room.getRoomId(), room);  // by using room ID, we ensure that it is unique
+
+                }
                     if (roomMap.isEmpty()) {
                         return Collections.emptyList();
                     }
 
-                    // we prepare these general placeholders only once
-                    String placeholders = roomMap.keySet().stream().map(k -> "?").collect(Collectors.joining(","));
-                    List<Object> idParams = new ArrayList<>(roomMap.keySet());
+                    // we prepare these general placeholders only once to reduce redundancy
+                    String placeholders = roomTypeMap.keySet().stream().map(k -> "?").collect(Collectors.joining(","));
+                    List<Object> idParams = new ArrayList<>(roomTypeMap.keySet());
 
                     // images section
-                    String imgSql = "SELECT ri.image_id, ri.room_id, ri.alt, ri.image_path " +
-                            "FROM room_image ri WHERE ri.room_id IN (" + placeholders + ")";
+                    String imgSql = "SELECT * FROM room_img WHERE room_type_id IN (" + placeholders + ")";
                     ResultSet imageResultSet = QueryHelper.execute(conn, imgSql, idParams.toArray());
 
                     while (imageResultSet.next()) {
-                        int imgRoomId = imageResultSet.getInt("room_id");
+                        int imgRoomTypeId = imageResultSet.getInt("room_type_id");  // getting the id based on where image matches with room type id
                         RoomImg roomImg = mapResultSetToRoomImg(imageResultSet);
-                        Room room = roomMap.get(imgRoomId);
-                        if (room != null) {
-                            room.getRoomImgList().add(roomImg);
+                        RoomType roomType = roomTypeMap.get(imgRoomTypeId);
+                        if (roomType != null) {
+                            roomType.getRoomImgList().add(roomImg);  // attaching the img to room type which we are using throighout the query
+                            LOG.log(Level.INFO, "Added room image for {0}", roomType.getRoomImgList().size());
                         }
                     }
 
                     // now amenities
-                    String amenitySql = "SELECT ra.room_id, a.amenity_id, a.name, a.cost " +
-                            "FROM amenity a " +
-                            "INNER JOIN room_amenity ra ON ra.amenity_id = a.amenity_id " +
-                            "WHERE ra.room_id IN (" + placeholders + ")";
+                    String amenitySql = "SELECT rta.room_type_id, a.* FROM amenity a JOIN room_type_amenity rta ON rta.amenity_id = a.amenity_id WHERE rta.room_type_id IN (" + placeholders + ")";
 
                     ResultSet amenityResultSet = QueryHelper.execute(conn, amenitySql, idParams.toArray());
-                    while (amenityResultSet.next()) {
-                        int roomAmenityId = amenityResultSet.getInt("room_id");
-                        Room room = roomMap.get(roomAmenityId);
-                        if (room != null) {
-                            room.getAmenityList().add(mapResultSetToAmenity(amenityResultSet));
+                    while (amenityResultSet.next()) {  // follpwing the same approach here
+                        int roomTypeAmenityId = amenityResultSet.getInt("room_type_id");
+                        RoomType roomType = roomTypeMap.get(roomTypeAmenityId);
+                        if (roomType != null) {
+                            roomType.getAmenityList().add(mapResultSetToAmenity(amenityResultSet));
+                            LOG.log(Level.INFO, "Added room amenity for {0}", roomType.getAmenityList());
                         }
                     }
                 return new ArrayList<>(roomMap.values());  // returning the list of rooms that fit into necessary search parameters with the images
@@ -180,7 +202,6 @@ public class RoomDAOImpl implements RoomDAO {
             }
         }
     }
-
 
     @Override
     public boolean existsByPrimaryKey( int primaryKey) throws SQLException {
@@ -196,17 +217,20 @@ public class RoomDAOImpl implements RoomDAO {
         }
     }
 
-    public int getLastInsertedId(Connection conn) throws SQLException {
+    @Override
+    public int getLastInsertedId() throws SQLException {
         String sql = "SELECT LAST_INSERT_ID()"; // mysql syntax
-        try (Statement stmt = conn.createStatement();
-             ResultSet resultSet = QueryHelper.execute(conn, sql)) {
+        try (Connection connection = DBConnection.getInstance().getConnection())
+        {
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(sql);
             if (resultSet.next()) {
                 return resultSet.getInt(1);
             } else {
                 throw new SQLException("Unable to retrieve last inserted ID");
             }
         }
-    }
+        }
 
     @Override
     public List<Amenity> getAmenitiesByRoomID(int roomID) throws SQLException {
@@ -215,7 +239,7 @@ public class RoomDAOImpl implements RoomDAO {
             ResultSet resultSet = QueryHelper.execute(conn, "SELECT a.id, a.name " +
                     "FROM amenity a " +
                     "INNER JOIN room_amenity ra ON ra.amenity_id = a.id " +
-                    "WHERE ra.room_id = ? ", roomID);
+                    "WHERE ra.room_type_id = ? ", roomID);
             while (resultSet.next()) {
                 amenities.add(mapResultSetToAmenity(resultSet));
             }
@@ -227,23 +251,16 @@ public class RoomDAOImpl implements RoomDAO {
     private Room mapResultSetToRoom(ResultSet resultSet) throws SQLException {
         return new Room.RoomBuilder()
                 .roomId(resultSet.getInt("room_id"))
-                .basePricePerNight(resultSet.getDouble("price_per_night"))
-                .baseDescription(resultSet.getString("description"))
-                .bedding(BeddingTypes.valueOf(resultSet.getString("bedding")))
-                .roomType(RoomTypes.valueOf(resultSet.getString("type")))
-                .totalRooms(resultSet.getInt("total_rooms"))
-                .roomStatus(RoomStatus.valueOf(resultSet.getString("status")))
-                .maxOccupancy(resultSet.getInt("max_occupancy"))
+                .roomNum(resultSet.getString("room_number"))
                 .floorNum(resultSet.getInt("floor_num"))
-                .roomImgList(new ArrayList<>())
+                .roomStatus(RoomStatus.valueOf(resultSet.getString("room_status")))
                 .build();
-
-
     }
+
 
     private RoomImg mapResultSetToRoomImg(ResultSet resultSet) throws SQLException {
         return new RoomImg(resultSet.getInt("image_id"),
-                resultSet.getInt("room_id"),
+                resultSet.getInt("room_type_id"),
                 resultSet.getString("image_path"),
                 resultSet.getString("alt"));
     }
@@ -252,5 +269,19 @@ public class RoomDAOImpl implements RoomDAO {
         return new Amenity(resultSet.getInt("amenity_id"),
                 resultSet.getString("name"),
                 resultSet.getDouble("cost"));
+    }
+
+    private RoomType mapResultSetToRoomType(ResultSet rs) throws SQLException {
+        return new RoomType.RoomTypeBuilder()
+                .roomTypeId(rs.getInt("room_type_id"))
+                .roomTypeName(rs.getString("name"))
+                .basePricePerNight(rs.getDouble("price_per_night"))
+                .baseDescription(rs.getString("description"))
+                .bedding(BeddingTypes.valueOf(rs.getString("bedding")))
+                .maxOccupancy(rs.getInt("max_occupancy"))
+                .totalRooms(rs.getInt("total_rooms"))
+                .roomImgList(new ArrayList<>())
+                .amenityList(new ArrayList<>())
+                .build();
     }
 }

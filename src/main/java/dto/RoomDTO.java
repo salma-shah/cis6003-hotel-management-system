@@ -1,59 +1,37 @@
 package dto;
 
-import constant.BeddingTypes;
 import constant.RoomStatus;
-import constant.RoomTypes;
-import entity.RoomImg;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.time.LocalDateTime;
 
 public class RoomDTO implements SuperDTO {
     private final int roomId;
-    private final String baseDescription;
-    private final double basePricePerNight;
-    private final RoomTypes roomType;
+    private final RoomTypeDTO roomType;
     private final RoomStatus roomStatus;
-    private final BeddingTypes bedding;
-    private final int maxOccupancy, floorNum, totalRooms;
-    private final Date createdAt, updatedAt;
-    private List<RoomImgDTO> roomImgList;
-    private List<AmenityDTO> amenityList;
+    private final String roomNum;
+    private final int floorNum;
+    private final LocalDateTime createdAt;
+    private final LocalDateTime updatedAt;
 
     public RoomDTO(RoomDTOBuilder roomDTOBuilder) {
         this.roomId = roomDTOBuilder.roomId;
-        this.baseDescription = roomDTOBuilder.baseDescription;
-        this.basePricePerNight = roomDTOBuilder.basePricePerNight;
+        this.roomNum = roomDTOBuilder.roomNum;
         this.roomType = roomDTOBuilder.roomType;
         this.roomStatus = roomDTOBuilder.roomStatus;
-        this.bedding = roomDTOBuilder.bedding;
-        this.maxOccupancy = roomDTOBuilder.maxOccupancy;
         this.floorNum = roomDTOBuilder.floorNum;
-        this.totalRooms = roomDTOBuilder.totalRooms;
         this.createdAt = roomDTOBuilder.createdAt;
         this.updatedAt = roomDTOBuilder.updatedAt;
-        this.roomImgList = roomDTOBuilder.roomImgList != null
-                ? roomDTOBuilder.roomImgList
-                : new ArrayList<>();
-        this.amenityList = roomDTOBuilder.amenityList != null
-                ? roomDTOBuilder.amenityList
-                : new ArrayList<>();
     }
 
     public int getRoomId() {
         return roomId;
     }
 
-    public String getDescription() {
-        return baseDescription;
-    }
+   public String getRoomNum() {
+        return roomNum;
+   }
 
-    public double getPricePerNight() {
-        return basePricePerNight;
-    }
-
-    public RoomTypes getRoomType() {
+    public RoomTypeDTO getRoomType() {
         return roomType;
     }
 
@@ -61,27 +39,15 @@ public class RoomDTO implements SuperDTO {
         return roomStatus;
     }
 
-    public BeddingTypes getBeddingTypes() {
-        return bedding;
-    }
-
-    public int getMaxOccupancy() {
-        return maxOccupancy;
-    }
-
     public int getFloorNum() {
         return floorNum;
     }
-    public int getTotalRooms() { return totalRooms; }
 
-    public List<RoomImgDTO> getRoomImgList() { return roomImgList; }
-    public List<AmenityDTO> getAmenityList() { return amenityList; }
-
-    public Date getCreatedAt() {
+    public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public Date getUpdatedAt() {
+    public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
 
@@ -89,17 +55,12 @@ public class RoomDTO implements SuperDTO {
     public String toString() {
         return "RoomDTO{" +
                 "roomId=" + roomId +
-                ", baseDescription='" + baseDescription + '\'' +
-                ", basePricePerNight=" + basePricePerNight +
+               ",roomNum='" + roomNum + '\'' +
                 ", roomType=" + roomType +
                 ", roomStatus=" + roomStatus +
-                ", bedding=" + bedding +
-                ", maxOccupancy=" + maxOccupancy +
                 ", floorNum=" + floorNum +
-                ", totalRooms=" + totalRooms +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
-                ", roomImgList=" + roomImgList +
                 '}';
     }
 
@@ -107,17 +68,12 @@ public class RoomDTO implements SuperDTO {
     // public static class builder
     public static class RoomDTOBuilder {
         private int roomId;
-        private double basePricePerNight;
-        private String baseDescription;
-        private BeddingTypes bedding;
-        private RoomTypes roomType;
+        private String roomNum;
+        private RoomTypeDTO roomType;
         private RoomStatus roomStatus;
-        private int maxOccupancy;
-        private int floorNum, totalRooms;
-        private Date createdAt;
-        private Date updatedAt;
-        private List<RoomImgDTO> roomImgList;
-        private  List<AmenityDTO> amenityList;
+        private int floorNum;
+        private LocalDateTime createdAt;
+        private LocalDateTime updatedAt;
 
         public RoomDTOBuilder() {
         }
@@ -127,36 +83,13 @@ public class RoomDTO implements SuperDTO {
             return this;
         }
 
-        public RoomDTO.RoomDTOBuilder basePricePerNight(double basePricePerNight) {
-            this.basePricePerNight = basePricePerNight;
-            return this;
-        }
-
-        public RoomDTO.RoomDTOBuilder roomImgList(List<RoomImgDTO> roomImgList) {
-            this.roomImgList = roomImgList;
-            return this;
-        }
-        public RoomDTO.RoomDTOBuilder baseDescription(String baseDescription) {
-            this.baseDescription = baseDescription;
-            return this;
-        }
-
-        public RoomDTO.RoomDTOBuilder bedding(BeddingTypes bedding) {
-            this.bedding = bedding;
-            return this;
-        }
-        public RoomDTO.RoomDTOBuilder amenityList(List<AmenityDTO> amenityList) {
-            this.amenityList = amenityList;
-            return this;
-        }
-
-        public RoomDTO.RoomDTOBuilder roomType(RoomTypes roomType) {
+        public RoomDTO.RoomDTOBuilder roomType(RoomTypeDTO roomType) {
             this.roomType = roomType;
             return this;
         }
 
-        public RoomDTO.RoomDTOBuilder totalRooms(int totalRooms) {
-            this.totalRooms = totalRooms;
+        public RoomDTO.RoomDTOBuilder roomNum(String roomNum) {
+            this.roomNum = roomNum;
             return this;
         }
 
@@ -170,17 +103,12 @@ public class RoomDTO implements SuperDTO {
             return this;
         }
 
-        public RoomDTO.RoomDTOBuilder maxOccupancy(int maxOccupancy) {
-            this.maxOccupancy = maxOccupancy;
-            return this;
-        }
-
-        public RoomDTO.RoomDTOBuilder createdAt(Date createdAt) {
+        public RoomDTO.RoomDTOBuilder createdAt(LocalDateTime createdAt) {
             this.createdAt = createdAt;
             return this;
         }
 
-        public RoomDTO.RoomDTOBuilder updatedAt(Date updatedAt) {
+        public RoomDTO.RoomDTOBuilder updatedAt(LocalDateTime updatedAt) {
             this.updatedAt = updatedAt;
             return this;
         }

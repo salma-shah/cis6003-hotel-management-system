@@ -1,42 +1,22 @@
 package entity;
 
-import constant.BeddingTypes;
 import constant.RoomStatus;
-import constant.RoomTypes;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Room implements SuperEntity {
     private final int roomId;
-    private final double basePricePerNight;
-    private final String baseDescription;
-    private final BeddingTypes bedding;
-    private final RoomTypes roomType;
+    private final RoomType roomType;
     private final RoomStatus roomStatus;
-    private final int maxOccupancy, floorNum, totalRooms;
+    private final String roomNum;
+    private final int floorNum;
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
-    private final List<RoomImg> roomImgList;
-    private final List<Amenity> amenityList;
 
     public int getRoomId() {
         return roomId;
     }
 
-    public double getBasePricePerNight() {
-        return basePricePerNight;
-    }
-
-    public String getBaseDescription() {
-        return baseDescription;
-    }
-
-    public BeddingTypes getBedding() {
-        return bedding;
-    }
-
-    public RoomTypes getRoomType() {
+    public RoomType getRoomType() {
         return roomType;
     }
 
@@ -44,16 +24,12 @@ public class Room implements SuperEntity {
         return roomStatus;
     }
 
-    public int getMaxOccupancy() {
-        return maxOccupancy;
+    public String getRoomNum() {
+        return roomNum;
     }
 
     public int getFloorNum() {
         return floorNum;
-    }
-
-    public int getTotalRooms() {
-        return totalRooms;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -64,47 +40,29 @@ public class Room implements SuperEntity {
         return updatedAt;
     }
 
-    public List<RoomImg> getRoomImgList() {
-        return roomImgList;
-    }
-
-    public List<Amenity> getAmenityList() {
-        return amenityList;
-    }
-
     // constructor
-    public Room(int roomId, double basePricePerNight, String baseDescription, BeddingTypes bedding, RoomTypes roomType, RoomStatus roomStatus, int maxOccupancy, int totalRooms, int floorNum, LocalDateTime createdAt, LocalDateTime updatedAt, List<RoomImg> roomImgList, List<Amenity> amenityList) {
+
+
+    public Room(int roomId, RoomType roomType, RoomStatus roomStatus, String roomNum, int floorNum, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.roomId = roomId;
-        this.basePricePerNight = basePricePerNight;
-        this.baseDescription = baseDescription;
-        this.bedding = bedding;
         this.roomType = roomType;
         this.roomStatus = roomStatus;
-        this.maxOccupancy = maxOccupancy;
+        this.roomNum = roomNum;
         this.floorNum = floorNum;
-        this.totalRooms = totalRooms;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
-        this.roomImgList = roomImgList;
-        this.amenityList = amenityList;
     }
 
     @Override
     public String toString() {
         return "Room{" +
                 "roomId=" + roomId +
-                ", basePricePerNight=" + basePricePerNight +
-                ", baseDescription='" + baseDescription + '\'' +
-                ", bedding=" + bedding +
                 ", roomType=" + roomType +
                 ", roomStatus=" + roomStatus +
-                ", maxOccupancy=" + maxOccupancy +
+                ", roomNum='" + roomNum + '\'' +
                 ", floorNum=" + floorNum +
-                ", totalRooms=" + totalRooms +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
-                ", roomImgList=" + roomImgList +
-                ", amenityList=" + amenityList +
                 '}';
     }
 
@@ -112,22 +70,12 @@ public class Room implements SuperEntity {
     private Room (RoomBuilder builder)
     {
         this.roomId = builder.roomId;
-        this.basePricePerNight = builder.basePricePerNight;
-        this.baseDescription = builder.baseDescription;
-        this.bedding = builder.bedding;
         this.roomType = builder.roomType;
         this.roomStatus = builder.roomStatus;
-        this.totalRooms = builder.totalRooms;
-        this.maxOccupancy = builder.maxOccupancy;
+        this.roomNum = builder.roomNum;
         this.floorNum = builder.floorNum;
         this.createdAt = builder.createdAt;
         this.updatedAt = builder.updatedAt;
-        this.roomImgList = builder.roomImgList != null
-                ? builder.roomImgList
-                : new ArrayList<>();
-        this.amenityList = builder.amenityList != null
-                ? builder.amenityList
-                : new ArrayList<>();
 
     }
 
@@ -136,17 +84,12 @@ public class Room implements SuperEntity {
     public static class RoomBuilder
     {
         private int roomId;
-        private double basePricePerNight;
-        private String baseDescription;
-        private BeddingTypes bedding;
-        private RoomTypes roomType;
+        private RoomType roomType;
         private RoomStatus roomStatus;
-        private int maxOccupancy;
-        private int floorNum, totalRooms;
+        private int floorNum;
+        private String roomNum;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
-        private List<RoomImg>  roomImgList;
-        private  List<Amenity> amenityList;
 
         public RoomBuilder(){}
         public RoomBuilder roomId(int roomId)
@@ -154,33 +97,12 @@ public class Room implements SuperEntity {
             this.roomId = roomId;
             return this;
         }
-        public RoomBuilder basePricePerNight(double basePricePerNight)
-        {
-            this.basePricePerNight = basePricePerNight;
-            return this;
-        }
-        public RoomBuilder baseDescription(String baseDescription)
-        {
-            this.baseDescription = baseDescription;
-            return this;
-        }
-        public RoomBuilder roomImgList(List<RoomImg> roomImgList)
-        {
-            this.roomImgList = roomImgList;
-            return this;
-        }
-
-        public RoomBuilder amenityList(List<Amenity>  amenityList)
-        {
-            this.amenityList = amenityList;
-            return this;
-        }
-        public RoomBuilder bedding(BeddingTypes bedding)
-        {
-            this.bedding = bedding;
-            return this;
-        }
-        public RoomBuilder roomType(RoomTypes roomType)
+       public RoomBuilder roomNum (String roomNum)
+       {
+           this.roomNum = roomNum;
+           return this;
+       }
+        public RoomBuilder roomType(RoomType roomType)
         {
             this.roomType = roomType;
             return this;
@@ -191,22 +113,12 @@ public class Room implements SuperEntity {
 
         return this;}
 
-        public RoomBuilder totalRooms(int totalRooms)
-        {
-            this.totalRooms = totalRooms;
-            return this;
-        }
-
         public RoomBuilder floorNum(int floorNum)
         {
             this.floorNum = floorNum;
             return this;
         }
-        public RoomBuilder maxOccupancy(int maxOccupancy)
-        {
-            this.maxOccupancy = maxOccupancy;
-            return this;
-        }
+
         public RoomBuilder createdAt(LocalDateTime createdAt)
         {
             this.createdAt = createdAt;

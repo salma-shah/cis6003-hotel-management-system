@@ -70,4 +70,10 @@ public class RoomTest {
 
         Assert.assertTrue(rooms.isEmpty());
     }
+
+    @Test
+    public void test_getAllRooms() throws SQLException {
+        List<RoomDTO> rooms = roomService.getAll(new HashMap<>());
+        Assert.assertEquals(5, rooms.size());
+    }
 }

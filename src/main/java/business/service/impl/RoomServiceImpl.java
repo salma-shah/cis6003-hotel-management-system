@@ -1,7 +1,6 @@
 package business.service.impl;
 
 import business.service.RoomService;
-import db.DBConnection;
 import dto.AmenityDTO;
 import dto.RoomDTO;
 import entity.Room;
@@ -9,7 +8,6 @@ import mapper.RoomMapper;
 import persistence.dao.RoomDAO;
 import persistence.dao.impl.RoomDAOImpl;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.logging.Level;
@@ -18,7 +16,7 @@ import java.util.stream.Collectors;
 
 public class RoomServiceImpl implements RoomService {
     private final RoomDAO roomDAO;
-    private final List<Room> rooms = new ArrayList<>();
+  //  private final List<Room> rooms = new ArrayList<>();
     private static final Logger LOG = Logger.getLogger(RoomServiceImpl.class.getName());
 
     public RoomServiceImpl() {
@@ -44,32 +42,33 @@ public class RoomServiceImpl implements RoomService {
         }
     }
 
+
     public int addAndReturnId(RoomDTO roomDTO) throws SQLException {
-        try(Connection conn = DBConnection.getInstance().getConnection()) {
-            Room roomEntity = RoomMapper.toRoom(roomDTO);
-            boolean created = roomDAO.add(roomEntity);
-            if (created) {
-                return roomDAO.getLastInsertedId(conn); // same connection so no error
-            } else {
-                return 0; // or throw exception
-            }
+
+        Room roomEntity = RoomMapper.toRoom(roomDTO);
+
+        if (roomDAO.add(roomEntity)) {
+            return roomDAO.getLastInsertedId();
         }
+        return 0;
     }
+
 
     @Override
     public boolean isRoomEligible(RoomDTO roomDTO, int adults, int children) throws SQLException {
         int totalGuests = adults + children;
+        int maxOccupancy = roomDTO.getRoomType().getMaxOccupancy();
 
         // if total guests itself is higher than the max occupancy for a room, not eligible
-        if (totalGuests > roomDTO.getMaxOccupancy())
+        if (totalGuests > maxOccupancy)
         {return false;}
 
         // then for children, they can only stay in rooms with a double or king bed
         if (children > 0)
         {
-            String bedding = roomDTO.getBeddingTypes().toString();
+            String bedding = roomDTO.getRoomType().getBedding().name();
             if (!bedding.contains("Double") && !bedding.contains("King"))
-            {return false;}
+            { return false;}
         }
         // if all room eligibity if fulfiled, return true
         return true;
@@ -142,26 +141,26 @@ public class RoomServiceImpl implements RoomService {
         {
             // room parameters
             Map<String, String> filters = (searchParams!= null) ? new HashMap<>(searchParams) : new HashMap<>();
+            List<RoomDTO> rooms = RoomMapper.toRoomDTOList(roomDAO.getAll(filters));
+            LOG.log(Level.INFO, "The rooms : " + rooms);
 
-            List<RoomDTO> rooms= RoomMapper.toRoomDTOList(roomDAO.getAll(filters));
-
-            if (filters.containsKey("amenityId"))
-            {
+            // checking if amenities exist
+            // we will return it to the DAO by splitting it
+            if (filters.containsKey("amenityId")) {
                 String[] amenityIds = filters.get("amenityId").split(",");
                 Set<String> amenities = new HashSet<>(Arrays.asList(amenityIds));
                 rooms = rooms.stream().filter(room -> {
-                            List<AmenityDTO> roomAmenities = room.getAmenityList();
-                            if (roomAmenities == null || roomAmenities.isEmpty()) return false;
+                    List<AmenityDTO> roomAmenities = room.getRoomType().getAmenityList();
+                    if (roomAmenities == null || roomAmenities.isEmpty()) return false;
 
-                            Set<String> roomAmenityIds = new HashSet<>();
-                            for (AmenityDTO a : roomAmenities) {
-                                roomAmenityIds.add(String.valueOf(a.getId()));
-                            }
-
-                            // return true only if all selected amenities exist in this room
-                            return roomAmenityIds.containsAll(amenities);
-                        })
+                    Set<String> roomAmenityIds = new HashSet<>();
+                    for (AmenityDTO a : roomAmenities) {
+                        roomAmenityIds.add(String.valueOf(a.getId()));
+                    }
+                    return roomAmenityIds.containsAll(amenities);
+                })
                         .collect(Collectors.toList());
+
             }
             return rooms;
        }
