@@ -4,9 +4,17 @@ import business.service.IRoom;
 
 // this is the concrete component of implemeintg decorator apttern
 public class BasicRoom implements IRoom {
+//    private final String roomTypeName;
+    private final double pricePerNight;
+
+    public BasicRoom( double pricePerNight) {
+//        this.roomTypeName = roomTypeName;
+        this.pricePerNight = pricePerNight;
+    }
+
     @Override
     public double getCost() {
-        return 20000.0;
+        return pricePerNight;
     }
 
     @Override
@@ -17,5 +25,7 @@ public class BasicRoom implements IRoom {
                 "The room includes a work desk, additional sofa, coffee and tea making set, and a TV with international channels. The bathroom is equipped with a shower and a hairdryer.\n" +
                 "\n" +
                 "It is possible to completely darken the room.\n";
+
+    //    return roomTypeName;
     }
 }

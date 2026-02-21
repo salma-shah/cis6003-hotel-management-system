@@ -1,9 +1,7 @@
 package business.service.impl;
 
 import business.service.*;
-import business.service.decorators.BreakfastDecorator;
-import business.service.decorators.MinibarDecorator;
-import business.service.decorators.PoolDecorator;
+import business.service.decorators.*;
 import constant.ReservationStatus;
 import dto.GuestDTO;
 import dto.ReservationDTO;
@@ -168,9 +166,16 @@ public class ReservationServiceImpl implements ReservationService {
         // based on the amenity, you calculate the cost
         for (String key : selectedAmenities) {
             switch (key) {
-                case "5" -> room = new BreakfastDecorator(room);
-                case "9" -> room = new MinibarDecorator(room);
+                case "1" -> room = new WifiDecorator(room);
                 case "2" -> room = new PoolDecorator(room);
+                case "3" -> room = new BathtubDecorator(room);
+                case "4" -> room = new BalconyDecorator(room);
+                case "5" -> room = new BreakfastDecorator(room);
+                case "6" -> room = new SpaDecorator(room);
+                case "7" -> room = new IronboardDecorator(room);
+                case "8" -> room = new HammockDecorator(room);
+                case "9" -> room = new MinibarDecorator(room);
+                case "10" -> room = new GiftpackDecorator(room);
             }
         }
         return room.getCost() * numOfNights;
