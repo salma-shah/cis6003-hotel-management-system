@@ -4,7 +4,7 @@
   <groupId>org.example</groupId>
   <artifactId>ocean-view-hotel</artifactId>
   <packaging>war</packaging>
-  <version>1.7.1</version>
+  <version>1.7.2</version>
   <name>ocean-view-hotel Maven Webapp</name>
   <url>http://maven.apache.org</url>
   <dependencies>
