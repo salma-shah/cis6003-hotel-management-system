@@ -153,7 +153,6 @@
         color: white;
     }
 
-
     .enter-btn:hover {
     background: #245a77;
     }
@@ -286,12 +285,14 @@
                             <label><input type="checkbox" name="amenities" class="amenity" value="7"> Ironing Board</label>
                             <label><input type="checkbox" name="amenities" class="amenity" value="9"> Minibar</label>
                             <label><input type="checkbox" name="amenities" class="amenity" value="5"> Bed & Breakfast</label>
-                            <label><input type="checkbox" name="amenities" class="amenity" value="6"> Spa</label>
-                            <label><input type="checkbox" name="amenities" class="amenity" value="3"> Bathtub</label>
-                            <label><input type="checkbox" name="amenities" class="amenity" value="4"> Balcony</label>
-                            <label><input type="checkbox" name="amenities" class="amenity" value="8"> Hammock</label>
-                            <label><input type="checkbox" name="amenities" class="amenity" value="10"> Personalized Galle Giftpack</label>
                         </div>
+                    <div class="amenities-group">
+                        <label><input type="checkbox" name="amenities" class="amenity" value="6"> Spa</label>
+                        <label><input type="checkbox" name="amenities" class="amenity" value="3"> Bathtub</label>
+                        <label><input type="checkbox" name="amenities" class="amenity" value="4"> Balcony</label>
+                        <label><input type="checkbox" name="amenities" class="amenity" value="8"> Hammock</label>
+                        <label><input type="checkbox" name="amenities" class="amenity" value="10"> Personalized Galle Giftpack</label>
+                    </div>
                     </div>
 
                     <div class="form-group">

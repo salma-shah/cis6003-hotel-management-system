@@ -26,6 +26,13 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
 
+        .content-header  {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
         .content-header h2 {
             margin: 0 0 20px;
             font-weight: 600;
@@ -98,6 +105,20 @@
         .btn-update
         {
             background-color: #4CAF50 !important;
+        }
+
+        .enter-btn {
+            background: #2E6F95;
+            border-radius: 30px;
+            padding: 10px 28px;
+            font-size: 14px;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .enter-btn:hover {
+            background-color: #205371;
         }
     </style>
 

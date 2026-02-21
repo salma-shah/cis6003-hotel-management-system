@@ -137,7 +137,7 @@
 
     <nav class="nav flex-column sidebar-nav">
 
-        <a class="nav-link" href="reservations.jsp">
+        <a class="nav-link" href="<c:url value='/reservation'/>">
             <i class="bi bi-book"></i> Reservations
         </a>
 
