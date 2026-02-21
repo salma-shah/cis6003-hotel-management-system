@@ -183,7 +183,6 @@ public class RoomDAOImpl implements RoomDAO {
                         RoomType roomType = roomTypeMap.get(imgRoomTypeId);
                         if (roomType != null) {
                             roomType.getRoomImgList().add(roomImg);  // attaching the img to room type which we are using throughout the query
-                            LOG.log(Level.INFO, "Added room image for {0}", roomType.getRoomImgList().size());
                         }
                     }
 
@@ -196,7 +195,6 @@ public class RoomDAOImpl implements RoomDAO {
                         RoomType roomType = roomTypeMap.get(roomTypeAmenityId);
                         if (roomType != null) {
                             roomType.getAmenityList().add(mapResultSetToAmenity(amenityResultSet));
-                            LOG.log(Level.INFO, "Added room amenity for {0}", roomType.getAmenityList());
                         }
                     }
                 return new ArrayList<>(roomMap.values());  // returning the list of rooms that fit into necessary search parameters with the images
@@ -256,11 +254,13 @@ public class RoomDAOImpl implements RoomDAO {
     public boolean isRoomAvailable(LocalDate checkInDate, LocalDate checkOutDate, int roomId) throws SQLException {
         try(Connection conn = DBConnection.getInstance().getConnection())
         {
-            String sql = "SELECT r.* FROM room r WHERE r.room_id = ? AND r.room_status='Available' " +
-                    "AND NOT EXISTS ( SELECT 1 FROM reservation rv WHERE rv.room_id = r.room_id AND rv.status='Confirmed' " +
-                    "AND (? < rv.checkout_date AND ? > checkin_date)) LIMIT 1";
+            // using stored proecdure
+            CallableStatement callableStatement = conn.prepareCall("{CALL sp_isRoomAvailable(?, ?, ?)}");
+            callableStatement.setObject(1, checkInDate);
+            callableStatement.setObject(2, checkOutDate);
+            callableStatement.setInt(3, roomId);
 
-            ResultSet resultSet = QueryHelper.execute(conn, sql, roomId,checkInDate, checkOutDate );
+            ResultSet resultSet = callableStatement.executeQuery();
 
             return resultSet.next();
         }
@@ -272,47 +272,26 @@ public class RoomDAOImpl implements RoomDAO {
        {
            List<Room> rooms = new ArrayList<>();
 
-           // the SQL query to get the rooms based on avail
-           StringBuilder sql = new StringBuilder("SELECT r.room_id, r.room_number, r.room_type_id, r.floor_num, r.room_status, " +
-                   "rt.room_type_id, rt.name, rt.bedding, rt.price_per_night, rt.max_occupancy, rt.total_rooms, GROUP_CONCAT(a.name) AS amenities FROM room r " +
-                   "JOIN room_type rt ON r.room_type_id = rt.room_type_id " +
-                   "LEFT JOIN room_type_amenity rta ON rta.room_type_id = rt.room_type_id " +
-                   "LEFT JOIN amenity a ON a.amenity_id = rta.amenity_id " +
-                   "WHERE r.room_type_id = ? AND r.room_status='Available' " +
-                   "AND NOT EXISTS ( SELECT 1 FROM reservation rv WHERE rv.room_id = r.room_id AND rv.status='Confirmed' AND (? < rv.checkout_date AND ? > checkin_date)) " +
-                   "GROUP BY r.room_id, r.room_number, r.room_type_id, r.floor_num, r.room_status, " +
-                   "rt.room_type_id, rt.name, rt.bedding, rt.price_per_night, rt.max_occupancy, rt.total_rooms ");
+           // using stored proecudre
+           CallableStatement callableStatement = conn.prepareCall("{CALL sp_getAvailableRooms(?, ?, ?, ?)}");
+           // setting up the params
+           callableStatement.setObject(1, checkInDate);
+           callableStatement.setObject(2, checkOutDate);
+           callableStatement.setInt(3, roomTypeId);
 
-       // only if amenities are passed, it will filter with amenities
-       if (amenityIds != null && !amenityIds.isEmpty()) {
-           sql.append("AND r.room_type_id IN ( " +
-                   "SELECT rta2.room_type_id FROM room_type_amenity rta2 " +
-                   "WHERE rta2.amenity_id IN (");
-           for (int i = 0; i < amenityIds.size(); i++) {
-               sql.append("?");
-               if (i < amenityIds.size() - 1) sql.append(",");
+           // only if amenities are passed, it will filter with amenities
+           String amenityString = null;
+           // seperating the ids by a comma
+           if (amenityIds != null && !amenityIds.isEmpty()) {
+               amenityString = amenityIds.stream().map(String::valueOf).collect(Collectors.joining(","));
            }
-           sql.append(") ) = ? "); // it will match at least one amenity if present
-       }
 
            // executing the query
            // if no amenities, it will not add amenityIds to it
-           PreparedStatement  preparedStatement = conn.prepareStatement(sql.toString());
-           int index = 1;
-           // setting up the params
-           preparedStatement.setInt(index++, roomTypeId);
-           preparedStatement.setObject(index++, checkInDate);
-           preparedStatement.setObject(index++, checkOutDate);
 
-           if (amenityIds != null && !amenityIds.isEmpty()) {
-               for (Integer amenityId : amenityIds) {
-                   preparedStatement.setInt(index++, amenityId);
-               }
-               // this is for putting the index in the HAVING count
-               preparedStatement.setInt(index++, amenityIds.size());
-           }
+               callableStatement.setString(4, amenityString);
 
-           ResultSet resultSet = preparedStatement.executeQuery();
+           ResultSet resultSet = callableStatement.executeQuery();
 
            while (resultSet.next()) {
                // we want amenities
