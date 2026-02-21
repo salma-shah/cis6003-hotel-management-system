@@ -2,10 +2,8 @@ package business.service.impl;
 
 import business.service.GuestService;
 import dto.GuestDTO;
-import dto.RoomDTO;
 import entity.Guest;
 import mapper.GuestMapper;
-import mapper.RoomMapper;
 import persistence.dao.GuestDAO;
 import persistence.dao.impl.GuestDAOImpl;
 
@@ -82,7 +80,13 @@ public class GuestServiceImpl implements GuestService {
     @Override
     public boolean add(GuestDTO guestDTO) throws SQLException {
         try {
+            // ensuring reg num is unique
+            if (validateRegistrationNumber(guestDTO.getRegistrationNumber())) {
+                LOG.log(Level.WARNING, "Invalid registration number");
+                return false;}
+
             if (guestDAO.findByEmail(guestDTO.getEmail())) {
+                LOG.log(Level.WARNING, "Email already exists");
                 return false; // email already exists
             }
             Guest guest = GuestMapper.toGuest(guestDTO);
@@ -95,12 +99,17 @@ public class GuestServiceImpl implements GuestService {
     }
 
     @Override
-    public boolean findByRegistrationNumber(String registrationNumber) throws SQLException {
+    public Integer findGuestIdByRegistrationNumber(String registrationNumber) throws SQLException {
         try {
-            return guestDAO.findByRegistrationNumber(registrationNumber);
+            return guestDAO.findGuestIdByRegistrationNumber(registrationNumber);
         } catch (SQLException ex) {
             LOG.log(Level.SEVERE, "Error finding guest in service layer");
             throw new SQLException(ex.getMessage());
         }
+    }
+
+    @Override
+    public boolean validateRegistrationNumber(String registrationNumber) throws SQLException {
+        return guestDAO.findByRegistrationNumber(registrationNumber);
     }
 }

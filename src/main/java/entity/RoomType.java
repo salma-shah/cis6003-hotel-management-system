@@ -1,12 +1,13 @@
 package entity;
 
 import constant.BeddingTypes;
+import dto.SuperDTO;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RoomType implements SuperEntity {
+public class RoomType implements SuperEntity, SuperDTO {
     private final int roomTypeId;
     private final String roomTypeName;
     private final double basePricePerNight;

@@ -56,11 +56,24 @@ public class RoomTypeDAOImpl implements RoomTypeDAO {
         try(Connection conn = DBConnection.getInstance().getConnection())
         {
             ResultSet resultSet = QueryHelper.execute(conn, "SELECT * FROM room_type WHERE room_type_id=? ",id);
-            if (resultSet.next())
+            if (!resultSet.next())
             {
-                return mapResultSetToRoomType(resultSet);
+                return null;
             }
-            return null;
+            return mapResultSetToRoomType(resultSet);
+        }
+    }
+
+    @Override
+    public RoomType findByRoomId(int roomId) throws SQLException {
+        try(Connection connection = DBConnection.getInstance().getConnection())
+        {
+            ResultSet resultSet = QueryHelper.execute(connection, "SELECT rt.* FROM room r JOIN room_type rt ON r.room_type_id= rt.room_type_id WHERE r.room_id=?",roomId);
+            if (!resultSet.next())
+                {
+                return null;
+                }
+            return mapResultSetToRoomType(resultSet);
         }
     }
 

@@ -2,8 +2,8 @@ package entity;
 
 import constant.ReservationStatus;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 public class Reservation implements SuperEntity {
     private final int id;
@@ -12,12 +12,12 @@ public class Reservation implements SuperEntity {
     private final String reservationNumber;
     private final double totalCost;
     private final LocalDateTime dateOfReservation;
-    private final Date checkInDate, checkOutDate;
+    private final LocalDate checkInDate, checkOutDate;
     private int numOfAdults, numOfChildren;
     private final ReservationStatus status;
     private LocalDateTime createdAt, updatedAt;
 
-    public Reservation(int id, int guestId, int roomId, String reservationNumber, double totalCost, LocalDateTime dateOfReservation, Date checkInDate, Date checkOutDate, int numOfAdults, int numOfChildren, ReservationStatus status) {
+    public Reservation(int id, int guestId, int roomId, String reservationNumber, double totalCost, LocalDateTime dateOfReservation, LocalDate checkInDate, LocalDate checkOutDate, int numOfAdults, int numOfChildren, ReservationStatus status) {
         this.id = id;
         this.guestId = guestId;
         this.roomId = roomId;
@@ -31,7 +31,7 @@ public class Reservation implements SuperEntity {
         this.status = status;
     }
 
-    public Reservation(int id, int guestId, int roomId, String reservationNumber, double totalCost, LocalDateTime dateOfReservation, Date checkInDate, Date checkOutDate, ReservationStatus status, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public Reservation(int id, int guestId, int roomId, String reservationNumber, double totalCost, LocalDateTime dateOfReservation, LocalDate checkInDate, LocalDate checkOutDate, ReservationStatus status, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.guestId = guestId;
         this.roomId = roomId;
@@ -77,11 +77,11 @@ public class Reservation implements SuperEntity {
         return numOfChildren;
     }
 
-    public Date getCheckInDate() {
+    public LocalDate getCheckInDate() {
         return checkInDate;
     }
 
-    public Date getCheckOutDate() {
+    public LocalDate getCheckOutDate() {
         return checkOutDate;
     }
 

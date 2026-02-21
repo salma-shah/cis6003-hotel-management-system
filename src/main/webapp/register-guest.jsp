@@ -94,7 +94,6 @@
                         <label for="registrationNumber">Registration Number</label>
                         <div class="d-flex gap-2">
                             <input type="text" id="registrationNumber" name="registrationNumber" class="form-control" placeholder="Enter registration number" required>
-
                             <button type="button" id="generateRegBtn" class="btn btn-outline-secondary">
                                 Generate
                             </button>

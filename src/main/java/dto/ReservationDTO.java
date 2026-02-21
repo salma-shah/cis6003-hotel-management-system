@@ -3,10 +3,10 @@ package dto;
 import constant.ReservationStatus;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 
-public class ReservationDTO implements Serializable {
+public class ReservationDTO implements Serializable, SuperDTO {
     private final int id;
     private final int guestId;
     private final int roomId;
@@ -14,11 +14,11 @@ public class ReservationDTO implements Serializable {
     private final double totalCost;
     private final int numOfAdults, numOfChildren;
     private final LocalDateTime dateOfReservation;
-    private final Date checkInDate, checkOutDate;
-    private final ReservationStatus status;
+    private final LocalDate checkInDate, checkOutDate;
+    private ReservationStatus status;
     private LocalDateTime createdAt, updatedAt;
 
-    public ReservationDTO(int id, int guestId, int roomId, String reservationNumber, double totalCost, LocalDateTime dateOfReservation, Date checkInDate, Date checkOutDate, int numOfAdults, int numOfChildren, ReservationStatus status) {
+    public ReservationDTO(int id, int guestId, int roomId, String reservationNumber, double totalCost, LocalDateTime dateOfReservation, LocalDate checkInDate, LocalDate checkOutDate, int numOfAdults, int numOfChildren, ReservationStatus status) {
         this.id = id;
         this.guestId = guestId;
         this.roomId = roomId;
@@ -30,6 +30,19 @@ public class ReservationDTO implements Serializable {
         this.numOfAdults = numOfAdults;
         this.numOfChildren = numOfChildren;
         this.status = status;
+    }
+
+    public ReservationDTO(int id, int guestId, int roomId, String reservationNum, double totalPrice, LocalDateTime dateOfRes, LocalDate checkInDate, LocalDate checkOutDate, int numAdults, int numChildren) {
+    this.id = id;
+    this.guestId = guestId;
+    this.roomId = roomId;
+    this.reservationNumber = reservationNum;
+    this.totalCost = totalPrice;
+    this.dateOfReservation = dateOfRes;
+    this.checkInDate = checkInDate;
+    this.checkOutDate = checkOutDate;
+    this.numOfAdults = numAdults;
+    this.numOfChildren = numChildren;
     }
 
     public int getId() {
@@ -56,11 +69,11 @@ public class ReservationDTO implements Serializable {
         return dateOfReservation;
     }
 
-    public Date getCheckInDate() {
+    public LocalDate getCheckInDate() {
         return checkInDate;
     }
 
-    public Date getCheckOutDate() {
+    public LocalDate getCheckOutDate() {
         return checkOutDate;
     }
 

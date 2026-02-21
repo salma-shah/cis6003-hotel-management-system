@@ -1,10 +1,5 @@
 package servlet;
-
-import business.service.AmenityService;
-import business.service.RoomImgService;
 import business.service.RoomService;
-import business.service.impl.AmenityServiceImpl;
-import business.service.impl.RoomImgServiceImpl;
 import business.service.impl.RoomServiceImpl;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -12,20 +7,14 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializer;
 import constant.RoomStatus;
 import dto.RoomDTO;
-import dto.RoomImgDTO;
 import dto.RoomTypeDTO;
-import entity.RoomType;
 
 import javax.servlet.ServletException;
-import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.Part;
-import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -34,24 +23,22 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 // this is for uploading files ; we use it for images
-@MultipartConfig(
-        fileSizeThreshold = 1024 * 1024,
-        maxFileSize = 1024 * 1024 * 5,
-        maxRequestSize = 1024 * 1024 * 5
-)
+//@MultipartConfig(
+//        fileSizeThreshold = 1024 * 1024,
+//        maxFileSize = 1024 * 1024 * 5,
+//        maxRequestSize = 1024 * 1024 * 5
+//)
 
 @WebServlet(name = "RoomServlet", urlPatterns = "/room/*")
 public class RoomServlet extends HttpServlet {
     // enabling logging in tomcat server
     private static final Logger LOG = Logger.getLogger(RoomServlet.class.getName());
     private RoomService roomService;
-    private RoomImgService roomImgService;
-    private AmenityService amenityService;
+//    private RoomImgService roomImgService;
+//    private AmenityService amenityService;
 
     public void init() {
         this.roomService = new RoomServiceImpl();
-        this.roomImgService = new RoomImgServiceImpl();
-        this.amenityService = new AmenityServiceImpl();
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {

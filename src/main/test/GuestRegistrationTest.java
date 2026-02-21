@@ -45,7 +45,7 @@ public class GuestRegistrationTest {
     public void test_searchByUniqueRegNumber() throws SQLException {
         GuestDAO guestDAO = new GuestDAOImpl();
         GuestServiceImpl guestService = new GuestServiceImpl();
-        boolean result = guestService.findByRegistrationNumber("OV58e74162-5b98-4d4c-a015-21dd505b44a5");
+        boolean result = guestService.validateRegistrationNumber("OV58e74162-5b98-4d4c-a015-21dd505b44a5");
 
         if (!result)
         {

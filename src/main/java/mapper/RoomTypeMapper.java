@@ -3,6 +3,9 @@ package mapper;
 import dto.RoomTypeDTO;
 import entity.RoomType;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class RoomTypeMapper {
 
     public static RoomTypeDTO toRoomTypeDTO(RoomType roomType) {
@@ -43,5 +46,15 @@ public class RoomTypeMapper {
                 .amenityList(roomTypeDTO.getAmenityList().stream().map(AmenityMapper::toAmenity).toList())
                 .roomImgList(roomTypeDTO.getRoomImgList().stream().map(RoomImgMapper::toRoomImg).toList())
                 .build();
+    }
+
+    // converting list of Users to list of UserDTos
+    public static List<RoomTypeDTO> roomTypeDTOList(List<RoomType> roomTypes) {
+        if (roomTypes == null) {
+            return null;
+        }
+        return roomTypes.stream()
+                .map(RoomTypeMapper::toRoomTypeDTO)
+                .collect(Collectors.toList());
     }
 }

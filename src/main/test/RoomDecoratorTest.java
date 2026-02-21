@@ -15,7 +15,7 @@ public class RoomDecoratorTest {
 
     @Test
     public void test_roomWithPoolDecorator(){
-        IRoom room =  new PoolDecorator(new BasicRoom());
+        IRoom room =  new PoolDecorator(new BasicRoom( 20000.00));
         assertEquals(35000.00, room.getCost(), 0.001);
 
         String expectedEndOfStatement = "immersion.";
@@ -26,7 +26,7 @@ public class RoomDecoratorTest {
     public void test_roomWithWifiAndBreakfastDecorator(){
         IRoom room =  new WifiDecorator(
                 new BreakfastDecorator(
-                        new BasicRoom()));
+                        new BasicRoom( 20000.00)));
         assertEquals(28000.00, room.getCost(), 0.001);
 
         List<String> expectedKeyWords = Arrays.asList("Wifi", "Breakfast");

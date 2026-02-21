@@ -9,6 +9,7 @@ import persistence.dao.RoomDAO;
 import persistence.dao.impl.RoomDAOImpl;
 
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -42,7 +43,6 @@ public class RoomServiceImpl implements RoomService {
         }
     }
 
-
     public int addAndReturnId(RoomDTO roomDTO) throws SQLException {
 
         Room roomEntity = RoomMapper.toRoom(roomDTO);
@@ -52,28 +52,6 @@ public class RoomServiceImpl implements RoomService {
         }
         return 0;
     }
-
-
-    @Override
-    public boolean isRoomEligible(RoomDTO roomDTO, int adults, int children) throws SQLException {
-        int totalGuests = adults + children;
-        int maxOccupancy = roomDTO.getRoomType().getMaxOccupancy();
-
-        // if total guests itself is higher than the max occupancy for a room, not eligible
-        if (totalGuests > maxOccupancy)
-        {return false;}
-
-        // then for children, they can only stay in rooms with a double or king bed
-        if (children > 0)
-        {
-            String bedding = roomDTO.getRoomType().getBedding().name();
-            if (!bedding.contains("Double") && !bedding.contains("King"))
-            { return false;}
-        }
-        // if all room eligibity if fulfiled, return true
-        return true;
-    }
-
     @Override
     public boolean update(RoomDTO roomDTO) throws SQLException {
        // checking for existing room
@@ -132,7 +110,6 @@ public class RoomServiceImpl implements RoomService {
         }
     }
 
-
     // this gets all rooms With filters
     // if no filters, it gets all rooms without filters
     @Override
@@ -170,21 +147,50 @@ public class RoomServiceImpl implements RoomService {
         }
     }
 
-//    @Override
-//    public IRoom getRoomWithPricing(int roomId) {
-//        try(Connection connection = DBConnection.getInstance().getConnection())
-//        {
-////            Room roomEntity = roomDAO.searchById(connection, roomId);
-////            IRoom room = new BasicRoom();
-//
-//            // this is room with a pool
-//
-//        }
-//        catch (SQLException ex)
-//        {
-//         //   throw new SQLException(ex.getMessage());
-//        }
-//        return null;
-//    }
+    @Override
+    public boolean isRoomEligible(RoomDTO roomDTO, int adults, int children) throws SQLException {
+        int totalGuests = adults + children;
+        int maxOccupancy = roomDTO.getRoomType().getMaxOccupancy();
+
+        // if total guests itself is higher than the max occupancy for a room, not eligible
+        if (totalGuests > maxOccupancy)
+        {return false;}
+
+        // then for children, they can only stay in rooms with a double or king bed
+        if (children > 0)
+        {
+            String bedding = roomDTO.getRoomType().getBedding().name();
+            if (!bedding.contains("Double") && !bedding.contains("King"))
+            { return false;}
+        }
+        // if all room eligibity if fulfiled, return true
+        return true;
+    }
+
+    @Override
+    public List<RoomDTO> findAvailableRooms(LocalDate checkInDate, LocalDate checkOutDate, int roomTypeId, List<Integer> amenityIds) throws SQLException {
+        LocalDate localDate = LocalDate.now();
+
+        // checking if dates are in the past
+        if (checkInDate.isBefore(localDate) || checkOutDate.isBefore(localDate))
+        {
+            LOG.log(Level.INFO, "The dates cannot be in the past");
+            return null;
+        }
+
+        if (checkInDate.isAfter(checkOutDate))
+        {
+            LOG.log(Level.INFO, "Checkin date cannot be after checkout date");
+            return null;
+        }
+        return RoomMapper.toRoomDTOList(roomDAO.findAvailableRooms(checkInDate, checkOutDate, roomTypeId, amenityIds));
+    }
+
+    @Override
+    public boolean isRoomAvailable(LocalDate checkInDate, LocalDate checkOutDate, int roomId) throws SQLException {
+        // first we query the database to check if there are any overlapping reservations on the same dates
+        return roomDAO.isRoomAvailable(checkInDate, checkOutDate, roomId);
+        //  return reservedRooms.isEmpty();   // if the list is empty, it means the room is avaialble ; so it is true
+    }
 
 }
