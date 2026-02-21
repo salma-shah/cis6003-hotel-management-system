@@ -151,9 +151,6 @@
 
     <%--        this is a section only manager can view--%>
        <c:if test="${sessionScope.userRole == 'Manager'}">
-        <a class="nav-link" href="<c:url value='/user/register' />">
-            <i class="bi bi-person-circle"></i>    Create New Account
-        </a>
         <a class="nav-link" href="<c:url value='/user/all' />">
             <i class="bi bi-gear"></i> Manage User Accounts
         </a>

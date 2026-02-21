@@ -114,6 +114,9 @@
 
             <div class="content-header">
                 <h2>Manage User Accounts</h2>
+                <a href="<c:url value='/user/register' />" class="btn enter-btn">
+                    + Create User Account
+                </a>
             </div>
 
             <div class="content-body">
