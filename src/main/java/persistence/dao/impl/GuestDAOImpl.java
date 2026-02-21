@@ -130,13 +130,9 @@ public class GuestDAOImpl implements GuestDAO {
 
             Map<Integer, Guest> guestsMap = new HashMap<>();
             StringBuilder query = new StringBuilder(
-                    "SELECT id, registration_number, first_name, last_name, address,dob, contact_number, email, passport_number, nic FROM guest WHERE 1=1"
-            );
-
-
-//                    ("SELECT g.*, r.reservation_number, r.status FROM guest g " +
-//                    "LEFT JOIN reservation r " +
-//                    "ON g.registration_number = r.registration_number");
+                    "SELECT g.*, r.reservation_number, r.status FROM guest g " +
+                    "LEFT JOIN reservation r " +
+                    "ON g.id = r.guest_id WHERE 1=1");
 
             // this part states the search params allowed
             List<Object> params = new ArrayList<>();
@@ -146,6 +142,7 @@ public class GuestDAOImpl implements GuestDAO {
             allowedParams.add("nic");
             allowedParams.add("passport_number");
             allowedParams.add("registration_number");
+            allowedParams.add("status");
 
             if (searchParams != null && !searchParams.isEmpty()) {
                 for (Map.Entry<String, String> entry : searchParams.entrySet()) {
@@ -153,7 +150,14 @@ public class GuestDAOImpl implements GuestDAO {
                     String value = entry.getValue();
 
                     // only using the allowed params
-                    if (allowedParams.contains(key)) {
+                    // status of res
+                    if ("status".equals(key))
+                    {
+                        query.append(" AND r.status = ?");
+                        params.add(value);
+                    }
+                    // otherwise we use LIKE
+                    else {
                         query.append(" AND ").append(key).append(" LIKE ? ");
                         params.add("%" + value + "%");
                     }
@@ -164,18 +168,11 @@ public class GuestDAOImpl implements GuestDAO {
                 ResultSet resultSet = QueryHelper.execute(connection, query.toString(), params.toArray());
                 while (resultSet.next()) {
                     int id = resultSet.getInt("id");
-//                    if (!guestsMap.containsKey(id)) {
-//                        Guest guest = mapResultSetToGuest(resultSet);
-//                    }
-//                    if (guestsMap.isEmpty()) {
-//                        guestsMap.put(id, null);
-//                    }
 
                     Guest guest = guestsMap.get(id);
 
                     if (guest == null) {
                         guest = mapResultSetToGuest(resultSet);
-                        // guest.setReservations(new ArrayList<>());  // prepare for future
                         guestsMap.put(id, guest);
                     }
                 }
