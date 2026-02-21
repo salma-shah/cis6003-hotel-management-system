@@ -191,7 +191,7 @@
                 <input type="date" name="checkInDate" id="checkInDate" required>
                 <span class="error-message" id="checkInError"></span>
             </div>
-
+            <br>
             <div class="form-group">
                 <label>Check-Out Date</label>
                 <input type="date" name="checkOutDate" id="checkOutDate" required>
