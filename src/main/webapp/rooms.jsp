@@ -183,9 +183,20 @@
         <label><input type="checkbox"  name="amenities" class="amenity-checked" value="9"> Minibar</label>
         <label><input type="checkbox"  name="amenities" class="amenity-checked" value="5"> Bed & Breakfast</label>
     </div>
+            <br>
 
 <%--    you also need a section to filter by dates--%>
+            <div class="form-group">
+                <label>Check-In Date</label>
+                <input type="date" name="checkInDate" id="checkInDate" required>
+                <span class="error-message" id="checkInError"></span>
+            </div>
 
+            <div class="form-group">
+                <label>Check-Out Date</label>
+                <input type="date" name="checkOutDate" id="checkOutDate" required>
+                <span class="error-message" id="checkOutError"></span>
+            </div>
     <br>
     <br>
 
@@ -241,6 +252,8 @@
         const guestsAdultInput = document.getElementById("guestsAdults");
         const guestsChildrenInput = document.getElementById("guestsChildren");
         const roomTypeInput = document.getElementById("typeFilter");
+        const checkInDate = document.getElementById("checkInDate");
+        const checkOutDate = document.getElementById("checkOutDate");
         const amenitiesCheckbox = document.querySelectorAll(".amenity-checked");
 
         // room grid variables
@@ -255,6 +268,7 @@
             const roomTypeFilter = roomTypeInput.value.trim();
             const guestsAdultsFilter = guestsAdultInput.value.trim();
             const guestsChildrenFilter = guestsChildrenInput.value.trim();
+
             const checkedAmenities = Array.from(amenitiesCheckbox)
                 .filter(cb => cb.checked).map(cb => cb.value);
             const allCards = roomGrid.querySelectorAll(".room-card");
@@ -275,6 +289,8 @@
             if (beddingFilter) params.append("beddingFilter", beddingFilter);
             if (guestsAdultsFilter !== "") params.append("guestsAdultsFilter", guestsAdultsFilter);
             if (guestsChildrenFilter !== "") params.append("guestsChildrenFilter", guestsChildrenFilter);
+            if (checkInDate.value) params.append("checkInDate", checkInDate.value);
+            if (checkOutDate.value) params.append("checkOutDate", checkOutDate.value);
 
             // passing only only the checked amentiies
             params.delete("amenitiesFilter");

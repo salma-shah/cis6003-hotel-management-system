@@ -135,6 +135,13 @@ public class RoomDAOImpl implements RoomDAO {
                         }
                     }
                 }
+
+                // adding filter by checkin/checkout dates
+                if (searchParams.containsKey("check_in") && searchParams.containsKey("check_out")) {
+                    roomSql.append(" AND NOT EXISTS ( SELECT 1 FROM reservation rv WHERE rv.room_id = r.room_id AND rv.status='Confirmed' AND (? < rv.checkout_date AND ? > checkin_date) ) ");
+                    params.add(searchParams.get("check_in"));
+                    params.add(searchParams.get("check_out"));
+                }
             }
 
             // this section is for retrieving rooms with their images

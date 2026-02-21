@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.logging.Level;
@@ -202,6 +203,9 @@ public class RoomServlet extends HttpServlet {
             String guestsChildsParam = request.getParameter("guestsChildrenFilter");
             String[] amenitiesParam = request.getParameterValues("amenitiesFilter");
             String roomTypeParam  = request.getParameter("roomTypeFilter");
+            String checkInDate = request.getParameter("checkInDate");
+            String checkOutDate = request.getParameter("checkOutDate");
+
 
             // if floor num parameter exists, we will add it to the search params
             if (floorParam != null && !floorParam.isEmpty()) {
@@ -229,6 +233,17 @@ public class RoomServlet extends HttpServlet {
                 String amenitiesCSV =  String.join(",", amenitiesParam);
                     searchParams.put("amenityId", amenitiesCSV);
                     LOG.log(Level.INFO, "Searching for amenities: " + amenitiesCSV);
+            }
+
+            // checkin checkout params
+            if(checkInDate != null) {
+                searchParams.put("check_in", String.valueOf(checkInDate));
+                LOG.log(Level.INFO, "Searching for check_in: " + checkInDate);
+            }
+
+            if(checkOutDate != null) {
+                searchParams.put("check_out", String.valueOf(checkOutDate));
+                LOG.log(Level.INFO, "Searching for check_out: " + checkOutDate);
             }
 
             List<RoomDTO> rooms = roomService.getAll(searchParams);
