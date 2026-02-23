@@ -41,7 +41,7 @@ public class BillServiceImpl implements BillService {
 
         double totalAmount = calculateTotalAmount(stayCost, tax, discount);
         // now we build the dto
-        BillDTO billDTO = new BillDTO(0, resId, guestId, tax, discount, totalAmount, stayCost);
+        BillDTO billDTO = new BillDTO(0, resId, guestId, stayCost,totalAmount, tax, discount);
 
         // generating bill if it exists
         Bill bill = BillMapper.toBill(billDTO);
@@ -90,7 +90,7 @@ public class BillServiceImpl implements BillService {
     public double calculateTotalAmount(double stayCost, double tax, double discount) throws SQLException {
         double totalAmount = 0;
         if  (stayCost > 0 && tax > 0 && discount > 0) {
-            totalAmount = (stayCost + tax) - ( stayCost * discount);
+            totalAmount = (stayCost + tax) - ( stayCost * (discount/100));
         }
         if  (stayCost > 0 && tax > 0 && discount <= 0) {
             totalAmount = stayCost + tax;
