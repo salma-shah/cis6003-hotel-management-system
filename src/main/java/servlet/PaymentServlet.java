@@ -1,11 +1,15 @@
 package servlet;
 
 import business.service.BillService;
+import business.service.GuestService;
 import business.service.PaymentService;
 import business.service.ReservationService;
 import business.service.impl.BillServiceImpl;
+import business.service.impl.GuestServiceImpl;
 import business.service.impl.PaymentServiceImpl;
 import business.service.impl.ReservationServiceImpl;
+import com.google.gson.Gson;
+import dto.ReservationDTO;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -14,6 +18,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -22,6 +28,7 @@ public class PaymentServlet extends HttpServlet {
     private static final Logger LOG = Logger.getLogger(PaymentServlet.class.getName());
     private PaymentService paymentService;
     private ReservationService reservationService;
+    private GuestService guestService;
     private BillService billService;
 
     @Override
@@ -30,6 +37,7 @@ public class PaymentServlet extends HttpServlet {
         this.paymentService = new PaymentServiceImpl();
         this.billService = new BillServiceImpl();
         this.reservationService = new ReservationServiceImpl();
+        this.guestService = new GuestServiceImpl();
     }
 
     @Override
@@ -42,7 +50,7 @@ public class PaymentServlet extends HttpServlet {
         if (path.equals("/")) {
             req.getRequestDispatcher("/make-payment.jsp").forward(req, resp);
         }
-        resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+        else if(path.equals("/form")) {req.getRequestDispatcher("/make-payment.jsp").forward(req, resp);}
     }
 
     @Override
@@ -68,7 +76,7 @@ public class PaymentServlet extends HttpServlet {
         try {
             // getting the params
             String resNum = req.getParameter("reservationNum");
-            String guestId = req.getParameter("guestId");
+            int guestId = Integer.parseInt(req.getParameter("guestId"));
             double stayCost = Double.parseDouble(req.getParameter("stayCost"));
             double discount = Double.parseDouble(req.getParameter("discount"));
             double tax = Double.parseDouble(req.getParameter("tax"));
@@ -76,7 +84,8 @@ public class PaymentServlet extends HttpServlet {
 
             // validations
 
-            int billId = billService.generateBill(resNum, guestId, stayCost,tax, discount, totalAmount);
+
+            int billId = billService.generateBill(resNum, guestId, stayCost,tax, discount);
             if (billId > 0) {
                 LOG.log(Level.INFO, "Bill generated successfully...");
 
@@ -92,9 +101,9 @@ public class PaymentServlet extends HttpServlet {
                     LOG.log(Level.INFO, "Payment failed...");
                 }
                 // generating the pdf for the bill
-                byte[] billPDF = billService.generateBillPDF(resNum, guestId, tax, discount, totalAmount, stayCost);
+                byte[] billPDF = billService.generateBillPDF(billId, resNum, guestId, stayCost, tax, discount, totalAmount);
                 resp.setContentType("application/pdf");
-                resp.setHeader("Content-Disposition", "attachment; filename=OV_Bill_ " + resNum + ".pdf");
+                resp.setHeader("Content-Disposition", "attachment; filename=OceanView_Bill_ " + billId + "_forRes" + resNum + ".pdf");
                 resp.getOutputStream().write(billPDF);
 
             } else {
@@ -108,4 +117,5 @@ public class PaymentServlet extends HttpServlet {
             throw new RuntimeException(e);
         }
     }
+
 }

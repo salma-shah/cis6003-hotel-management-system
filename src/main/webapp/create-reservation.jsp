@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ page isELIgnored="false" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -296,6 +297,11 @@
                     </div>
 
                     <div class="form-group">
+                        <label>Amenities Cost</label>
+                        <input type="text" name="amenitiesCost" id="amenitiesCost" required>
+                    </div>
+
+                    <div class="form-group">
                         <label>Guest Registration Number</label>
                         <input type="text" name="guestRegNumber" id="guestRegNumber" required>
                     </div>
@@ -361,7 +367,7 @@
         </div>
     </div>
 </div>
-</body>
+
 
 <script>
     document.getElementById("reservationForm").addEventListener("submit", function (e) {
@@ -398,12 +404,6 @@
             return;
         }
     });
-
-            // after successful validation and reservation is made, you can choose to make the payment now
-            <%--const confirmPayment = confirm("Reservation successful. Do you want to make the payment now?");--%>
-            <%--if (confirmPayment) {--%>
-            <%--    window.location.href = "<c:url value='/generate/payment'/>";--%>
-            <%--}--%>
 
     // generating the reservation number
     document.getElementById("generateResNum").addEventListener("click", function (e) {
@@ -559,4 +559,54 @@
         totalCostField.value = numOfNights * roomTypeId;
     }
 
+    document.querySelectorAll("input[name='amenities']").forEach(cb => {
+        cb.addEventListener("change", updateAmenitiesCost);
+    });
+
+    function updateAmenitiesCost() {
+        const selected = Array.from(
+            document.querySelectorAll("input[name='amenities']:checked")
+        ).map(cb => cb.value);
+
+        const params = new URLSearchParams();
+        selected.forEach(a => params.append("amenities", a));
+
+        params.append("roomId", document.getElementById("roomIdInput").value);
+        params.append("checkInDate", document.getElementById("checkInDate").value);
+        params.append("checkOutDate", document.getElementById("checkOutDate").value);
+
+        fetch('<c:url value="/reservation/calculate" />', {
+            method: "post",
+            body: params
+        })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById("amenitiesCost").value =
+                    data.amenitiesCost.toFixed(2);
+            });
+    }
+
 </script>
+
+<%--%--    // after successful validation and reservation is made, you can choose to make the payment now&ndash;%&gt;--%>
+<c:if test="${not empty param.success}">
+    <script>
+        const reservationNum = "${param.reservationNum}";
+        const totalCost = "${param.totalCost}";
+        const guestId = "${param.guestId}";
+
+        if (reservationNum) {
+            const confirmPayment = confirm(
+                "The reservation was made successfully!\nDo you want to make the payment now?"
+            );
+
+            if (confirmPayment) {
+                window.location.href =
+                    "${pageContext.request.contextPath}/payment/form?reservationNum=" + reservationNum + "&totalCost=" + totalCost + "&guestId=" + guestId;
+            }
+        }
+    </script>
+</c:if>
+
+</body>
+</html>

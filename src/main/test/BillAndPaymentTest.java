@@ -19,15 +19,14 @@ public class BillAndPaymentTest {
         BillService billService = new BillServiceImpl();
         double totalAmount = 20800.00;
         double tax = 0.1 * totalAmount;
-       // billService.generateBill(1, 26, 6, totalAmount, tax, 0.1);
+        billService.generateBill("RV12345O2J", 6, 6, tax, 0.1);
     }
 
     @Test
     public void test_generatingPaymentForBill() throws SQLException {
         PaymentService paymentService = new PaymentServiceImpl();
         LocalDateTime timeOfPayment = LocalDateTime.now();
-        PaymentDTO paymentDTO = new PaymentDTO(2, 26, 20800, timeOfPayment, "Cash");
-     //   paymentService.processPayment(paymentDTO);
+        paymentService.processPayment(2, 13800, "Cash");
     }
 
 }

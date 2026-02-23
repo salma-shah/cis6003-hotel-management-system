@@ -24,8 +24,6 @@ public class PaymentServiceImpl implements PaymentService {
     public boolean processPayment(int billId, double amount, String paymentMethod) throws SQLException {
         PaymentDTO paymentDTO = new PaymentDTO(0, billId, amount, LocalDateTime.now(), paymentMethod);
 
-        if (paymentDAO.searchById(paymentDTO.getId()) != null) return false;
-
         Payment payment = PaymentMapper.toPayment(paymentDTO);
         return paymentDAO.insertPayment(payment);
     }

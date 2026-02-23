@@ -1,6 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-
+<%@ page isELIgnored="false" %>
 <head>
     <title>Make Payment</title>
 
@@ -69,27 +69,27 @@
 
             <div class="mb-3">
                 <label class="form-label">Reservation Number</label>
-                <input type="text" id="reservationNum" name="reservationNum" class="form-control" onblur="getReservationBillDetails()" required>
+                <input type="text" id="reservationNum" name="reservationNum" class="form-control"  value="${param.reservationNum}"  onblur="getReservationBillDetails()" required>
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Guest ID</label>
-                <input type="text" name="guestId" id="guestId" class="form-control" required>
+                <input type="text" name="guestId" id="guestId"  value="${param.guestId}" class="form-control" required>
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Total Stay Cost</label>
-                <input type="number" step="0.01" id="stayCost" name="stayCost" class="form-control" required>
+                <input type="number" step="0.01" id="stayCost" name="stayCost" value="${param.totalCost}" class="form-control" required readonly>
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Discount</label>
-                <input type="number" step="5" name="discount" id="discount"  class="form-control" required>
+                <label class="form-label">Discount (%) </label>
+                <input type="number" step="1" name="discount" id="discount" min="0" max="100" class="form-control" required>
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Tax</label>
-                <input type="number" step="5" name="tax"  id="tax" class="form-control" required>
+                <input type="number" step="5" name="tax"  id="tax" class="form-control" required readonly>
             </div>
 
             <div class="mb-3">
@@ -147,48 +147,28 @@
 
 <script>
 
-<%--    function getReservationBillDetails() {--%>
-<%--        const resNum = document.getElementById("reservationNum").value.trim();--%>
-<%--        if (!resNum) return;--%>
+    // calculating the total amount dynamically
+    function calculateTotal() {
+        const stayCostValue = parseFloat(document.getElementById('stayCost').value);
+        const discountValue = document.getElementById('discount').value;
 
-<%--        const params = new URLSearchParams(window.location.search);--%>
-<%--        const resId = params.get("resNum");--%>
-<%--        if (reservationNum) {--%>
-<%--            document.getElementById("reservationNum").value = resNum;--%>
-<%--            getReservationBillDetails();--%>
-<%--        }--%>
-<%--        params.append("reservationNum", resNum);--%>
+        // tax is 10% of the stay cost
+        const taxCost = stayCostValue * 0.10;
+        document.getElementById('tax').value = taxCost.toFixed(2);
 
-<%--        fetch('<c:url value="/payment/details?num=" />' + params.toString(),--%>
-<%--            {--%>
-<%--                headers: {--%>
-<%--                    "X-Requested-With": "XMLHttpRequest"--%>
-<%--                }--%>
-<%--            })--%>
-<%--            .then(res => {--%>
-<%--                if (!res.ok) {--%>
-<%--                    throw new Error("HTTP error " + res.status);--%>
-<%--                }--%>
-<%--                return res.json();--%>
-<%--            })--%>
-<%--            .then(data =>--%>
-<%--            {--%>
-<%--                document.getElementById("stayCost").value = parseFloat(data.totalCost).toFixed(2);--%>
-<%--                document.getElementById("guestId").value = data.guestId;--%>
+        // discount applies to the total amount cost
+        let totalAmountPrice = stayCostValue + taxCost;
+        if (discountValue > 0) {
+            const discount = totalAmountPrice * (discountValue / 100);
+            totalAmountPrice = totalAmountPrice - discount;
+        }
 
-<%--                // re calculating the total cost based on new factors like tax and discount--%>
-<%--                const discount = parseFloat(document.getElementById("discount").value  || 0);--%>
-<%--                const tax = parseFloat(document.getElementById("tax").value || 0)--%>
-<%--                document.getElementById("amount").value = ((data.totalCost - discount) + tax).toFixed(2);--%>
-<%--            })--%>
-<%--            .catch(err => {--%>
-<%--                console.error(err);--%>
-<%--                alert("Something went wrong loading the reservation details.")--%>
-<%--            })--%>
-<%--    }--%>
+        document.getElementById('amount').value = totalAmountPrice.toFixed(2);
+    }
 
-<%--    document.getElementById("discount").addEventListener("input", getReservationBillDetails);--%>
-<%--    document.getElementById("tax").addEventListener("input", getReservationBillDetails);--%>
+    // refreshing dynamically every time new value is entered into discount
+    document.getElementById('discount').addEventListener('input', calculateTotal)
+
 
     const paymentSelect = document.getElementById("paymentMethod");
     const cardSection = document.getElementById("cardSection");
