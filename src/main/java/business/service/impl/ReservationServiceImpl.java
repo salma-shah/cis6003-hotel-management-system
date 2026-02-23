@@ -50,7 +50,7 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Override
     public ReservationDTO searchById(int id) throws SQLException {
-        return null;
+        return ReservationMapper.toReservationDTO(reservationDAO.searchById(id));
     }
 
     @Override
@@ -61,6 +61,16 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     public boolean existsByPrimaryKey(int primaryKey) throws SQLException {
         return false;
+    }
+
+    @Override
+    public Integer findResIdByReservationNumber(String resNum) throws SQLException {
+        try {
+            return reservationDAO.findReservationIdByReservationNumber(resNum);
+        } catch (SQLException ex) {
+            LOG.log(Level.SEVERE, "Error finding reservation in service layer");
+            throw new SQLException(ex.getMessage());
+        }
     }
 
     @Override
@@ -180,4 +190,11 @@ public class ReservationServiceImpl implements ReservationService {
         }
         return room.getCost() * numOfNights;
     }
+
+    @Override
+    public ReservationDTO getByReservationNumber(String resNum) throws SQLException {
+        return ReservationMapper.toReservationDTO(reservationDAO.findByReservationNumber(resNum));
+    }
+
+
 }

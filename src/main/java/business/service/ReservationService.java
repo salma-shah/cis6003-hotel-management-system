@@ -11,5 +11,7 @@ public interface ReservationService extends CRUDService<ReservationDTO> {
     boolean makeReservation(ReservationDTO entity, List<String> selectedAmenities) throws SQLException;
     boolean validateReservationDates(ReservationDTO entity) throws SQLException;
     void sendSuccessfulResEmail(ReservationDTO entity) throws SQLException;
+    Integer findResIdByReservationNumber(String resNum) throws SQLException;
     double calculateTotalCostForStay(double basePricePerNight, LocalDate startDate, LocalDate endDate, List<String> selectedAmenities) throws SQLException;
+    ReservationDTO getByReservationNumber(String resNum) throws SQLException;
 }

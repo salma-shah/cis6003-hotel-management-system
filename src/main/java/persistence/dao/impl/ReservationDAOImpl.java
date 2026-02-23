@@ -80,9 +80,10 @@ public class ReservationDAOImpl implements ReservationDAO {
     }
 
     @Override
-    public Reservation findByReservationNumber() throws SQLException {
+    public Reservation findByReservationNumber(String resNum) throws SQLException {
         try(Connection conn = DBConnection.getInstance().getConnection()) {
-            ResultSet resultSet = QueryHelper.execute(conn, "SELECT 1 FROM reservation WHERE reservation_number = ?", 1);
+            LOG.info("Running query with resNum: " + resNum);
+            ResultSet resultSet = QueryHelper.execute(conn, "SELECT * FROM reservation WHERE reservation_number = ?", resNum);
             if (!resultSet.next()) {
                 return null;
             }
@@ -98,6 +99,23 @@ public class ReservationDAOImpl implements ReservationDAO {
                 return false;
             }
             return resultSet.next();
+        }
+    }
+
+    public Integer findReservationIdByReservationNumber(String resNum) throws SQLException {
+        try (Connection conn = DBConnection.getInstance().getConnection()) {
+            ResultSet resultSet = QueryHelper.execute(conn, "SELECT id FROM reservation WHERE reservation_number = ?", resNum);
+            if (!resultSet.next())
+            {
+                return null;
+            }
+            return resultSet.getInt("id");
+
+        }
+        catch(SQLException ex)
+        {
+            LOG.log(Level.SEVERE, "There was an error finding the reservation by res number");
+            throw new SQLException(ex.getMessage());
         }
     }
 
