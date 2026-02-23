@@ -133,11 +133,12 @@
 
 <div class="sidebar p-3">
 
-    <h4 class="mb-4">Dashboard</h4>
+    <a class="nav-link" href="<c:url value='/user/dashboard'/>">
+        <h4 class="mb-4">Dashboard</h4></a>
 
     <nav class="nav flex-column sidebar-nav">
 
-        <a class="nav-link" href="<c:url value='/reservation'/>">
+        <a class="nav-link" href="<c:url value='/reservation/all'/>">
             <i class="bi bi-book"></i> Reservations
         </a>
 

@@ -90,6 +90,8 @@ public class UserServlet extends HttpServlet {
             case "/search":
                 searchUsers(request, response);
                 break;
+            case "/dashboard":
+                request.getRequestDispatcher("/dashboard.jsp").forward(request, response);
             default:
                 LOG.log(Level.SEVERE, "Unsupported path: " + path);
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
