@@ -4,6 +4,7 @@ import constant.Role;
 import mail.EmailBase;
 import mail.EmailUtility;
 import mail.factory.EmailFactory;
+import mail.factory.impl.PasswordChangeEmailFactory;
 import mail.factory.impl.WelcomeEmailFactory;
 import persistence.dao.UserDAO;
 import persistence.dao.impl.UserDAOImpl;
@@ -76,16 +77,17 @@ public class UserServiceImpl implements UserService {
                 emails.remove(email);
                 return false;
             }
-                // sending email
-                // sending the email
-                // using the creator method for welcoming user email
-                EmailFactory emailFactory = new WelcomeEmailFactory((userDTO.getFirstName() + " " + userDTO.getLastName()), userDTO.getEmail(), userDTO.getUsername(), userCredentialDTO.getPassword());
 
-                // then using the base interface
-                EmailBase emailBase = emailFactory.createEmail();
+            // sending email
+            // sending the email
+            // using the creator method for welcoming user email
+            EmailFactory emailFactory = new WelcomeEmailFactory((userDTO.getFirstName() + " " + userDTO.getLastName()), userDTO.getEmail(), userDTO.getUsername(), userCredentialDTO.getPassword());
 
-                // then finally the send mail utility
-                EmailUtility.sendMail(emailBase.getReceiver(), emailBase.getSubject(), emailBase.getBody());
+            // then using the base interface
+            EmailBase emailBase = emailFactory.createEmail();
+
+            // then finally the send mail utility
+            EmailUtility.sendMail(emailBase.getReceiver(), emailBase.getSubject(), emailBase.getBody());
                 return true;
         }
         catch (SQLException ex) {
@@ -189,6 +191,35 @@ public class UserServiceImpl implements UserService {
         {
             throw new SQLException(ex.getMessage());
         }
+    }
+
+    @Override
+    public boolean changePassword(String username, String password) throws Exception {
+        // we need to hash the password before we store it
+        String hashedPassword = PasswordManager.saltAndHashPassword(password);
+        userDAO.changePassword(username, hashedPassword);
+        UserDTO userDTO = UserMapper.toUserDTO(userDAO.findByUsername(username));
+        sendPasswordChangeEmail(userDTO);
+        return true;
+    }
+
+    @Override
+    public void sendWelcomeUserEmail(UserDTO userDTO) throws SQLException {
+
+    }
+
+    @Override
+    public void sendPasswordChangeEmail(UserDTO userDTO) throws SQLException {
+        // sending email
+        // sending the email
+        // using the creator method for welcoming user email
+        EmailFactory emailFactory = new PasswordChangeEmailFactory((userDTO.getFirstName() + " " + userDTO.getLastName()), userDTO.getEmail());
+
+        // then using the base interface
+        EmailBase emailBase = emailFactory.createEmail();
+
+        // then finally the send mail utility
+        EmailUtility.sendMail(emailBase.getReceiver(), emailBase.getSubject(), emailBase.getBody());
     }
 
     // method to validate that user is a manager logged in

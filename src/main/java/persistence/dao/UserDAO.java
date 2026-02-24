@@ -14,6 +14,6 @@ public interface UserDAO extends CRUDDAO<User> {
     User findByUsername(String username) throws SQLException;
     User findByEmail(String email) throws SQLException;
     List<User> searchUsers(String query) throws SQLException;
-
+    boolean changePassword(String username, String password) throws SQLException;
 
 }

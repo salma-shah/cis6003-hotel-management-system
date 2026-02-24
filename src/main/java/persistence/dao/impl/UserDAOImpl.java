@@ -212,6 +212,14 @@ public class UserDAOImpl implements UserDAO {
         }
     }
 
+    @Override
+    public boolean changePassword(String username, String password) throws SQLException {
+        try(Connection conn = DBConnection.getInstance().getConnection())
+        {
+            return QueryHelper.execute(conn, "UPDATE user SET password=? WHERE username=?", password, username);
+        }
+    }
+
     // this is the mapping to User, based on table's column names
     private User mapResultSetToUser(ResultSet resultSet) throws SQLException {
         return new User.UserBuilder()

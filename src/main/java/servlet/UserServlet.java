@@ -56,6 +56,14 @@ public class UserServlet extends HttpServlet {
             case "/update":
                 updateUser(request, response);
                 break;
+            case "/change-password":
+                try {
+                    changePassword(request,response);
+                    break;
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+
             default:
                 LOG.log(Level.SEVERE, "Unsupported path: " + path);
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -311,6 +319,21 @@ public class UserServlet extends HttpServlet {
         catch (Exception ex) {
             LOG.log(Level.SEVERE, "Error searching users: " + ex);
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private void changePassword(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        LOG.log(Level.INFO, "Changing password...");
+        String username = request.getParameter("username");
+        String password = request.getParameter("newPw");
+
+        // changing password method
+        boolean passwordChanged  = userService.changePassword(username,password);
+        if (passwordChanged) {
+            LOG.log(Level.INFO, "Password changed successfully");
+        }
+        else {
+            LOG.log(Level.INFO, "Password could not be changed.");
         }
     }
 }

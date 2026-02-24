@@ -37,6 +37,9 @@ public class WelcomeUserEmail implements EmailBase {
                 "Please log into your account and change your password to secure your account.\n\n" +
                 "We are happy to welcome you to our team. Please contact us if you have any questions." + "\n\n" +
                 "Regards," + "\n" +
-                "Ocean View Hotel Team.";
+                "Ocean View Resort Team\n" +
+                "Galle\n" +
+                "Email: ocean.view.hotel.cis6003@gmail.com\n" +
+                "Phone: +94 11 22 33 567";
     }
 }

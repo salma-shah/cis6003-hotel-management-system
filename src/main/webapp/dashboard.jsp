@@ -46,7 +46,7 @@
             margin-top: 20px;
             border-radius: 20px;
             padding: 6px 25px;
-            font-size: 14px;
+            font-size: 17px;
             color: white;
         }
 
@@ -96,6 +96,38 @@
             margin-bottom: 10px;
             color: #4682A9;
         }
+
+        .custom-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .custom-modal-content {
+            background-color: #fff;
+            margin: 5% auto;
+            padding: 20px;
+            width: 425px;
+            border-radius: 5px;
+            position: relative;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .custom-modal .close {
+            position: absolute;
+            top: 5px; right: 10px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .btn-changepw
+        {
+            background-color: #7f94af !important;
+        }
     </style>
 </head>
 <body>
@@ -113,9 +145,9 @@
                     <h2>Welcome Guest.</h2>
                 </c:otherwise>
             </c:choose>
-            <a href="<c:url value='/user/change-password' />" class="btn btn-primary">
+            <button class="btn btn-primary" onclick="openChangePwModal()">
                 Change Password
-            </a>
+            </button>
         </div>
 
         <!-- count of reservations -->
@@ -163,11 +195,11 @@
                 </div>
                 <div class="quick-link-card">
                     <i class="bi bi-people"></i>
-                    <p><a href="<c:url value='/guest/all' />">View Guests</a></p>
+                    <p><a href="<c:url value='/guest/register' />">Register Guest</a></p>
                 </div>
                 <div class="quick-link-card">
                     <i class="bi bi-credit-card-2-front"></i>
-                    <p><a href="<c:url value='/payment/all' />">Payments</a></p>
+                    <p><a href="<c:url value='/payment' />">Make Payment</a></p>
                 </div>
                 <div class="quick-link-card">
                     <i class="bi bi-house-door"></i>
@@ -192,6 +224,39 @@
         </div>
 
     </main>
+
+
+    <div id="changePwModal" class="custom-modal">
+        <div class="custom-modal-content">
+            <span class="close" onclick="closeModal('changePwModal')">&times;</span>
+            <form method="post" action="<c:url value='/user/change-password' />">
+                <label>Username</label>
+                <input class="form-control" name="username" id="username">
+                <label>New Password</label>
+                <input class="form-control" name="newPw" id="newPw">
+                <br>
+                    <button type="submit" class="btn-changepw">Change Password</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openChangePwModal() {
+            document.getElementById('changePwModal').style.display = 'block';
+        }
+
+        // closes modal if user clicks outside it
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            ["changePwModal"].forEach(id => {
+                let modal = document.getElementById(id);
+                if(event.target === modal) modal.style.display = "none";
+            });
+        }
+    </script>
 </div>
 </body>
 </html>
