@@ -93,6 +93,13 @@ public class ReservationServlet extends HttpServlet {
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
+            case "/status":
+                try {
+                    updateStatus(request, response);
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+                break;
         }
     }
 
@@ -269,5 +276,28 @@ public class ReservationServlet extends HttpServlet {
         response.getWriter().write(json);
         LOG.log(Level.INFO, "Full details found: " + json);
     }
+
+    // updating a reservation's status
+    private void updateStatus(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException {
+        LOG.log(Level.INFO, "Updating status of reservations...");
+
+        int id = Integer.parseInt(request.getParameter("id"));
+        LOG.log(Level.INFO, "ID: " + id);
+
+        ReservationStatus status = ReservationStatus.valueOf(request.getParameter("status"));
+        LOG.log(Level.INFO, "Status: " + status);
+
+        // updating the status
+        boolean updatedStatus = reservationService.updateReservationStatus(id, status);
+
+        LOG.log(Level.INFO, "Updated status of reservation: " + id);
+
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        String json = "{\"success\": " + updatedStatus + "}";
+        response.getWriter().write(json);
+
+    }
+
 }
 

@@ -5,8 +5,6 @@ import business.service.decorators.*;
 import constant.ReservationStatus;
 import dto.*;
 import entity.Reservation;
-import exception.OceanViewResortException;
-import exception.OceanViewResortExceptionTypes;
 import mail.EmailBase;
 import mail.EmailUtility;
 import mail.factory.EmailFactory;
@@ -237,5 +235,10 @@ public class ReservationServiceImpl implements ReservationService {
             LOG.log(Level.SEVERE, "Error finding reservation in service layer", ex);
             throw new SQLException(ex.getMessage());
         }
+    }
+
+    @Override
+    public boolean updateReservationStatus(int id, ReservationStatus status) throws SQLException {
+            return reservationDAO.updateReservationStatus(id, status);
     }
 }

@@ -4,10 +4,12 @@ public class ReservationAggregrateDTO {
     private final ReservationDTO reservationDTO;
     private final BillDTO billDTO;
     private final PaymentDTO paymentDTO;
+    private final GuestDTO guestDTO;
 
-    public ReservationAggregrateDTO(ReservationDTO reservationDTO, BillDTO billDTO, PaymentDTO paymentDTO) {
+    public ReservationAggregrateDTO(ReservationDTO reservationDTO, BillDTO billDTO, PaymentDTO paymentDTO, GuestDTO guestDTO) {
         this.reservationDTO = reservationDTO;
         this.billDTO = billDTO;
+        this.guestDTO = guestDTO;
         this.paymentDTO = paymentDTO;
     }
 
@@ -17,6 +19,10 @@ public class ReservationAggregrateDTO {
 
     public BillDTO getBillDTO() {
         return billDTO;
+    }
+
+    public GuestDTO getGuestDTO() {
+        return guestDTO;
     }
 
     public PaymentDTO getPaymentDTO() {

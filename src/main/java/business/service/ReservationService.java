@@ -1,6 +1,7 @@
 package business.service;
 
 import business.service.helper.CRUDService;
+import constant.ReservationStatus;
 import dto.ReservationAggregrateDTO;
 import dto.ReservationDTO;
 
@@ -16,4 +17,5 @@ public interface ReservationService extends CRUDService<ReservationDTO> {
     double calculateTotalCostForStay(double basePricePerNight, LocalDate startDate, LocalDate endDate, List<String> selectedAmenities) throws SQLException;
     ReservationDTO getByReservationNumber(String resNum) throws SQLException;
     ReservationAggregrateDTO getFullReservation(int id) throws SQLException;
+    boolean updateReservationStatus(int id, ReservationStatus status) throws SQLException;
 }

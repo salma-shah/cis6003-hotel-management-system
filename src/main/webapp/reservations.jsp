@@ -216,20 +216,25 @@
                                     <c:otherwise>${reservation.status}</c:otherwise>
                                 </c:choose>
                             </td>
-                            <td>
-                                <button class ="btn btn-sm btn-primary" onclick="openReservationModal('${reservation.id}')">
+                            <td class="d-flex flex-wrap gap-1">
+                                <button class ="btn btn-sm btn-primary flex-fill" onclick="openReservationModal('${reservation.id}')">
                                     View
                                 </button>
-                                <button class ="btn btn-sm btn-success" onclick="checkInReservation('${reservation.id}')">
+                                <c:choose>
+                                <c:when test="${reservation.status == 'Confirmed'}">
+                                <button id="checkInBtn" value="checkin" class ="btn btn-sm btn-success flex-fill" onclick="changeResStatus('${reservation.id}', 'CheckedIn')">
                                     Check-In
                                 </button>
-                                <button class ="btn btn-sm btn-warning" onclick="checkOutReservation('${reservation.id}')">
-                                    Check-Out
-                                </button>
-                                <button class ="btn btn-sm btn-danger" onclick="cancelReservation('${reservation.id}')">
+                                <button id="cancelBtn" value="cancel" class ="btn btn-sm btn-danger flex-fill" onclick="changeResStatus('${reservation.id}', 'Cancelled')">
                                     Cancel
                                 </button>
-
+                                </c:when>
+                                <c:when test="${reservation.status == 'CheckedIn'}">
+                                <button id="checkOutBtn" value="checkout" class ="btn btn-sm btn-warning flex-fill" onclick="changeResStatus('${reservation.id}', 'CheckedOut')">
+                                    Check-Out
+                                </button>
+                                </c:when>
+                                </c:choose>
                             </td>
                         </tr>
                     </c:forEach>
@@ -286,6 +291,38 @@
                     <div class="form-group">
                         <label>Date of Reservation</label>
                         <input type="text" id="dateOfRes" readonly class="form-control">
+                    </div>
+                </div>
+
+                <div class="modal-column">
+                    <h5>Guest</h5>
+                    <div class="form-group">
+                        <label>Registration Number</label>
+                        <input type="text" id="guestReg" readonly class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" id="name" readonly class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="text" id="email" readonly class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Contact</label>
+                        <input type="text" id="contactNumber" readonly class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>NIC</label>
+                        <input type="text" id="nic" readonly class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Passport Number</label>
+                        <input type="text" id="passportNum" readonly class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Address</label>
+                        <input type="text" id="address" readonly class="form-control">
                     </div>
                 </div>
 
@@ -387,44 +424,37 @@
                         console.log(reservation);
                         const tr = document.createElement("tr");
 
-                        // tr.innerHTML =
-                        //     "<td>" + reservation.reservationNumber + "</td>" +
-                        //     "<td>" + reservation.checkInDate + "</td>" +
-                        //     "<td>" + reservation.checkOutDate + "</td>" +
-                        //     "<td class='" + statusClass + "'>" + reservation.status + "</td>" +
-                        //     "<td>" +
-                        //
-                        //     "<a href='#' onclick=\"openViewAndEditModal('" + reservation.id + "')\">View</a> | " +
-                        //     "<a href='#' onclick=\"openDeleteModal('" + reservation.id + "')\">Delete</a>" +
-                        //     "</td>";
-
                         const statusClass =
-                            reservation.status === "CheckedIn"
-                                ? "status-checkedin"
-                                : "status-checkedout";
+                            reservation.status === "CheckedIn" ? "<span class='status-checkedin'>Checked In</span>" :
+                                reservation.status === "CheckedOut"  ? "<span class='status-checkedout'>Checked Out</span>" :
+                                    reservation.status;
+
+                        let btns = "<button class='btn btn-sm btn-primary flex-fill' " +
+                            "onclick=\"openReservationModal('" + reservation.id + "')\">" +
+                            "View</button>";
+
+                        // add btns based on the res status
+                        if (reservation.status === "CheckedIn") {
+                            btns += "<button class='btn btn-sm btn-warning flex-fill' " +
+                                "onclick=\"changeResStatus('" + reservation.id + "', 'CheckedOut')\">" +
+                                "Check Out</button>";
+                        }
+                        else if (reservation.status === "Confirmed") {
+                            btns += "<button class='btn btn-sm btn-success flex-fill' " +
+                                "onclick=\"changeResStatus('" + reservation.id + "','CheckedIn')\">" +
+                                "Check In</button>" +
+
+                                "<button class='btn btn-sm btn-danger flex-fill' " +
+                                "onclick=\"changeResStatus('" + reservation.id + "', 'Cancelled')\">" +
+                                "Cancel</button>";
+                        }
 
                         tr.innerHTML =
                             "<td>" + reservation.reservationNumber + "</td>" +
                             "<td>" + reservation.checkInDate + "</td>" +
                             "<td>" + reservation.checkOutDate + "</td>" +
-                            "<td class='" + statusClass + "'>" + reservation.status + "</td>" +
-                            "<td>" +
-                            "<button class='btn btn-sm btn-primary me-1' " +
-                            "onclick=\"openReservationModal('" + reservation.id + "')\">" +
-                            "View</button>" +
-
-                            "<button class='btn btn-sm btn-success me-1' " +
-                            "onclick=\"checkInReservation('" + reservation.id + "')\">" +
-                            "Check In</button>" +
-
-                            "<button class='btn btn-sm btn-warning me-1' " +
-                            "onclick=\"checkOutReservation('" + reservation.id + "')\">" +
-                            "Check Out</button>" +
-
-                            "<button class='btn btn-sm btn-danger' " +
-                            "onclick=\"cancelReservation('" + reservation.id + "')\">" +
-                            "Cancel</button>" +
-                            "</td>";
+                            "<td>" + statusClass + "</td>" +
+                            "<td class='d-flex flex-wrap gap-1'>" + btns + "</td>";
 
                         tableBody.appendChild(tr);
                         console.log(tableBody.children.length);
@@ -485,6 +515,29 @@
                 document.getElementById("dateOfRes").value =
                     data.reservationDTO.dateOfReservation;
 
+                document.getElementById("guestReg").value =
+                    data.guestDTO.registrationNumber;
+
+                document.getElementById("name").value =
+                    data.guestDTO.firstName + " " + data.guestDTO.lastName;
+
+                document.getElementById("email").value =
+                    data.guestDTO.email;
+
+                document.getElementById("contactNumber").value =
+                    data.guestDTO.contactNumber;
+
+                document.getElementById("passportNum").value =
+                    data.guestDTO.passportNumber ?? 'N/A';
+
+                document.getElementById("nic").value =
+                    data.guestDTO.nic ?? 'N/A';
+
+                document.getElementById("address").value =
+                    data.guestDTO.address;
+
+
+
                 // this bill area is only if a bill for it is made
                 if (data.billDTO) {
                     document.getElementById("billId").value = data.billDTO.id;
@@ -542,6 +595,32 @@
 
         window.location.href = "${pageContext.request.contextPath}/payment/form?reservationNum=" + reservationNum + "&totalCost=" + totalCost + "&guestId=" + guestId;
 
+    }
+
+    // updating reservation status buttons
+    function changeResStatus(id, status)
+    {
+        const params = new URLSearchParams();
+        params.append("id", id);
+        params.append("status", status);
+
+        fetch('<c:url value="/reservation/status" />',
+            {
+                method: 'post',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: params.toString()
+            }
+        ).then(response => response.json())
+            .then(data => {
+                console.log(data);
+                if (data.success)
+                {
+                    location.reload();
+                }
+            })
+            .catch(err => console.error(err));
     }
 
 </script>

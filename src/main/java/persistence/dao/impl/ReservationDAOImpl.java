@@ -38,12 +38,12 @@ public class ReservationDAOImpl implements ReservationDAO {
     }
 
     @Override
-    public boolean update(Reservation entity) throws SQLException {
+    public boolean update(Reservation entity) {
         try (Connection conn = DBConnection.getInstance().getConnection()) {
             return QueryHelper.execute(conn, "UPDATE reservation SET checkout_date, total_cost WHERE reservation_id = ?", entity.getId());
         } catch (SQLException ex) {
             LOG.log(Level.INFO, "Something went wrong updating the reservation in the DAO layer");
-            throw new SQLException(ex.getMessage());
+            return false;
         }
     }
 
@@ -169,10 +169,12 @@ public class ReservationDAOImpl implements ReservationDAO {
         String sql = "SELECT r.id AS r_id, r.guest_id AS r_guest_id, r.room_id, r.reservation_number, r.checkin_date, r.checkout_date, r.total_cost," +
                 "r.num_adults, r.num_children, r.status AS res_status, r.date_of_res, " +
                 "b.id AS b_id, b.reservation_id, b.guest_id AS b_guest_id, b.stay_cost, b.total_amount, b.tax, b.discount, b.status AS bill_status, " +
-                "p.payment_id, p.bill_id, p.payment_method, p.payment_date, p.amount " +
+                "p.payment_id, p.bill_id, p.payment_method, p.payment_date, p.amount, " +
+                "g.registration_number, g.id AS g_guest_id, g.first_name, g.last_name, g.address, g.email, g.nic, g.passport_number, g.contact_number " +
                 "FROM reservation r " +
                 " LEFT JOIN bill b ON r.id = b.reservation_id " +
                 " LEFT JOIN payment p ON b.id = p.bill_id " +
+                " LEFT JOIN guest g ON r.guest_id = g.id " +
                 " WHERE r.id = ?";
         try(Connection conn = DBConnection.getInstance().getConnection()) {
             ResultSet resultSet = QueryHelper.execute(conn, sql, id);
@@ -208,7 +210,34 @@ public class ReservationDAOImpl implements ReservationDAO {
                         resultSet.getTimestamp("payment_date").toLocalDateTime(),
                         resultSet.getString("payment_method"));
             }
-            return new ReservationAggregrateDTO(reservationDTO, billDTO, paymentDTO);
+
+            // guest dto building
+            GuestDTO guestDTO = null;
+            if (resultSet.getObject("g_guest_id") != null) {
+                guestDTO = new GuestDTO.GuestDTOBuilder()
+                        .id(resultSet.getInt("g_guest_id"))
+                        .firstName(resultSet.getString("first_name"))
+                        .lastName(resultSet.getString("last_name"))
+                        .address(resultSet.getString("address"))
+                        .contactNumber(resultSet.getString("contact_number"))
+                        .nic(resultSet.getString("nic"))
+                        .passportNumber(resultSet.getString("passport_number"))
+                        .registrationNumber(resultSet.getString("registration_number"))
+                        .email(resultSet.getString("email")).build();
+            }
+            return new ReservationAggregrateDTO(reservationDTO, billDTO, paymentDTO, guestDTO);
+        }
+    }
+
+    @Override
+    public boolean updateReservationStatus(int id, ReservationStatus status) throws SQLException {
+        try(Connection conn = DBConnection.getInstance().getConnection()) {
+            return QueryHelper.execute(conn, "UPDATE reservation SET status = ? WHERE id = ?", status.toString(), id);
+        }
+        catch (SQLException ex)
+        {
+            LOG.log(Level.SEVERE, "There was an error updating the reservation status" + ex.getMessage());
+            throw new SQLException(ex.getMessage());
         }
     }
 
