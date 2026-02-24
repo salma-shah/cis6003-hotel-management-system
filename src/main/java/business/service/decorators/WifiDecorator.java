@@ -15,6 +15,6 @@ public class WifiDecorator extends RoomDecorator{
 
     @Override
     public double getCost() {
-        return decoratedRoom.getCost() + 2500.00;
+        return decoratedRoom.getCost() + 250.00;
     }
 }

@@ -2,7 +2,7 @@ package business.service.impl;
 
 import business.service.IRoom;
 
-// this is the concrete component of implemeintg decorator apttern
+// this is the concrete component of implementing decorator pattern
 public class BasicRoom implements IRoom {
 //    private final String roomTypeName;
     private final double pricePerNight;

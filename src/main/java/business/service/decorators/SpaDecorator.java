@@ -10,7 +10,8 @@ public class SpaDecorator extends RoomDecorator {
 
     @Override
     public String getDescription() {
-        return decoratedRoom.getDescription() + "A relaxing spa experience.";
+        return decoratedRoom.getDescription() +
+                "A relaxing spa experience brought to your room.";
     }
 
     @Override
