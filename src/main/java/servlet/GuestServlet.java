@@ -32,13 +32,6 @@ public class GuestServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-        // logs for debugging
-//        System.err.println("DO POST IS BEING HIT");
-//        LOG.log(Level.INFO, "Handling POST request for registration purposes.");
-//        LOG.info("ServletPath = " + request.getServletPath());
-//        LOG.info("PathInfo = " + request.getPathInfo());
-//        LOG.log(Level.INFO, "Context path = " + request.getContextPath());
-
         String path = request.getPathInfo();
 
         if (path == null) {

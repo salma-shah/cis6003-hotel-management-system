@@ -12,7 +12,7 @@ public class BillDTO implements SuperDTO {
     private PaymentStatus status;
     private LocalDateTime createdAt;
 
-    public BillDTO(int id, int resId, int guestId, double stayCost,double totalAmount, double tax, double discount) {
+    public BillDTO(int id, int resId, int guestId, double stayCost, double tax, double discount, double totalAmount) {
         this.id = id;
         this.resId = resId;
         this.guestId = guestId;
@@ -20,6 +20,17 @@ public class BillDTO implements SuperDTO {
         this.totalAmount = totalAmount;
         this.tax = tax;
         this.discount = discount;
+    }
+
+    public BillDTO(int id, int resId, int guestId,  double stayCost, double tax, double discount,  double totalAmount, PaymentStatus status) {
+        this.id = id;
+        this.resId = resId;
+        this.guestId = guestId;
+        this.totalAmount = totalAmount;
+        this.tax = tax;
+        this.stayCost = stayCost;
+        this.discount = discount;
+        this.status = status;
     }
 
     public BillDTO(int id, int resId, int guestId, double totalAmount, double tax, double stayCost, double discount, PaymentStatus status, LocalDateTime createdAt) {

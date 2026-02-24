@@ -3,10 +3,10 @@ package business.service.impl;
 import business.service.*;
 import business.service.decorators.*;
 import constant.ReservationStatus;
-import dto.GuestDTO;
-import dto.ReservationDTO;
-import dto.RoomTypeDTO;
+import dto.*;
 import entity.Reservation;
+import exception.OceanViewResortException;
+import exception.OceanViewResortExceptionTypes;
 import mail.EmailBase;
 import mail.EmailUtility;
 import mail.factory.EmailFactory;
@@ -19,6 +19,7 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -39,13 +40,24 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
-    public boolean update(ReservationDTO entity) throws SQLException {
-        return false;
+    public boolean update(ReservationDTO entity) throws OceanViewResortException {
+       try
+       {
+           return reservationDAO.update(ReservationMapper.toReservation(entity));
+       }
+       catch (SQLException ex)
+       {
+           LOG.log(Level.SEVERE, ex.getMessage(), ex);
+           throw new OceanViewResortException(OceanViewResortExceptionTypes.ERROR_RESERVATION_UPDATE);
+       }
     }
 
     @Override
-    public boolean delete(int id) throws SQLException {
-        return false;
+    public boolean delete(int id) throws OceanViewResortException, SQLException {
+        if (!reservationDAO.existsByPrimaryKey(id)) {
+            throw new OceanViewResortException(OceanViewResortExceptionTypes.RESERVATION_NOT_FOUND);
+        }
+       return reservationDAO.delete(id);
     }
 
     @Override
@@ -55,12 +67,26 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Override
     public List<ReservationDTO> getAll(Map<String, String> searchParams) throws SQLException {
-        return List.of();
+        try {
+            Map<String, String> filters = (searchParams!= null) ? new HashMap<>(searchParams) : new HashMap<>();
+            return ReservationMapper.toDTOList(reservationDAO.getAll(filters));
+        }
+        catch (SQLException e)
+        {
+            throw new SQLException(e.getMessage());
+        }
     }
 
     @Override
     public boolean existsByPrimaryKey(int primaryKey) throws SQLException {
-        return false;
+        try
+        {
+            return reservationDAO.existsByPrimaryKey(primaryKey);
+        }
+        catch (Exception ex)
+        {
+            throw new SQLException(ex.getMessage());
+        }
     }
 
     @Override
@@ -85,6 +111,12 @@ public class ReservationServiceImpl implements ReservationService {
 
              // checking if dates are valid
             if (!validateReservationDates(reservationDTO)) return false;
+
+            // checking if room is eligible
+//            int roomId = reservationDTO.getRoomId();
+//            RoomDTO roomDTO = roomService.searchById(roomId);
+//            if (!roomService.isRoomEligible(roomDTO, reservationDTO.getNumOfAdults(), reservationDTO.getNumOfChildren())) {return false;}
+
             // checking if room is available
             boolean isAvailable = roomService.isRoomAvailable(reservationDTO.getCheckInDate(), reservationDTO.getCheckOutDate(), reservationDTO.getRoomId());
 
@@ -196,5 +228,14 @@ public class ReservationServiceImpl implements ReservationService {
         return ReservationMapper.toReservationDTO(reservationDAO.findByReservationNumber(resNum));
     }
 
-
+    @Override
+    public ReservationAggregrateDTO getFullReservation(int id) throws SQLException {
+        try {
+            return reservationDAO.findFullReservation(id);
+        }
+        catch(SQLException ex) {
+            LOG.log(Level.SEVERE, "Error finding reservation in service layer", ex);
+            throw new SQLException(ex.getMessage());
+        }
+    }
 }

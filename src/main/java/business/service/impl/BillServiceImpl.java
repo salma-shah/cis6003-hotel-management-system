@@ -16,7 +16,6 @@ import persistence.dao.BillDAO;
 import persistence.dao.impl.BillDAOImpl;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -41,7 +40,7 @@ public class BillServiceImpl implements BillService {
 
         double totalAmount = calculateTotalAmount(stayCost, tax, discount);
         // now we build the dto
-        BillDTO billDTO = new BillDTO(0, resId, guestId, stayCost,totalAmount, tax, discount);
+        BillDTO billDTO = new BillDTO(0, resId, guestId, stayCost, tax, discount, totalAmount);
 
         // generating bill if it exists
         Bill bill = BillMapper.toBill(billDTO);
@@ -88,14 +87,12 @@ public class BillServiceImpl implements BillService {
 
     @Override
     public double calculateTotalAmount(double stayCost, double tax, double discount) throws SQLException {
-        double totalAmount = 0;
-        if  (stayCost > 0 && tax > 0 && discount > 0) {
-            totalAmount = (stayCost + tax) - ( stayCost * (discount/100));
-        }
-        if  (stayCost > 0 && tax > 0 && discount <= 0) {
-            totalAmount = stayCost + tax;
-        }
+        double discountAmount = stayCost * (discount/100);
+        return (stayCost+tax) - discountAmount;
+    }
 
-        return totalAmount;
+    @Override
+    public BillDTO searchById(int id) throws SQLException {
+        return BillMapper.toBillDTO(billDAO.searchById(id));
     }
 }

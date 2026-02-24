@@ -129,8 +129,8 @@
                 <input type="text" id="regSearchInput" placeholder="Search by registration number...">
                 <select id="statusFilter">
                     <option value="">All Status</option>
-                    <option value="Checked-In">Checked-In</option>
-                    <option value="Checked-Out">Checked-Out</option>
+                    <option value="CheckedIn">Checked-In</option>
+                    <option value="CheckedOut">Checked-Out</option>
                 </select>
                 <input type="text" id="nicOrPPSearchInput" placeholder="Search by NIC or Passport number...">
             </div>
@@ -146,7 +146,6 @@
                         <th>Name</th>
                         <th>Email</th>
                         <th>Contact</th>
-<%--                        <th>Status</th>--%>
                         <th>Actions</th>
                     </tr>
                     </thead>
@@ -341,7 +340,7 @@
                 document.getElementById('dob').value = guest.dob ?? 'No Date of Birth Provided';
                 document.getElementById('editNationality').value = guest.nationality ?? 'No Nationality provided';
                 console.log("Guest ID passed :", guest.id);
-                // Show the modal
+                // show the modal
                 document.getElementById('viewAndEditModal').style.display = 'block';
             })
             .catch(err => {
@@ -357,7 +356,9 @@
     }
 
     // history modal
-    function openHistoryModal(guestId){}
+    function openHistoryModal(guestId){
+
+    }
 
     // closing all modals
     function closeModal(modalId) {

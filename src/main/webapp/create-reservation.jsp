@@ -588,7 +588,7 @@
 
 </script>
 
-<%--%--    // after successful validation and reservation is made, you can choose to make the payment now&ndash;%&gt;--%>
+<%--%--    // after successful validation and reservation is made, you can choose to make the payment now ;--%>
 <c:if test="${not empty param.success}">
     <script>
         const reservationNum = "${param.reservationNum}";

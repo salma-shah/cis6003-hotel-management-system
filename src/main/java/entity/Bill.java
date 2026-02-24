@@ -12,7 +12,7 @@ public class Bill implements SuperEntity {
     private PaymentStatus status;
     private LocalDateTime createdAt;
 
-    public Bill(int id, int resId, int guestId, double stayCost, double tax, double discount,double totalAmount) {
+    public Bill(int id, int resId, int guestId, double stayCost, double tax, double discount, double totalAmount) {
         this.id = id;
         this.resId = resId;
         this.guestId = guestId;

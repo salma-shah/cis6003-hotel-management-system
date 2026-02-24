@@ -8,8 +8,6 @@ import business.service.impl.BillServiceImpl;
 import business.service.impl.GuestServiceImpl;
 import business.service.impl.PaymentServiceImpl;
 import business.service.impl.ReservationServiceImpl;
-import com.google.gson.Gson;
-import dto.ReservationDTO;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -18,8 +16,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -86,6 +82,8 @@ public class PaymentServlet extends HttpServlet {
 
 
             int billId = billService.generateBill(resNum, guestId, stayCost,tax, discount);
+//            BillDTO billDTO = billService.searchById(billId);
+//            totalAmount = billDTO.getTotalAmount();
             if (billId > 0) {
                 LOG.log(Level.INFO, "Bill generated successfully...");
 

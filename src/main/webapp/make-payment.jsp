@@ -150,18 +150,17 @@
     // calculating the total amount dynamically
     function calculateTotal() {
         const stayCostValue = parseFloat(document.getElementById('stayCost').value);
-        const discountValue = document.getElementById('discount').value;
+        const discountValue = parseFloat(document.getElementById('discount').value);
 
         // tax is 10% of the stay cost
         const taxCost = stayCostValue * 0.10;
         document.getElementById('tax').value = taxCost.toFixed(2);
 
-        // discount applies to the total amount cost
-        let totalAmountPrice = stayCostValue + taxCost;
-        if (discountValue > 0) {
-            const discount = totalAmountPrice * (discountValue / 100);
-            totalAmountPrice = totalAmountPrice - discount;
-        }
+        // discount applies to the total stay cost
+
+            const discount = stayCostValue * (discountValue / 100);
+            const totalAmountPrice = (stayCostValue + taxCost) - discount;
+
 
         document.getElementById('amount').value = totalAmountPrice.toFixed(2);
     }

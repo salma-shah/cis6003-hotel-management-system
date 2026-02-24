@@ -80,27 +80,59 @@
         .custom-modal {
             display: none;
             position: fixed;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
             z-index: 1000;
-            left: 0; top: 0;
-            width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.5);
+            overflow-y: auto;
         }
 
         .custom-modal-content {
-            background-color: #fff;
+            background: #fff;
             margin: 5% auto;
-            padding: 20px;
-            width: 425px;
-            border-radius: 5px;
+            padding: 30px;
+            width: 90%;
+            border-radius: 12px;
             position: relative;
-            max-height: 80vh;
-            overflow-y: auto;
+            display: flex;               /* make columns */
+            flex-wrap: wrap;             /* responsive on smaller screens */
+            gap: 20px;                   /* spacing between columns */
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        }
+
+        /* individual columns */
+        .modal-column {
+            flex: 1 1 30%;
+            min-width: 250px;
+        }
+
+        .modal-column h5 {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .modal-column table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .modal-column th {
+            text-align: left;
+            background-color: #f1f3f5;
+            padding: 8px;
+            font-weight: 600;
+        }
+
+        .modal-column td {
+            padding: 8px;
         }
 
         .custom-modal .close {
             position: absolute;
-            top: 5px; right: 10px;
-            font-size: 24px;
+            top: 10px; right: 15px;
+            font-size: 28px;
             cursor: pointer;
         }
 
@@ -126,7 +158,7 @@
             </div>
 
             <div class="search-filter">
-                <input type="text" id="regSearchInput" placeholder="Search by reservation number...">
+                <input type="text" id="resSearchInput" placeholder="Search by reservation number...">
                 <select id="statusFilter">
                     <option value="">All Status</option>
                     <option value="Pending">Pending</option>
@@ -135,39 +167,68 @@
                     <option value="CheckedIn">Checked-In</option>
                     <option value="CheckedOut">Checked-Out</option>
                 </select>
+
+                <div class="form-group">
+                    <label>Check-In Date</label>
+                    <input type="date" name="checkInDate" id="checkInDate" required>
+                    <span class="error-message" id="checkInError"></span>
+                </div>
+                <br>
+                <div class="form-group">
+                    <label>Check-Out Date</label>
+                    <input type="date" name="checkOutDate" id="checkOutDate" required>
+                    <span class="error-message" id="checkOutError"></span>
+                </div>
+
             </div>
 
             <%--    // this is if there are no search results--%>
-            <p id="noGuestsMessage" style="display:none;">No guests found.</p>
+            <p id="noResMsg" style="display:none;">No reservations found.</p>
 
             <div class="table-responsive">
                 <table class="table table-hover" id="guestTable">
                     <thead>
                     <tr>
                         <th>Reservation Num</th>
-                        <th>Room Type</th>
+<%--                        <th>Room Type</th>--%>
                         <th>Start Date</th>
                         <th>End Date</th>
                         <th>Status</th>
-                        <th>Payment Status</th>
+<%--                        <th>Payment Status</th>--%>
                         <th>Actions</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <c:forEach var="guest" items="${guests}">
-                        <tr data-name="${reservation.reservationNum} ${guest.lastName}" data-email="${guest.email}">
-                            <td>${guest.registrationNumber}</td>
-                            <td>${guest.firstName} ${guest.lastName}</td>
-                            <td>${guest.email}</td>
-                            <td>${guest.contactNumber}</td>
+                    <c:forEach var="reservation" items="${reservations}">
+                        <tr data-name="${reservation.id}">
+                            <td>${reservation.reservationNumber}</td>
+<%--                            <td>${reservation.roomId}</td>--%>
+                            <td>${reservation.checkInDate}</td>
+                            <td>${reservation.checkOutDate}</td>
                             <td>
-                                <a href="javascript:void(0)" onclick="openViewAndEditModal('${reservation.id}')">
+                                <c:choose>
+                                    <c:when test="${reservation.status == 'CheckedIn'}">
+                                        <span class="status-checkedin">${reservation.status}</span>
+                                    </c:when>
+                                    <c:when test="${reservation.status == 'CheckedOut'}">
+                                        <span class="status-checkedout">${reservation.status}</span>
+                                    </c:when>
+                                    <c:otherwise>${reservation.status}</c:otherwise>
+                                </c:choose>
+                            </td>
+                            <td>
+                                <button class ="btn btn-sm btn-primary" onclick="openReservationModal('${reservation.id}')">
                                     View
-                                </a>
-                                |
-                                <a href="javascript:void(0)" onclick="openHistoryModal('${reservation.id}')">
-                                    Update
-                                </a>
+                                </button>
+                                <button class ="btn btn-sm btn-success" onclick="checkInReservation('${reservation.id}')">
+                                    Check-In
+                                </button>
+                                <button class ="btn btn-sm btn-warning" onclick="checkOutReservation('${reservation.id}')">
+                                    Check-Out
+                                </button>
+                                <button class ="btn btn-sm btn-danger" onclick="cancelReservation('${reservation.id}')">
+                                    Cancel
+                                </button>
 
                             </td>
                         </tr>
@@ -180,65 +241,127 @@
 
 
 <!-- modals -->
-<!-- view & edit modal -->
-<div id="viewAndEditModal" class="custom-modal modal-dialog-scrollable">
-    <div class="custom-modal-content">
-        <span class="close" onclick="closeModal('viewAndEditModal')">&times;</span>
-        <form method="post" action="<c:url value= '/reservation/update'  />">
-            <input type="hidden" name="resId" id="resId">
-            <label>Reservation Number</label>
-            <input class="form-control" name="resNum" id="resNum" readonly>
-            <label>Room Type</label>
-            <input class="form-control" name="firstName" id="editFirstName" readonly>
-            <label class="mt-2">Room Number</label>
-            <input class="form-control" name="lastName" id="editLastName" readonly>
-            <label>Floor Num</label>
-            <input class="form-control" name="email" id="email" readonly>
-            <label class="mt-2">Guest IDt</label>
-            <input class="form-control" name="contactNumber" id="editContact" readonly>
-            <label class="mt-2">Guest Name</label>
-            <input class="form-control" name="nic" id="nic" readonly>
-            <label class="mt-2">Check-in Date</label>
-            <input class="form-control" name="passportNumber" id="editPassportNum" readonly>
-            <label class="mt-2">Check-out Date</label>
-            <input class="form-control" name="nationality" id="editNationality">
-            <label class="mt-2">Date of Reservation</label>
-            <input class="form-control" name="address" id="editAddress" readonly>
-            <label class="mt-2">Payment Status</label>
-            <input class="form-control" name="dob" id="dob" readonly>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="closeModal('viewAndEditModal')">Cancel</button>
-                <button type="submit" class="btn btn-warning btn-update">Update</button>
+        <div id="reservationModal" class="custom-modal">
+            <div class="custom-modal-content">
+                <span class="close" onclick="closeModal()">&times;</span>
+
+                <div class="modal-column">
+                    <h5>Reservation</h5>
+                    <div class="form-group">
+                        <label>Reservation Number</label>
+                        <input type="text" id="reservationNumber" readonly class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Guest ID</label>
+                        <input type="text" id="guestId" readonly class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Room ID</label>
+                        <input type="text" id="roomId" readonly class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <input type="text" id="resStatus" readonly class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Total Stay Cost</label>
+                        <input type="text" id="stayCost" readonly class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Check In</label>
+                        <input type="text" id="modalCheckInDate" readonly class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Check Out</label>
+                        <input type="text" id="modalCheckOutDate" readonly class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Number of Adults</label>
+                        <input type="text" id="numAdults" readonly class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Number of Children</label>
+                        <input type="text" id="numChildren" readonly class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Date of Reservation</label>
+                        <input type="text" id="dateOfRes" readonly class="form-control">
+                    </div>
+                </div>
+
+                <div class="modal-column">
+                    <h5>Bill</h5>
+                    <div class="form-group">
+                        <label>Bill ID</label>
+                        <input type="text" id="billId" readonly class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Stay Cost</label>
+                        <input type="text" id="billStayCost" readonly class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Tax</label>
+                        <input type="text" id="tax" readonly class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Discount</label>
+                        <input type="text" id="discount" readonly class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Amount</label>
+                        <input type="text" id="totalBillAmount" readonly class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <input type="text" id="billStatus" readonly class="form-control">
+                    </div>
+                </div>
+
+                <div class="modal-column">
+                    <h5>Payment</h5>
+                    <div class="form-group">
+                        <label>Total Payment</label>
+                        <input type="text" id="totalPaymentAmount" readonly class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Method</label>
+                        <input type="text" id="paymentMethod" readonly class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Paid Date</label>
+                        <input type="text" id="paymentDate" readonly class="form-control">
+                    </div>
+                    <button id="makePayment" type="submit" class="btn enter-btn" hidden="hidden" onClick="goToMakePaymentPage()">
+                        Make Payment
+                    </button>
+                </div>
             </div>
-        </form>
-    </div>
-</div>
+        </div>
 
 <script>
     document.addEventListener("DOMContentLoaded", () => {
-        // search and filter fields
-        const nicOrPPSearchInput = document.getElementById("nicOrPPSearchInput");
-        const regSearchInput = document.getElementById("regSearchInput");
-        const statusFilter = document.getElementById("statusFilter");
 
-        // guest profile tables
-        const tableBody = document.getElementById("guestTable").getElementsByTagName("tbody")[0];
+        // search and filter fields
+        const resSearchInput = document.getElementById("resSearchInput");
+        const statusInput = document.getElementById("statusFilter");
+        const checkInDate = document.getElementById("checkInDate");
+        const checkOutDate = document.getElementById("checkOutDate");
 
         function performSearch(){
-            const nicOrPPSearchText = nicOrPPSearchInput.value.toLowerCase();
-            const regSearchText = regSearchInput.value;
-            const statusText = statusFilter.value;
+            const regSearchText = resSearchInput.value;
+            const statusText = statusInput.value;
             const rows = document.querySelectorAll("#guestTable tbody tr");
             const tableBody = document.querySelector("#guestTable tbody");
             tableBody.innerHTML = "";
 
             const params = new URLSearchParams();
-            if (nicOrPPSearchText) params.append("nicOrPPSearchText", nicOrPPSearchText);
-            if (regSearchText) params.append("regSearchText", regSearchText);
-            if (statusText) params.append("statusText", statusText);
+            if (resSearchInput) params.append("resSearchInput", regSearchText);
+            if (statusInput) params.append("statusInput", statusText);
+            if (checkInDate.value) params.append("checkInDate", checkInDate.value);
+            if (checkOutDate.value) params.append("checkOutDate", checkOutDate.value);
 
-            // sending the request to get all but filtered guests
-            fetch('<c:url value="/guest/all" />?' + params.toString(),
+            // sending the request to get all but filtered res
+            fetch('<c:url value="/reservation/all" />?' + params.toString(),
                 {
                     headers: {
                         "X-Requested-With": "XMLHttpRequest"
@@ -248,29 +371,59 @@
                     if (!res.ok) throw new Error("Search failed");
                     return res.json();
                 })
-                .then(guests => {
+                .then(reservations => {
                     tableBody.innerHTML = "";
-                    console.log(guests);
+                    console.log(reservations);
                     rows.forEach((row) => {
                         row.style.display = "none";
                     });
 
-                    if (!guests || guests.length === 0) {
-                        tableBody.innerHTML = `<tr><td colspan="5">No guests found</td></tr>`;
+                    if (!reservations || reservations.length === 0) {
+                        tableBody.innerHTML = `<tr><td colspan="5">No reservations found</td></tr>`;
                         return; // if no guests, no guests profile  msg displayed
                     }
 
-                    guests.forEach(guest => {
-                        console.log(guest);
+                    reservations.forEach(reservation => {
+                        console.log(reservation);
                         const tr = document.createElement("tr");
+
+                        // tr.innerHTML =
+                        //     "<td>" + reservation.reservationNumber + "</td>" +
+                        //     "<td>" + reservation.checkInDate + "</td>" +
+                        //     "<td>" + reservation.checkOutDate + "</td>" +
+                        //     "<td class='" + statusClass + "'>" + reservation.status + "</td>" +
+                        //     "<td>" +
+                        //
+                        //     "<a href='#' onclick=\"openViewAndEditModal('" + reservation.id + "')\">View</a> | " +
+                        //     "<a href='#' onclick=\"openDeleteModal('" + reservation.id + "')\">Delete</a>" +
+                        //     "</td>";
+
+                        const statusClass =
+                            reservation.status === "CheckedIn"
+                                ? "status-checkedin"
+                                : "status-checkedout";
+
                         tr.innerHTML =
-                            "<td>" + guest.registrationNumber + "</td>" +
-                            "<td>" + guest.firstName + "</td>" +
-                            "<td>" + guest.lastName + "</td>" +
-                            "<td>" + guest.email + "</td>" +
+                            "<td>" + reservation.reservationNumber + "</td>" +
+                            "<td>" + reservation.checkInDate + "</td>" +
+                            "<td>" + reservation.checkOutDate + "</td>" +
+                            "<td class='" + statusClass + "'>" + reservation.status + "</td>" +
                             "<td>" +
-                            "<a href='#' onclick=\"openViewAndEditModal('" + guest.id + "')\">View</a> | " +
-                            "<a href='#' onclick=\"openDeleteModal('" + guest.id + "')\">Delete</a>" +
+                            "<button class='btn btn-sm btn-primary me-1' " +
+                            "onclick=\"openReservationModal('" + reservation.id + "')\">" +
+                            "View</button>" +
+
+                            "<button class='btn btn-sm btn-success me-1' " +
+                            "onclick=\"checkInReservation('" + reservation.id + "')\">" +
+                            "Check In</button>" +
+
+                            "<button class='btn btn-sm btn-warning me-1' " +
+                            "onclick=\"checkOutReservation('" + reservation.id + "')\">" +
+                            "Check Out</button>" +
+
+                            "<button class='btn btn-sm btn-danger' " +
+                            "onclick=\"cancelReservation('" + reservation.id + "')\">" +
+                            "Cancel</button>" +
                             "</td>";
 
                         tableBody.appendChild(tr);
@@ -281,70 +434,116 @@
                 .catch(err => console.error(err));
         }
 
-        nicOrPPSearchInput.addEventListener("input", performSearch);
-        regSearchInput.addEventListener("input", performSearch);
+        resSearchInput.addEventListener("input", performSearch);
         statusFilter.addEventListener("change", performSearch);
-    });
 
-    // view and edit modal
-    function openViewAndEditModal(id){
-        guestId = parseInt(id);
-        if (isNaN(parseInt(guestId)) || guestId <=0) {
-            alert("Invalid guest ID.")
-            return;
+        function checkDateChanges() {
+            if (checkInDate.value !== "" && checkOutDate.value !== "")
+            {
+                performSearch();
+            }
         }
 
-        // this gets the guest's personal info
-        fetch('<c:url value="/guest/get?id=" />' + id)
-            .then(res => {
-                if (!res.ok) {
-                    throw new Error("HTTP error " + res.status);
+        checkInDate.addEventListener("change", checkDateChanges);
+        checkOutDate.addEventListener("change", checkDateChanges);
+    });
+
+    // view res modal
+    function openReservationModal(id) {
+
+        fetch('<c:url value="/reservation/details?id=" />' + id)
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                // reservation
+                document.getElementById("reservationNumber").value =
+                    data.reservationDTO.reservationNumber;
+
+                document.getElementById("guestId").value =
+                    data.reservationDTO.guestId;
+
+                document.getElementById("roomId").value =
+                    data.reservationDTO.roomId;
+
+                document.getElementById("resStatus").value =
+                    data.reservationDTO.status;
+
+                document.getElementById("stayCost").value =
+                    data.reservationDTO.totalCost;
+
+                const checkIn = new Date(data.reservationDTO.checkInDate);
+                const checkOut = new Date(data.reservationDTO.checkOutDate);
+                document.getElementById("modalCheckInDate").value = checkIn.toLocaleDateString();
+                document.getElementById("modalCheckOutDate").value = checkOut.toLocaleDateString();
+
+                document.getElementById("numAdults").value =
+                    data.reservationDTO.numOfAdults;
+
+                document.getElementById("numChildren").value =
+                    data.reservationDTO.numOfChildren;
+
+                document.getElementById("dateOfRes").value =
+                    data.reservationDTO.dateOfReservation;
+
+                // this bill area is only if a bill for it is made
+                if (data.billDTO) {
+                    document.getElementById("billId").value = data.billDTO.id;
+                    document.getElementById("billStayCost").value = data.billDTO.stayCost;
+                    document.getElementById("tax").value = data.billDTO.tax;
+                    document.getElementById("discount").value = data.billDTO.discount;
+                    document.getElementById("totalBillAmount").value = data.billDTO.totalAmount;
+                    document.getElementById("billStatus").value = data.billDTO.status;
                 }
-                return res.json();
-            })
-            .then(guest => {
-                document.getElementById('guestId').value = guest.id;
-                document.getElementById('RegNum').value = guest.registrationNumber;
-                document.getElementById('editFirstName').value = guest.firstName ?? 'No first name provided';
-                document.getElementById('editLastName').value = guest.lastName ?? 'No last name provided';
-                document.getElementById('editContact').value = guest.contactNumber ?? 'No contact number provided';
-                document.getElementById('email').value = guest.email ?? 'No email provided';
-                document.getElementById('nic').value = guest.nic ?? 'No NIC Provided.';
-                document.getElementById('editPassportNum').value = guest.passportNumber  ?? 'No Passport provided';
-                document.getElementById('editAddress').value = guest.address ?? 'No Address provided';
-                document.getElementById('dob').value = guest.dob ?? 'No Date of Birth Provided';
-                document.getElementById('editNationality').value = guest.nationality ?? 'No Nationality provided';
-                console.log("Guest ID passed :", guest.id);
-                // Show the modal
-                document.getElementById('viewAndEditModal').style.display = 'block';
-            })
-            .catch(err => {
-                console.error(err);
-                alert("Error fetching guest details");
-            });
-    }
+                else {
+                    document.getElementById("billId").value = 'Bill is not generated yet.';
+                    document.getElementById("billStayCost").value = 'N/A';
+                    document.getElementById("tax").value = 'N/A';
+                    document.getElementById("discount").value = 'N/A';
+                    document.getElementById("totalBillAmount").value = 'N/A';
+                    document.getElementById("billStatus").value = 'N/A';
+                }
 
-    // opening delete modal
-    function openDeleteModal(guestId) {
-        document.getElementById("deleteGuestId").value = guestId;
-        document.getElementById("deleteModal").style.display = "block";
-    }
+                // same goes for payment
+                if (data.paymentDTO) {
+                    document.getElementById("paymentMethod").value = data.paymentDTO.paymentMethod;
+                    document.getElementById("paymentDate").value = data.paymentDTO.paymentDate;
+                    document.getElementById("totalPaymentAmount").value = data.paymentDTO.amount;
+                    document.getElementById("makePayment").hidden = true;
+                }
+                else
+                {
+                    document.getElementById("paymentMethod").value = 'N/A';
+                    document.getElementById("paymentDate").value = 'N/A';
+                    document.getElementById("totalPaymentAmount").value = 'Payment has not been made yet';
+                    document.getElementById("makePayment").hidden = false;
+                }
 
-    // history modal
-    function openHistoryModal(guestId){}
+                document.getElementById("reservationModal").style.display = "block";
+            })
+            .catch(err => console.error(err));
+    }
 
     // closing all modals
-    function closeModal(modalId) {
-        document.getElementById(modalId).style.display = "none";
+    function closeModal() {
+        document.getElementById("reservationModal").style.display = "none";
     }
 
     // closes modal if user clicks outside it
     window.onclick = function(event) {
-        ["viewAndEditModal", "deleteModal"].forEach(id => {
-            let modal = document.getElementById(id);
-            if(event.target === modal) modal.style.display = "none";
-        });
+        const modal = document.getElementById("reservationModal");
+        if (event.target === modal) closeModal();
     }
+
+    // redirecting to payment modal with the necessary attributes
+    function goToMakePaymentPage() {
+        const reservationNum = document.getElementById("reservationNumber").value;
+        const totalCost = document.getElementById("stayCost").value;
+        const guestId = document.getElementById("guestId").value;
+
+        window.location.href = "${pageContext.request.contextPath}/payment/form?reservationNum=" + reservationNum + "&totalCost=" + totalCost + "&guestId=" + guestId;
+
+    }
+
 </script>
 
 </body>

@@ -6,7 +6,12 @@ import business.service.RoomTypeService;
 import business.service.impl.GuestServiceImpl;
 import business.service.impl.ReservationServiceImpl;
 import business.service.impl.RoomTypeServiceImpl;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializer;
 import constant.ReservationStatus;
+import dto.ReservationAggregrateDTO;
 import dto.ReservationDTO;
 import dto.RoomTypeDTO;
 
@@ -17,6 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -46,12 +52,24 @@ public class ReservationServlet extends HttpServlet {
         }
 
         switch (path) {
-            case "/":
-                request.getRequestDispatcher("/reservations.jsp").forward(request, response);
-                break;
             case "/create":
                 request.getRequestDispatcher("/create-reservation.jsp").forward(request, response);
                 break;
+            case "/all":
+                try {
+                    getAllReservations(request, response);
+                    break;
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            case "/details":
+                try {
+                    getFullDetailsForReservations(request,response);
+                    break;
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+
             default:
                 LOG.log(Level.SEVERE, "Unsupported path: " + path);
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -132,6 +150,7 @@ public class ReservationServlet extends HttpServlet {
         }
     }
 
+    // calculating only amenities cost to display dynamically
     private void calculateAmenities(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException {
         String[] amenities = request.getParameterValues("amenities");
         List<String> list = amenities != null
@@ -158,5 +177,97 @@ public class ReservationServlet extends HttpServlet {
         response.getWriter().write("{\"amenitiesCost\":"  + amenitiesCost + "}");
     }
 
+    // getting all reservations
+    private void getAllReservations(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException {
+        LOG.log(Level.INFO, "Getting all reservations...");
+        Map<String, String> searchParams = new HashMap<>();
+
+        try {
+            String resNum = request.getParameter("resSearchInput");
+            String status = request.getParameter("statusInput");
+            String checkIn = request.getParameter("checkInDate");
+            String checkOut = request.getParameter("checkOutDate");
+
+            if (resNum != null && !resNum.isEmpty()) {
+                searchParams.put("reservation_number", resNum);
+                LOG.log(Level.INFO, "Searching for res num : " + resNum);
+            }
+
+            if (status != null && !status.isEmpty()) {
+                searchParams.put("status", status);
+                LOG.log(Level.INFO, "Searching for Status : " + status);
+            }
+
+            // date filtering
+            if(checkIn!= null && !checkIn.isEmpty()) {
+                searchParams.put("checkin_date", checkIn);
+                LOG.log(Level.INFO, "Searching for check_in: " + checkIn);
+            }
+
+            if(checkOut != null && !checkOut.isEmpty()) {
+                searchParams.put("checkout_date", checkOut);
+                LOG.log(Level.INFO, "Searching for check_out: " + checkOut);
+            }
+
+            LOG.log(Level.INFO, "Searching for reservations by : " + searchParams);
+            List<ReservationDTO> reservations = reservationService.getAll(searchParams);
+
+            // converting dates into serializable
+            Gson gson = new GsonBuilder()
+                    .registerTypeAdapter(Date.class, (JsonSerializer<Date>) (src, typeOfSrc, context) ->
+                            new JsonPrimitive(new SimpleDateFormat("yyyy-MM-dd").format(src)))
+                    .registerTypeAdapter(LocalDateTime.class, (JsonSerializer<LocalDateTime>) (src, typeOfSrc, context) ->
+                            new JsonPrimitive(src.toString()))
+                    .registerTypeAdapter(LocalDate.class, (JsonSerializer<LocalDate>) (src, typeOfSrc, context) ->
+                            new JsonPrimitive(src.toString()))
+                    .create();
+
+            // this is if js sends a search request
+            if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
+                List<ReservationDTO> reservationDTOList = (reservations != null) ? reservations : Collections.emptyList();
+                String resJSON = gson.toJson(reservationDTOList);
+
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
+                response.getWriter().write(resJSON);
+                LOG.log(Level.INFO, "Reservation JSON sent: " + resJSON);
+                return;
+            }
+
+            // if no search req, then just the rooms will be populated
+            request.setAttribute("reservations", reservations);
+            LOG.log(Level.INFO, "Reservations found: " + reservations.size());
+            request.getRequestDispatcher("/reservations.jsp").forward(request, response);
+        }
+        catch (Exception ex) {
+            LOG.warning(ex.getMessage());
+        }
+    }
+
+    // getting full details for a reservation
+    private void getFullDetailsForReservations(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException {
+        LOG.log(Level.INFO, "Getting full details for reservations...");
+        int id = Integer.parseInt(request.getParameter("id"));
+        LOG.log(Level.INFO, "ID: " + id);
+
+        // getting the full details using res aggregate
+        ReservationAggregrateDTO reservationAggregrateDTO = reservationService.getFullReservation(id);
+
+        // converting dates into serializable
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapter(Date.class, (JsonSerializer<Date>) (src, typeOfSrc, context) ->
+                        new JsonPrimitive(new SimpleDateFormat("yyyy-MM-dd").format(src)))
+                .registerTypeAdapter(LocalDateTime.class, (JsonSerializer<LocalDateTime>) (src, typeOfSrc, context) ->
+                        new JsonPrimitive(src.toString()))
+                .registerTypeAdapter(LocalDate.class, (JsonSerializer<LocalDate>) (src, typeOfSrc, context) ->
+                        new JsonPrimitive(src.toString()))
+                .create();
+
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        String json = gson.toJson(reservationAggregrateDTO);
+        response.getWriter().write(json);
+        LOG.log(Level.INFO, "Full details found: " + json);
+    }
 }
 

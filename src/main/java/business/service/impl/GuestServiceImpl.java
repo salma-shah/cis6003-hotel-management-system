@@ -109,6 +109,11 @@ public class GuestServiceImpl implements GuestService {
     }
 
     @Override
+    public String findGuestRegNumById(int id) throws SQLException {
+        return guestDAO.findGuestRegNumById(id);
+    }
+
+    @Override
     public boolean validateRegistrationNumber(String registrationNumber) throws SQLException {
         return guestDAO.findByRegistrationNumber(registrationNumber);
     }

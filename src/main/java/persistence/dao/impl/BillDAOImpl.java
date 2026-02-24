@@ -1,6 +1,5 @@
 package persistence.dao.impl;
 
-import constant.PaymentStatus;
 import db.DBConnection;
 
 import entity.Bill;
@@ -24,9 +23,9 @@ public class BillDAOImpl implements BillDAO {
                 ps.setInt(1, entity.getResId());
                 ps.setInt(2, entity.getGuestId());
                 ps.setDouble(3, entity.getStayCost());
-                ps.setDouble(5, entity.getTax());
-                ps.setDouble(6, entity.getDiscount());
-                ps.setDouble(4, entity.getTotalAmount());
+                ps.setDouble(4, entity.getTax());
+                ps.setDouble(5, entity.getDiscount());
+                ps.setDouble(6, entity.getTotalAmount());
                 ps.setObject(7, LocalDateTime.now());
                 int rows = ps.executeUpdate();
                 ResultSet rs = ps.getGeneratedKeys();
@@ -74,8 +73,9 @@ public class BillDAOImpl implements BillDAO {
 
     private Bill mapResultSetToBill(ResultSet resultSet) throws SQLException {
         return new Bill(resultSet.getInt("id"), resultSet.getInt("reservation_id"), resultSet.getInt("guest_id"),
-                 resultSet.getDouble("tax"), resultSet.getDouble("discount"), resultSet.getDouble("total_amount"),
-                resultSet.getDouble("stay_cost")
+                resultSet.getDouble("stay_cost"),
+                resultSet.getDouble("tax"), resultSet.getDouble("discount"),
+                resultSet.getDouble("total_amount")
         );
     }
 }

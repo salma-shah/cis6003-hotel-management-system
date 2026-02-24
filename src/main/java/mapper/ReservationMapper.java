@@ -3,6 +3,9 @@ package mapper;
 import dto.ReservationDTO;
 import entity.Reservation;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class ReservationMapper {
     public static Reservation toReservation(ReservationDTO reservationDTO) {
         if  (reservationDTO == null) {
@@ -20,5 +23,15 @@ public class ReservationMapper {
 
         return new ReservationDTO(reservation.getId(), reservation.getGuestId(), reservation.getRoomId(), reservation.getReservationNumber(), reservation.getTotalCost(),
                 reservation.getDateOfReservation(), reservation.getCheckInDate(), reservation.getCheckOutDate(), reservation.getNumOfAdults(), reservation.getNumOfChildren(), reservation.getStatus());
+    }
+
+    // converting list of res to list of UserDTos
+    public static List<ReservationDTO> toDTOList(List<Reservation> reservations) {
+        if (reservations == null) {
+            return null;
+        }
+        return reservations.stream()
+                .map(ReservationMapper::toReservationDTO)
+                .collect(Collectors.toList());
     }
 }

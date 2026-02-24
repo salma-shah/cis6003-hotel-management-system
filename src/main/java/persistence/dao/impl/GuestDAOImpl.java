@@ -48,6 +48,24 @@ public class GuestDAOImpl implements GuestDAO {
         }
     }
 
+    public String findGuestRegNumById(int id) throws SQLException {
+        try(Connection connection = DBConnection.getInstance().getConnection())
+        {
+            ResultSet resultSet = QueryHelper.execute(connection, "SELECT registration_number FROM guest WHERE id  = ?", id);
+            if (!resultSet.next())
+            {
+                return null;
+            }
+            return resultSet.getString("registration_number");
+
+        }
+        catch(SQLException ex)
+        {
+            LOG.log(Level.SEVERE, "There was an error finding the guest by reg number");
+            throw new SQLException(ex.getMessage());
+        }
+    }
+
     @Override
     public boolean findByEmail(String email) throws SQLException {
         try(Connection conn = DBConnection.getInstance().getConnection())

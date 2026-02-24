@@ -1,6 +1,7 @@
 package business.service;
 
 import business.service.helper.CRUDService;
+import dto.ReservationAggregrateDTO;
 import dto.ReservationDTO;
 
 import java.sql.SQLException;
@@ -14,4 +15,5 @@ public interface ReservationService extends CRUDService<ReservationDTO> {
     Integer findResIdByReservationNumber(String resNum) throws SQLException;
     double calculateTotalCostForStay(double basePricePerNight, LocalDate startDate, LocalDate endDate, List<String> selectedAmenities) throws SQLException;
     ReservationDTO getByReservationNumber(String resNum) throws SQLException;
+    ReservationAggregrateDTO getFullReservation(int id) throws SQLException;
 }
