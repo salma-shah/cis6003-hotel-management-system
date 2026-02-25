@@ -5,6 +5,12 @@ import business.service.decorators.*;
 import constant.ReservationStatus;
 import dto.*;
 import entity.Reservation;
+import exception.reservation.DuplicateResNumException;
+import exception.reservation.ReservationNotFoundException;
+import exception.room.RoomReservedException;
+import exception.service.BusinessValidationException;
+import exception.service.CheckOutDateBeforeCheckInException;
+import exception.service.DateInPastException;
 import mail.EmailBase;
 import mail.EmailUtility;
 import mail.factory.EmailFactory;
@@ -13,7 +19,6 @@ import mapper.ReservationMapper;
 import persistence.dao.ReservationDAO;
 import persistence.dao.impl.ReservationDAOImpl;
 
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -38,74 +43,73 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
-    public boolean update(ReservationDTO entity) throws OceanViewResortException {
-       try
-       {
-           return reservationDAO.update(ReservationMapper.toReservation(entity));
-       }
-       catch (SQLException ex)
-       {
-           LOG.log(Level.SEVERE, ex.getMessage(), ex);
-           throw new OceanViewResortException(OceanViewResortExceptionTypes.ERROR_RESERVATION_UPDATE);
-       }
+    public boolean update(ReservationDTO entity) {
+        if (searchById(entity.getId()) == null) {
+            throw new ReservationNotFoundException("Reservation ID : " + entity.getId() + "not found");
+        }
+        return reservationDAO.update(ReservationMapper.toReservation(entity));
     }
 
     @Override
-    public boolean delete(int id) throws OceanViewResortException, SQLException {
-        if (!reservationDAO.existsByPrimaryKey(id)) {
-            throw new OceanViewResortException(OceanViewResortExceptionTypes.RESERVATION_NOT_FOUND);
+    public boolean delete(int id)  {
+        if (id <=0 )
+        {
+            throw new IllegalArgumentException("Invalid reservation ID");
+        }
+        if (existsByPrimaryKey(id)) {
+            throw new ReservationNotFoundException("Reservation ID : " + id + " not found");
         }
        return reservationDAO.delete(id);
     }
 
     @Override
-    public ReservationDTO searchById(int id) throws SQLException {
-        return ReservationMapper.toReservationDTO(reservationDAO.searchById(id));
-    }
-
-    @Override
-    public List<ReservationDTO> getAll(Map<String, String> searchParams) throws SQLException {
-        try {
-            Map<String, String> filters = (searchParams!= null) ? new HashMap<>(searchParams) : new HashMap<>();
-            return ReservationMapper.toDTOList(reservationDAO.getAll(filters));
-        }
-        catch (SQLException e)
+    public ReservationDTO searchById(int id)  {
+        if (id <=0 )
         {
-            throw new SQLException(e.getMessage());
+            throw new IllegalArgumentException("Invalid reservation ID");
         }
-    }
 
-    @Override
-    public boolean existsByPrimaryKey(int primaryKey) throws SQLException {
-        try
+        Reservation reservation = reservationDAO.searchById(id);
+        if (reservation == null)
         {
-            return reservationDAO.existsByPrimaryKey(primaryKey);
+            throw new ReservationNotFoundException("Reservation ID : " + id + " not found");
         }
-        catch (Exception ex)
+        return ReservationMapper.toReservationDTO(reservation);
+    }
+
+    @Override
+    public List<ReservationDTO> getAll(Map<String, String> searchParams) {
+        Map<String, String> filters = (searchParams != null) ? new HashMap<>(searchParams) : new HashMap<>();
+        return ReservationMapper.toDTOList(reservationDAO.getAll(filters));
+    }
+
+    @Override
+    public boolean existsByPrimaryKey(int primaryKey)  {
+        if (primaryKey <=0 )
         {
-            throw new SQLException(ex.getMessage());
+            throw new IllegalArgumentException("Invalid reservation PK: " + primaryKey);
         }
+
+        return reservationDAO.existsByPrimaryKey(primaryKey);
+
     }
 
     @Override
-    public Integer findResIdByReservationNumber(String resNum) throws SQLException {
-        try {
-            return reservationDAO.findReservationIdByReservationNumber(resNum);
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, "Error finding reservation in service layer");
-            throw new SQLException(ex.getMessage());
+    public Integer findResIdByReservationNumber(String resNum)  {
+        if (resNum == null)
+        {
+            throw new IllegalArgumentException("Invalid reservation number: " + resNum);
         }
+        return reservationDAO.findReservationIdByReservationNumber(resNum);
     }
 
     @Override
-    public boolean makeReservation(ReservationDTO reservationDTO, List<String> selectedAmenities) throws SQLException {
-        try {
-            // checking if res num is unique
+    public boolean makeReservation(ReservationDTO reservationDTO, List<String> selectedAmenities)  {
+
+        // checking if res num is unique
             if (validateResNum(reservationDTO.getReservationNumber())) {
-                LOG.log(Level.WARNING, "Reservation number already exists.");
-                return false; }
-
-             if (reservationDAO.searchById(reservationDTO.getId()) != null) {return false;}
+                return false;
+            }
 
              // checking if dates are valid
             if (!validateReservationDates(reservationDTO)) return false;
@@ -119,8 +123,7 @@ public class ReservationServiceImpl implements ReservationService {
             boolean isAvailable = roomService.isRoomAvailable(reservationDTO.getCheckInDate(), reservationDTO.getCheckOutDate(), reservationDTO.getRoomId());
 
             if (!isAvailable) {
-                LOG.log(Level.INFO, "The room is already marked for reservation");
-                return false;
+                throw new RoomReservedException("The room is already reserved for these dates");
             }
 
             // calculating the total cost
@@ -128,6 +131,11 @@ public class ReservationServiceImpl implements ReservationService {
             double basePrice = roomTypeDTO.getBasePricePerNight();
             // using the calculate total cost method
             double totalCost = calculateTotalCostForStay(basePrice, reservationDTO.getCheckInDate(), reservationDTO.getCheckOutDate(), selectedAmenities);
+
+            if (totalCost < 0)
+            {
+                throw new BusinessValidationException("The total cost for a reservation cannot be less than 0");
+            }
 
             ReservationDTO updatedDTO = new ReservationDTO(
                     reservationDTO.getId(),
@@ -154,37 +162,44 @@ public class ReservationServiceImpl implements ReservationService {
             // sending email is successful
             sendSuccessfulResEmail(reservationDTO);
             return true;
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, "Error making reservation in service layer", ex);
-            throw new SQLException(ex.getMessage());
-        }
     }
 
     @Override
-    public boolean validateReservationDates(ReservationDTO reservationDTO) throws SQLException {
+    public boolean validateReservationDates(ReservationDTO reservationDTO)  {
         LocalDate localDate = LocalDate.now();
-
         // checking if dates are in the past
         if (reservationDTO.getCheckInDate().isBefore(localDate) || reservationDTO.getCheckOutDate().isBefore(localDate))
         {
-            LOG.log(Level.INFO, "The dates cannot be in the past");
-            return false;
+            throw new DateInPastException("Reservation dates cannot be in the past");
         }
 
         if (reservationDTO.getCheckInDate().isAfter(reservationDTO.getCheckOutDate())) {
-            LOG.log(Level.INFO, "Checkin date cannot be after checkout date");
-            return false;
+           throw new CheckOutDateBeforeCheckInException("The checkout date cannot be before checkin date");
         }
         return true;
     }
 
-    public boolean validateResNum(String resNum) throws SQLException {
-        return reservationDAO.validateReservationNumber(resNum);
+    public boolean validateResNum(String resNum)  {
+        if (resNum == null || resNum.isEmpty())
+        {
+            throw new IllegalArgumentException("Invalid reservation number");
+        }
+
+        boolean existingResNum = reservationDAO.validateReservationNumber(resNum);
+        if (existingResNum)
+        {
+            throw new DuplicateResNumException("The reservation number " + resNum + " already exists");
+        }
+        return true;
     }
 
     @Override
-    public void sendSuccessfulResEmail(ReservationDTO reservationDTO) throws SQLException {
+    public void sendSuccessfulResEmail(ReservationDTO reservationDTO)  {
 
+        if (reservationDTO == null)
+        {
+            throw new IllegalArgumentException("Invalid reservation DTO");
+        }
         // getting the required params for email
         GuestDTO guestDTO = guestService.searchById(reservationDTO.getGuestId());
         String roomTypeName = roomTypeService.getByRoomId(reservationDTO.getRoomId()).getRoomTypeName();
@@ -198,7 +213,23 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
-    public double calculateTotalCostForStay(double basePricePerNight, LocalDate startDate, LocalDate endDate, List<String> selectedAmenities) throws SQLException {
+    public double calculateTotalCostForStay(double basePricePerNight, LocalDate startDate, LocalDate endDate, List<String> selectedAmenities)  {
+        LocalDate localDate = LocalDate.now();
+        if (basePricePerNight < 0)
+        {
+            throw new IllegalArgumentException("Invalid base price per night");
+        }
+
+        if (endDate.isBefore(startDate))
+        {
+            throw new CheckOutDateBeforeCheckInException("The checkout date cannot before the checkin date");
+        }
+
+        if (startDate.isBefore(localDate) ||  endDate.isBefore(localDate))
+        {
+            throw new DateInPastException("The reservation dates cannot be in the past");
+        }
+
         long numOfNights = ChronoUnit.DAYS.between(startDate, endDate);  // calculating the number of nights stayed
         if (numOfNights < 0) return 0;
         IRoom room = new BasicRoom(basePricePerNight);
@@ -222,23 +253,43 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
-    public ReservationDTO getByReservationNumber(String resNum) throws SQLException {
-        return ReservationMapper.toReservationDTO(reservationDAO.findByReservationNumber(resNum));
+    public ReservationDTO getByReservationNumber(String resNum)  {
+        if (resNum == null || resNum.isEmpty())
+        {
+            throw new IllegalArgumentException("Invalid reservation number");
+        }
+
+        Reservation reservation = reservationDAO.findByReservationNumber(resNum);
+        if (reservation == null)
+        {
+            throw new ReservationNotFoundException("Reservation not found");
+        }
+
+        return ReservationMapper.toReservationDTO(reservation);
     }
 
     @Override
-    public ReservationAggregrateDTO getFullReservation(int id) throws SQLException {
-        try {
+    public ReservationAggregrateDTO getFullReservation(int id)  {
+        if (id <= 0)
+        {
+            throw new IllegalArgumentException("Invalid reservation id");
+        }
             return reservationDAO.findFullReservation(id);
-        }
-        catch(SQLException ex) {
-            LOG.log(Level.SEVERE, "Error finding reservation in service layer", ex);
-            throw new SQLException(ex.getMessage());
-        }
     }
 
     @Override
-    public boolean updateReservationStatus(int id, ReservationStatus status) throws SQLException {
+    public boolean updateReservationStatus(int id, ReservationStatus status)  {
+
+        if (id <= 0)
+        {
+            throw new IllegalArgumentException("Invalid reservation id");
+        }
+        if (status != ReservationStatus.CheckedOut && status != ReservationStatus.CheckedIn
+        && status != ReservationStatus.Cancelled)
+        {
+            throw new IllegalArgumentException("Invalid reservation status");
+        }
+
             return reservationDAO.updateReservationStatus(id, status);
     }
 }

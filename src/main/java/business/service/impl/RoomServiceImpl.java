@@ -4,11 +4,15 @@ import business.service.RoomService;
 import dto.AmenityDTO;
 import dto.RoomDTO;
 import entity.Room;
+import exception.room.AmenitiesNotFoundException;
+import exception.room.RoomNotFoundException;
+import exception.service.BusinessValidationException;
+import exception.service.CheckOutDateBeforeCheckInException;
+import exception.service.DateInPastException;
 import mapper.RoomMapper;
 import persistence.dao.RoomDAO;
 import persistence.dao.impl.RoomDAOImpl;
 
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.logging.Level;
@@ -24,173 +28,166 @@ public class RoomServiceImpl implements RoomService {
         this.roomDAO = new RoomDAOImpl();
     }
 
-    public boolean add(RoomDTO roomDTO) throws SQLException {
-        try
-        {
-            if (roomDAO.existsByPrimaryKey( roomDTO.getRoomId()))
-            {
-                return false; // room already exists
-            }
-            // otherwise, room will be added
-            Room roomEntity = RoomMapper.toRoom(roomDTO);
-            LOG.log(Level.INFO, "The room : " + roomEntity + " was successfully added.");
-            return roomDAO.add(roomEntity);
-        }
-        catch(SQLException ex)
-        {
-            LOG.severe("Error adding room: " + ex.getMessage());
-            throw new SQLException(ex.getMessage());
-        }
+    public boolean add(RoomDTO roomDTO) {
+
+        // otherwise, room will be added
+        Room roomEntity = RoomMapper.toRoom(roomDTO);
+        LOG.log(Level.INFO, "The room : " + roomEntity + " was successfully added.");
+        return roomDAO.add(roomEntity);
+
     }
 
-    public int addAndReturnId(RoomDTO roomDTO) throws SQLException {
-
+    public int addAndReturnId(RoomDTO roomDTO)  {
         Room roomEntity = RoomMapper.toRoom(roomDTO);
-
-        if (roomDAO.add(roomEntity)) {
-            return roomDAO.getLastInsertedId();
-        }
+        if (roomDAO.add(roomEntity)) { return roomDAO.getLastInsertedId();}
         return 0;
     }
+
     @Override
-    public boolean update(RoomDTO roomDTO) throws SQLException {
+    public boolean update(RoomDTO roomDTO)  {
        // checking for existing room
-        try {
+        if (!existsByPrimaryKey(roomDTO.getRoomId())) {return false;}
+        Room room = RoomMapper.toRoom(roomDTO);
 
-            if (!roomDAO.existsByPrimaryKey(roomDTO.getRoomId())) {
-                return false;
-            }
-
-            Room room = RoomMapper.toRoom(roomDTO);
-
-            return roomDAO.update(room);
-        }
-        catch (SQLException ex)
-        {
-            LOG.severe("Error updating room: " + ex.getMessage());
-            throw new SQLException(ex.getMessage());
-        }
-        }
-
-    @Override
-    public boolean delete(int id) throws SQLException {
-        try {
-            // if the user for the specific PK exists, delete the user
-            if (roomDAO.existsByPrimaryKey( id))
-            {
-                return roomDAO.delete(id);
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return false;
+        if (room == null) {throw new RoomNotFoundException("The room was not found");}
+        return roomDAO.update(room);
     }
 
     @Override
-    public RoomDTO searchById(int id) throws SQLException {
-        try{
-            return RoomMapper.toRoomDTO(roomDAO.searchById(id));
+    public boolean delete(int id)  {
+        if (id <= 0) {
+            throw new IllegalArgumentException("Invalid room ID.");
         }
-        catch (SQLException ex)
-        {
-            LOG.severe("Error searching room: " + ex.getMessage());
-            throw new SQLException(ex.getMessage());
+        // if the room for the specific PK exists, delete the user
+        if (!existsByPrimaryKey(id)) {
+            return false;
         }
+        return roomDAO.delete(id);
     }
 
     @Override
-    public boolean existsByPrimaryKey(int primaryKey) throws SQLException {
-        try
-        {
-            return roomDAO.existsByPrimaryKey( primaryKey);
+    public RoomDTO searchById(int id)  {
+
+        if (id <= 0) {
+            throw new IllegalArgumentException("Invalid room ID.");
         }
-        catch (Exception ex)
-        {
-            throw new SQLException(ex.getMessage());
+
+        Room room = roomDAO.searchById(id);
+        if (room == null) {
+            throw new RoomNotFoundException("The room ID " + id + " was not found");
         }
+        return RoomMapper.toRoomDTO(room);
+
+    }
+
+    @Override
+    public boolean existsByPrimaryKey(int primaryKey)  {
+
+        if (primaryKey <= 0) {
+            throw new IllegalArgumentException("Invalid room PK.");
+        }
+        return (roomDAO.existsByPrimaryKey(primaryKey));
     }
 
     // this gets all rooms With filters
     // if no filters, it gets all rooms without filters
     @Override
-    public List<RoomDTO> getAll(Map<String, String> searchParams) throws SQLException {
-        try
-        {
-            // room parameters
-            Map<String, String> filters = (searchParams!= null) ? new HashMap<>(searchParams) : new HashMap<>();
-            List<RoomDTO> rooms = RoomMapper.toRoomDTOList(roomDAO.getAll(filters));
-            LOG.log(Level.INFO, "The rooms : " + rooms);
+    public List<RoomDTO> getAll(Map<String, String> searchParams)  {
 
-            // checking if amenities exist
-            // we will return it to the DAO by splitting it
-            if (filters.containsKey("amenityId")) {
-                String[] amenityIds = filters.get("amenityId").split(",");
-                Set<String> amenities = new HashSet<>(Arrays.asList(amenityIds));
-                rooms = rooms.stream().filter(room -> {
-                    List<AmenityDTO> roomAmenities = room.getRoomType().getAmenityList();
-                    if (roomAmenities == null || roomAmenities.isEmpty()) return false;
+        // room parameters
+        Map<String, String> filters = (searchParams!= null) ? new HashMap<>(searchParams) : new HashMap<>();
+        List<RoomDTO> rooms = RoomMapper.toRoomDTOList(roomDAO.getAll(filters));
+        LOG.log(Level.INFO, "The rooms : " + rooms);
 
-                    Set<String> roomAmenityIds = new HashSet<>();
-                    for (AmenityDTO a : roomAmenities) {
-                        roomAmenityIds.add(String.valueOf(a.getId()));
-                    }
-                    return roomAmenityIds.containsAll(amenities);
-                })
-                        .collect(Collectors.toList());
+        // checking if amenities exist
+        // we will return it to the DAO by splitting it
+        if (filters.containsKey("amenityId")) {
+            String[] amenityIds = filters.get("amenityId").split(",");
+            Set<String> amenities = new HashSet<>(Arrays.asList(amenityIds));
+            rooms = rooms.stream().filter(room -> {
+                        List<AmenityDTO> roomAmenities = room.getRoomType().getAmenityList();
+                        if (roomAmenities == null || roomAmenities.isEmpty()) return false;
 
-            }
-            return rooms;
-       }
-        catch (SQLException ex)
-        {
-            throw new SQLException(ex.getMessage());
+                        Set<String> roomAmenityIds = new HashSet<>();
+                        for (AmenityDTO a : roomAmenities) {
+                            roomAmenityIds.add(String.valueOf(a.getId()));
+                        }
+                        return roomAmenityIds.containsAll(amenities);
+                    })
+                    .collect(Collectors.toList());
+
         }
+        return rooms;
     }
 
     @Override
-    public boolean isRoomEligible(RoomDTO roomDTO, int adults, int children) throws SQLException {
+    public boolean isRoomEligible(RoomDTO roomDTO, int adults, int children)  {
+
+        if (adults <= 0 && children < 0) {
+            throw new IllegalArgumentException("Invalid value of adults or children.");
+        }
+
         int totalGuests = adults + children;
         int maxOccupancy = roomDTO.getRoomType().getMaxOccupancy();
 
         // if total guests itself is higher than the max occupancy for a room, not eligible
         if (totalGuests > maxOccupancy)
-        {return false;}
+        { throw new BusinessValidationException("The maximum number of guests is " + maxOccupancy + "."); }
 
         // then for children, they can only stay in rooms with a double or king bed
         if (children > 0)
         {
             String bedding = roomDTO.getRoomType().getBedding().name();
             if (!bedding.contains("Double") && !bedding.contains("King"))
-            { return false;}
+            {
+               throw new BusinessValidationException("Only rooms with double and king bedding support guests with children");
+            }
         }
-        // if all room eligibity if fulfiled, return true
+        // if all room eligibility if fulfilled, return true
         return true;
     }
 
     @Override
-    public List<RoomDTO> findAvailableRooms(LocalDate checkInDate, LocalDate checkOutDate, int roomTypeId, List<Integer> amenityIds) throws SQLException {
-        LocalDate localDate = LocalDate.now();
+    public List<RoomDTO> findAvailableRooms(LocalDate checkInDate, LocalDate checkOutDate, int roomTypeId, List<Integer> amenityIds)  {
 
+        if (roomTypeId <= 0 )
+        {
+            throw new IllegalArgumentException("Invalid room type.");
+        }
+
+        LocalDate localDate = LocalDate.now();
         // checking if dates are in the past
         if (checkInDate.isBefore(localDate) || checkOutDate.isBefore(localDate))
         {
-            LOG.log(Level.INFO, "The dates cannot be in the past");
-            return null;
+            throw new DateInPastException("Dates cannot be in the past.");
         }
 
         if (checkInDate.isAfter(checkOutDate))
         {
-            LOG.log(Level.INFO, "Checkin date cannot be after checkout date");
-            return null;
+            throw new CheckOutDateBeforeCheckInException("The check in date has to be before the check out date.");
         }
         return RoomMapper.toRoomDTOList(roomDAO.findAvailableRooms(checkInDate, checkOutDate, roomTypeId, amenityIds));
     }
 
     @Override
-    public boolean isRoomAvailable(LocalDate checkInDate, LocalDate checkOutDate, int roomId) throws SQLException {
-        // first we query the database to check if there are any overlapping reservations on the same dates
+    public boolean isRoomAvailable(LocalDate checkInDate, LocalDate checkOutDate, int roomId)  {
+        // we query the database to check if there are any overlapping reservations on the same dates
+        if (roomId <= 0) {
+            throw new IllegalArgumentException("Invalid room ID.");
+        }
+        LocalDate localDate = LocalDate.now();
+        // checking if dates are in the past
+        if (checkInDate.isBefore(localDate) || checkOutDate.isBefore(localDate))
+        {
+            throw new DateInPastException("Dates cannot be in the past.");
+        }
+
+        if (checkInDate.isAfter(checkOutDate))
+        {
+            throw new CheckOutDateBeforeCheckInException("The check in date has to be before the check out date.");
+        }
+
         return roomDAO.isRoomAvailable(checkInDate, checkOutDate, roomId);
-        //  return reservedRooms.isEmpty();   // if the list is empty, it means the room is avaialble ; so it is true
     }
 
 }

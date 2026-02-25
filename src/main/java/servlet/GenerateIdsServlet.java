@@ -13,11 +13,11 @@ import java.util.logging.Logger;
 
 @WebServlet(name="GenerateIdsServlet", urlPatterns = "/generate/*")
 public class GenerateIdsServlet extends HttpServlet {
-    private IdGenerator idGenerator;
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String typeOfId = request.getParameter("type");
+        IdGenerator idGenerator;
         if (typeOfId.equals("reg-num"))
         {
             idGenerator = new GuestRegNumGenerator();

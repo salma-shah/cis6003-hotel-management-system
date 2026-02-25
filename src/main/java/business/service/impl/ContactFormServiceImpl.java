@@ -3,6 +3,7 @@ package business.service.impl;
 import business.service.ContactFormService;
 import dto.ContactFormDTO;
 import entity.ContactForm;
+import exception.user.InvalidUserCredentialsException;
 import mapper.ContactFormMapper;
 import persistence.dao.ContactFormDAO;
 import persistence.dao.impl.ContactFormDAOImpl;
@@ -22,14 +23,14 @@ public class ContactFormServiceImpl implements ContactFormService {
     }
 
     @Override
-    public boolean saveForm(ContactFormDTO contactFormDTO) throws SQLException {
-        try {
-            ContactForm contactForm = ContactFormMapper.toContactForm(contactFormDTO);
-            return contactFormDAO.saveForm(contactForm);
+    public boolean saveForm(ContactFormDTO contactFormDTO) {
+
+        if (contactFormDTO.getUserId() == 0) {
+            throw new InvalidUserCredentialsException("Invalid user ID.");
         }
-        catch (SQLException ex) {
-            LOG.log(Level.SEVERE, "There was an error saving the form in the service layer: ");
-            throw new SQLException(ex.getMessage());
-        }
+
+        ContactForm contactForm = ContactFormMapper.toContactForm(contactFormDTO);
+        return contactFormDAO.saveForm(contactForm);
+
     }
 }

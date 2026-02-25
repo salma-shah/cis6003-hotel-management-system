@@ -10,11 +10,11 @@ import java.util.Map;
 // it promotes modularity and reusability
 public interface CRUDDAO<T extends SuperEntity> {
 
-    boolean add(T entity) throws SQLException;
-    boolean update(T entity) throws SQLException;
-    boolean delete(int id) throws SQLException;
-    T searchById(int id) throws SQLException;
-    List<T> getAll(Map<String, String> searchParams) throws SQLException;
-    boolean existsByPrimaryKey(int primaryKey) throws SQLException;
+    boolean add(T entity) ;
+    boolean update(T entity) ;
+    boolean delete(int id) ;
+    T searchById(int id) ;
+    List<T> getAll(Map<String, String> searchParams) ;
+    boolean existsByPrimaryKey(int primaryKey) ;
 
 }

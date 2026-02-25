@@ -66,24 +66,21 @@ public class AuthServlet extends HttpServlet {
         }
 
        // setting the methods based on the paths
-        switch (path) {
-            case "/login":
-                login(request, response);
-                break;
-//            case "/logout":
+        if (path.equals("/login")) {
+            login(request, response);
+            //            case "/logout":
 //                logout(request, response);
 //                break;
-            default:
-                LOG.log(Level.SEVERE, "Unsupported path: " + path);
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        } else {
+            LOG.log(Level.SEVERE, "Unsupported path: " + path);
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
 
 
     // method for login so that we can reuse these methods in doGet and doPost both
     private void login(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        try
-        {
+
             LOG.log(Level.INFO, "Login request received");
 
             // getting form parameters from the form
@@ -117,19 +114,12 @@ public class AuthServlet extends HttpServlet {
             session.setAttribute("username", user.getUsername());
             session.setAttribute("userRole", user.getRole().name());
             response.sendRedirect(request.getContextPath() + "/dashboard.jsp");
-        }
-        catch (Exception e)
-        {
-            LOG.log(Level.SEVERE, "Login failed", e);
-            response.sendRedirect(request.getContextPath() + "/login.jsp?error=system_error");
-        }
+
     }
 
     // logout method
     private void logout(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        try
-        {
-            LOG.log(Level.INFO, "Logout request received");
+          LOG.log(Level.INFO, "Logout request received");
 
             // getting current session
             HttpSession session = request.getSession();
@@ -155,12 +145,7 @@ public class AuthServlet extends HttpServlet {
             {
                 LOG.log(Level.INFO, "No active session was found to invalidate for logout request.");
             }
-            }
-        catch (Exception e)
-        {
-            LOG.log(Level.SEVERE, "There was an error during logout: ", e.getMessage());
-            response.sendRedirect(request.getContextPath() + "/auth/login?error=system_error");
-        }
+
     }
 }
 

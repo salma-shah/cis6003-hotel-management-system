@@ -11,6 +11,8 @@ public interface UserService extends CRUDService<UserDTO> {
     UserDTO findByEmail(String email) throws Exception;
     List<UserDTO> searchUsers(String query) throws Exception;
     boolean changePassword(String username, String password) throws Exception;
-    void sendWelcomeUserEmail(UserDTO userDTO) throws SQLException;
-    void sendPasswordChangeEmail(UserDTO userDTO) throws SQLException;
+    void sendWelcomeUserEmail(UserDTO userDTO) ;
+    void sendPasswordChangeEmail(UserDTO userDTO) ;
+    boolean existsByUsername(String username);
+    boolean existsByEmail(String email);
 }

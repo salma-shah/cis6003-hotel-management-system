@@ -6,5 +6,5 @@ import dto.UserDTO;
 import java.sql.SQLException;
 
 public interface AuthService {
-    UserDTO login(UserCredentialDTO credentialDTO) throws SQLException;
+    UserDTO login(UserCredentialDTO credentialDTO);
 }

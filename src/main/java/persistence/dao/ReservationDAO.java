@@ -8,9 +8,9 @@ import persistence.dao.helper.CRUDDAO;
 import java.sql.SQLException;
 
 public interface ReservationDAO extends CRUDDAO<Reservation> {
-    Reservation findByReservationNumber(String resNum) throws SQLException;
-    boolean validateReservationNumber(String resNum) throws SQLException;
-    Integer findReservationIdByReservationNumber(String resNum) throws SQLException;
-    ReservationAggregrateDTO findFullReservation(int id) throws SQLException;
-    boolean updateReservationStatus(int id, ReservationStatus status) throws SQLException;
+    Reservation findByReservationNumber(String resNum) ;
+    boolean validateReservationNumber(String resNum) ;
+    Integer findReservationIdByReservationNumber(String resNum) ;
+    ReservationAggregrateDTO findFullReservation(int id) ;
+    boolean updateReservationStatus(int id, ReservationStatus status) ;
 }

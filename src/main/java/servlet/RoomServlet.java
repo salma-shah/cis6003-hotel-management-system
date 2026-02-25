@@ -8,6 +8,7 @@ import com.google.gson.JsonSerializer;
 import constant.RoomStatus;
 import dto.RoomDTO;
 import dto.RoomTypeDTO;
+import exception.service.BusinessValidationException;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -15,13 +16,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 // this is for uploading files ; we use it for images
 //@MultipartConfig(
@@ -51,16 +51,14 @@ public class RoomServlet extends HttpServlet {
         }
 
         // setting the methods based on the paths
-        switch (path) {
-            case "/create":
-                createRoom(request, response);
-                break;
-//            case "/get":
+        if (path.equals("/create")) {
+            createRoom(request, response);
+            //            case "/get":
 //                getUserDetails(request, response);
 //                break;
-            default:
-                LOG.log(Level.SEVERE, "Unsupported path: " + path);
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        } else {
+            LOG.log(Level.SEVERE, "Unsupported path: " + path);
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
 
@@ -92,14 +90,13 @@ public class RoomServlet extends HttpServlet {
     }
 
     private void createRoom(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        try {
             LOG.log(Level.INFO, "Creating room...");
 
             // ensuring all fields are filled
             // do validation
 
 
-            // if everything correct, we save the room
+        // if everything correct, we save the room
             // setting room TYPE first
             RoomTypeDTO roomTypeDTO = new RoomTypeDTO.Builder().roomTypeId(Integer.parseInt(request.getParameter("roomTypeId"))).build();
 
@@ -183,14 +180,9 @@ public class RoomServlet extends HttpServlet {
 //                    }
 //                }
 //            }
-        } catch (Exception ex) {
-            LOG.log(Level.SEVERE, ex.getMessage(), ex);
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
     }
 
-    private void getAllRooms(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        try {
+    private void getAllRooms(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
             LOG.log(Level.INFO, "Getting all rooms...");
 
             Map<String, String> searchParams = new HashMap<>();
@@ -253,22 +245,18 @@ public class RoomServlet extends HttpServlet {
             int adults = ((guestsAdultsParam != null) && !guestsAdultsParam.isEmpty()) ? Integer.parseInt(guestsAdultsParam) : 0;
             int children = ((guestsChildsParam != null && !guestsChildsParam.isEmpty()) ? Integer.parseInt(guestsChildsParam) : 0);
 
-            if (adults > 0 || children > 0) {
-
-                // now we filter the rooms by max occupancy method
-                rooms = rooms.stream()
-                        .filter(room -> {
-                            try {
-                                LOG.log(Level.INFO, "Searching for room with guests: " + adults + " and " + children);
-                                return roomService.isRoomEligible(room, adults, children);
-                            } catch (SQLException ex) {
-                                LOG.log(Level.INFO, "Eligible rooms could not be checked: " + ex);
-                                return false;
-                            }
-                        })
-                        .toList();
-            }
-
+        if (adults > 0 || children > 0) {
+            rooms = rooms.stream()
+                    .filter(room -> {
+                        try {
+                            return roomService.isRoomEligible(room, adults, children);
+                        } catch (BusinessValidationException e) {
+                            LOG.log(Level.INFO, "Room " + room.getRoomNum() + " not eligible: " + e.getMessage());
+                            return false;
+                        }
+                    })
+                    .collect(Collectors.toList());
+        }
 
 //            // converting dob into being serializable
             Gson gson = new GsonBuilder()
@@ -288,21 +276,17 @@ public class RoomServlet extends HttpServlet {
                 return;
             }
 
+            if (rooms.isEmpty()) {
+                request.setAttribute("rooms", "No rooms found");
+            }
             // if no search req, then just the rooms will be populated
             request.setAttribute("rooms", rooms);
             request.getRequestDispatcher("/rooms.jsp").forward(request, response);
-        }
-        catch(Exception ex)
-            {
-                LOG.log(Level.SEVERE, ex.getMessage(), ex);
-            }
         }
 
     // deleting a room method
     private void deleteRoom(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         LOG.log(Level.INFO, "Deleting room...");
-        try
-        {
             String id = request.getParameter("roomId");
             int roomId = Integer.parseInt(id);
             if (roomId == 0) {
@@ -321,10 +305,5 @@ public class RoomServlet extends HttpServlet {
                 LOG.log(Level.INFO, "User ID:" + roomId + " was not deleted.");
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
             }
-        }
-        catch (Exception ex) {
-            LOG.log(Level.SEVERE, "Error deleting user:" +  ex);
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
     }
 }

@@ -1,5 +1,6 @@
 package entity;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 
@@ -12,7 +13,7 @@ public class Guest implements SuperEntity {
     private final String address;
     private final String email, nationality  ;
     private final String nic, passportNumber;
-    private final Date dob;
+    private final LocalDate dob;
     private final LocalDateTime createdAt, updatedAt;
 
     public int getId() {
@@ -51,7 +52,7 @@ public class Guest implements SuperEntity {
         return passportNumber;
     }
 
-    public Date getDob() {
+    public LocalDate getDob() {
         return dob;
     }
 
@@ -111,7 +112,7 @@ public class Guest implements SuperEntity {
         private String firstName, lastName, contactNumber, address, email;
         private String nic;
         private String passportNumber, nationality;
-        private Date dob;
+        private LocalDate dob;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
 
@@ -156,7 +157,7 @@ public class Guest implements SuperEntity {
             this.passportNumber = passportNumber;
             return this;
         }
-        public GuestBuilder dob(Date dob) {
+        public GuestBuilder dob(LocalDate dob) {
             this.dob = dob;
             return this;
         }

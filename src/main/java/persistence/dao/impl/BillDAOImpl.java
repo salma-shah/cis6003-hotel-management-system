@@ -3,18 +3,19 @@ package persistence.dao.impl;
 import db.DBConnection;
 
 import entity.Bill;
+import exception.db.DataAccessException;
+import exception.EntityNotFoundException;
 import persistence.dao.BillDAO;
 import persistence.dao.helper.QueryHelper;
 
 import java.sql.*;
 import java.time.LocalDateTime;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class BillDAOImpl implements BillDAO {
     private static final Logger LOG = Logger.getLogger(BillDAOImpl.class.getName());
 
-    public int generateBill(Bill entity) throws SQLException {
+    public int generateBill(Bill entity) {
         try (Connection connection = DBConnection.getInstance().getConnection()) {
             PreparedStatement ps = connection.prepareStatement(
                     String.valueOf("INSERT INTO bill (reservation_id, guest_id, stay_cost,tax, discount, total_amount, created_at) VALUES ( ?, ?,?, ?, ?, ?,?)"),
@@ -39,43 +40,38 @@ public class BillDAOImpl implements BillDAO {
             }
 
         } catch (Exception ex) {
-            LOG.log(Level.SEVERE, "There was an error generating the bill");
-            throw new SQLException(ex.getMessage());
+            throw new DataAccessException("There was an error inserting the bill", ex);
         }
     }
 
     @Override
-    public Bill searchById(int id) throws SQLException {
+    public Bill searchById(int id) {
         try (Connection conn = DBConnection.getInstance().getConnection()) {
-            ResultSet resultSet = QueryHelper.execute(conn, "SELECT * FROM bill WHERE id = ?", id);
-            if (!resultSet.next()) {
-                return null;
-            }
-            return mapResultSetToBill(resultSet);
+            return QueryHelper.executeQuery(conn, "SELECT * FROM bill WHERE id = ?",
+                    rs -> {
+                if (rs.next()) {
+                    return mapResultSetToBill(rs);
+                }
+                    return null;
+                },
+                    id);
+        } catch (SQLException e) {
+            throw new EntityNotFoundException("Bill for id could not be found", e);
         }
 
     }
 
-    @Override
-    public int getLastInsertedId() throws SQLException {
-        String sql = "SELECT LAST_INSERT_ID()"; // mysql syntax
-        try (Connection connection = DBConnection.getInstance().getConnection())
-        {
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(sql);
-            if (resultSet.next()) {
-                return resultSet.getInt(1);
-            } else {
-                throw new SQLException("Unable to retrieve last inserted ID");
-            }
-        }
-    }
+    private Bill mapResultSetToBill(ResultSet resultSet) {
 
-    private Bill mapResultSetToBill(ResultSet resultSet) throws SQLException {
-        return new Bill(resultSet.getInt("id"), resultSet.getInt("reservation_id"), resultSet.getInt("guest_id"),
-                resultSet.getDouble("stay_cost"),
-                resultSet.getDouble("tax"), resultSet.getDouble("discount"),
-                resultSet.getDouble("total_amount")
-        );
+        try {
+            return new Bill(resultSet.getInt("id"), resultSet.getInt("reservation_id"), resultSet.getInt("guest_id"),
+                    resultSet.getDouble("stay_cost"),
+                    resultSet.getDouble("tax"), resultSet.getDouble("discount"),
+                    resultSet.getDouble("total_amount")
+            );
+        }
+        catch (SQLException ex) {
+            throw new EntityNotFoundException(ex.getMessage());
+        }
     }
 }

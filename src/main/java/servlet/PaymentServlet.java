@@ -23,8 +23,6 @@ import java.util.logging.Logger;
 public class PaymentServlet extends HttpServlet {
     private static final Logger LOG = Logger.getLogger(PaymentServlet.class.getName());
     private PaymentService paymentService;
-    private ReservationService reservationService;
-    private GuestService guestService;
     private BillService billService;
 
     @Override
@@ -32,8 +30,6 @@ public class PaymentServlet extends HttpServlet {
     {
         this.paymentService = new PaymentServiceImpl();
         this.billService = new BillServiceImpl();
-        this.reservationService = new ReservationServiceImpl();
-        this.guestService = new GuestServiceImpl();
     }
 
     @Override
@@ -57,19 +53,14 @@ public class PaymentServlet extends HttpServlet {
         }
 
         if (path.equals("/generate")) {
-            try {
                 generateBill(req, resp);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
         }
     }
 
-    private void generateBill(HttpServletRequest req, HttpServletResponse resp) throws SQLException{
+    private void generateBill(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
         LOG.log(Level.INFO, "Generate bill method reached...");
 
-        try {
             // getting the params
             String resNum = req.getParameter("reservationNum");
             int guestId = Integer.parseInt(req.getParameter("guestId"));
@@ -107,13 +98,6 @@ public class PaymentServlet extends HttpServlet {
             } else {
                 LOG.log(Level.INFO, "Something went wrong");
             }
-        }
-        catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw  new SQLException(ex.getMessage());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
 }

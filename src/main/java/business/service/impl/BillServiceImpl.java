@@ -11,20 +11,18 @@ import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Paragraph;
 import dto.BillDTO;
 import entity.Bill;
+import exception.service.BusinessValidationException;
+import exception.bill.BillNotFoundException;
 import mapper.BillMapper;
 import persistence.dao.BillDAO;
 import persistence.dao.impl.BillDAOImpl;
 
 import java.io.ByteArrayOutputStream;
-import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class BillServiceImpl implements BillService {
     private final BillDAO billDAO;
     private final ReservationService reservationService;
     private final GuestService guestService;
-    private static final Logger LOG = Logger.getLogger(BillServiceImpl.class.getName());
 
     public BillServiceImpl() {
         this.billDAO = new  BillDAOImpl();
@@ -33,15 +31,18 @@ public class BillServiceImpl implements BillService {
     }
 
     @Override
-    public int generateBill(String resCode, int guestId, double stayCost, double tax, double discount) throws SQLException {
+    public int generateBill(String resCode, int guestId, double stayCost, double tax, double discount)  {
+
+        if (stayCost < 0 || discount < 0 || tax < 0)  {
+            throw new BusinessValidationException("Invalid monetary values");
+        }
 
         int resId = reservationService.findResIdByReservationNumber(resCode);
-        // int guestId = guestService.findGuestIdByRegistrationNumber(guestCode);
 
         double totalAmount = calculateTotalAmount(stayCost, tax, discount);
+
         // now we build the dto
         BillDTO billDTO = new BillDTO(0, resId, guestId, stayCost, tax, discount, totalAmount);
-
         // generating bill if it exists
         Bill bill = BillMapper.toBill(billDTO);
         return billDAO.generateBill(bill);
@@ -49,8 +50,6 @@ public class BillServiceImpl implements BillService {
 
     @Override
     public byte[] generateBillPDF(int billId, String resCode, int guestId, double stayCost, double tax, double discount,  double totalAmount) {
-
-       try {
            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
            PdfWriter pdfWriter = new PdfWriter(outputStream);
            PdfDocument pdfDocument = new PdfDocument(pdfWriter);
@@ -77,22 +76,24 @@ public class BillServiceImpl implements BillService {
 
            document.close();
            return outputStream.toByteArray();
-       }
-       catch (SQLException ex) {
-           LOG.log(Level.SEVERE, null, ex);
-          // throw new SQLException(ex.getMessage());
-           return null;
-       }
     }
 
     @Override
-    public double calculateTotalAmount(double stayCost, double tax, double discount) throws SQLException {
+    public double calculateTotalAmount(double stayCost, double tax, double discount)  {
+        if (stayCost < 0 || discount < 0 || tax < 0)  {
+            throw new BusinessValidationException("Invalid monetary values");
+        }
+
         double discountAmount = stayCost * (discount/100);
         return (stayCost+tax) - discountAmount;
     }
 
     @Override
-    public BillDTO searchById(int id) throws SQLException {
+    public BillDTO searchById(int id)  {
+
+        if (billDAO.searchById(id) == null) {
+            throw new BillNotFoundException("Bill not found.");
+        }
         return BillMapper.toBillDTO(billDAO.searchById(id));
     }
 }

@@ -44,38 +44,32 @@ public class CheckRoomAvailabilityServlet extends HttpServlet {
 
     private void getAvailableRooms(HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.setContentType("application/json");
-        try {
-            LOG.log(Level.INFO, "Getting available rooms...");
+        LOG.log(Level.INFO, "Getting available rooms...");
 
-            LocalDate checkIn = LocalDate.parse(request.getParameter("checkIn"));
-            LocalDate checkOut = LocalDate.parse(request.getParameter("checkOut"));
-            int roomTypeId = Integer.parseInt(request.getParameter("roomTypeId"));
-            String[] amenities =  request.getParameterValues("amenities");
-            List<Integer> amenityIds = new ArrayList<>();
+        LocalDate checkIn = LocalDate.parse(request.getParameter("checkIn"));
+        LocalDate checkOut = LocalDate.parse(request.getParameter("checkOut"));
+        int roomTypeId = Integer.parseInt(request.getParameter("roomTypeId"));
+        String[] amenities = request.getParameterValues("amenities");
+        List<Integer> amenityIds = new ArrayList<>();
 
-            if (amenities != null) {
-                for (String amenityId : amenities) {
-                    amenityIds.add(Integer.parseInt(amenityId));
-                }
+        if (amenities != null) {
+            for (String amenityId : amenities) {
+                amenityIds.add(Integer.parseInt(amenityId));
             }
-            LOG.log(Level.INFO, "Parameters are: " + checkIn + " " + checkOut + " " +  roomTypeId + " " + amenityIds.size());
-
-            List<RoomDTO> availableRooms = roomService.findAvailableRooms(checkIn, checkOut, roomTypeId, amenityIds);
-            LOG.log(Level.INFO, "Rooms are: " + availableRooms);
-            // converting dates to gson to serialize
-            // fallback protection to avoid errors
-            Gson gson = new GsonBuilder()
-                    .registerTypeAdapter(Date.class, (JsonSerializer<Date>) (src, typeOfSrc, context) ->
-                            new JsonPrimitive(new SimpleDateFormat("yyyy-MM-dd").format(src)))
-                    .registerTypeAdapter(LocalDateTime.class, (JsonSerializer<LocalDateTime>) (src, typeOfSrc, context) ->
-                            new JsonPrimitive(src.toString()))
-                    .create();
-
-            response.getWriter().println(gson.toJson(availableRooms));
-
         }
-        catch (Exception e) {
-            LOG.log(Level.SEVERE, e.getMessage(), e);
-        }
+        LOG.log(Level.INFO, "Parameters are: " + checkIn + " " + checkOut + " " + roomTypeId + " " + amenityIds.size());
+
+        List<RoomDTO> availableRooms = roomService.findAvailableRooms(checkIn, checkOut, roomTypeId, amenityIds);
+        LOG.log(Level.INFO, "Rooms are: " + availableRooms);
+        // converting dates to gson to serialize
+        // fallback protection to avoid errors
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapter(Date.class, (JsonSerializer<Date>) (src, typeOfSrc, context) ->
+                        new JsonPrimitive(new SimpleDateFormat("yyyy-MM-dd").format(src)))
+                .registerTypeAdapter(LocalDateTime.class, (JsonSerializer<LocalDateTime>) (src, typeOfSrc, context) ->
+                        new JsonPrimitive(src.toString()))
+                .create();
+
+        response.getWriter().println(gson.toJson(availableRooms));
     }
 }

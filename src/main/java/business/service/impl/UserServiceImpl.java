@@ -1,34 +1,34 @@
 package business.service.impl;
 
+import business.service.UserService;
 import constant.Role;
+import dto.UserCredentialDTO;
+import dto.UserDTO;
+import entity.User;
+import exception.service.DuplicateEmailException;
+import exception.user.DuplicateUsernameException;
+import exception.user.UnauthorizedRoleException;
+import exception.user.UserNotFoundException;
 import mail.EmailBase;
 import mail.EmailUtility;
 import mail.factory.EmailFactory;
 import mail.factory.impl.PasswordChangeEmailFactory;
 import mail.factory.impl.WelcomeEmailFactory;
+import mapper.UserMapper;
 import persistence.dao.UserDAO;
 import persistence.dao.impl.UserDAOImpl;
-import dto.UserCredentialDTO;
-import dto.UserDTO;
-import entity.User;
-import mapper.UserMapper;
 import security.PasswordManager;
-import business.service.UserService;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class UserServiceImpl implements UserService {
-
     // enabling logging in tomcat server
     private static final Logger LOG = Logger.getLogger(UserServiceImpl.class.getName());
-    // private final Connection connection = DBConnection.getConnection();
     private final UserDAO userDAO;
 
     // setting up hash sets for usernames and emails
@@ -37,36 +37,36 @@ public class UserServiceImpl implements UserService {
     private final Set<String> emails = ConcurrentHashMap.newKeySet();
 
     public UserServiceImpl() {
-        this.userDAO = new UserDAOImpl();
-        preloadUniqueFields();  // we preload the unique usernames and fields so nothing new pops up after tomcat server is restarted ecery time
-    }
-
-    private void preloadUniqueFields() {
-        List<UserDTO> userDTOs = new ArrayList<>();
-
-        // lambda function
-        userDTOs.forEach(userDTO -> {
-            usernames.add(userDTO.getUsername());
-            emails.add(userDTO.getEmail());
-        });
-    }
-
-    public boolean add(UserCredentialDTO userCredentialDTO, UserDTO userDTO) throws SQLException {
-       // checking that username or email is unique
-        String username = userCredentialDTO.getUsername();
-        String email = userDTO.getEmail();
-
-        if (!usernames.add(username)) {
-            throw new IllegalArgumentException("Duplicate username");
+            this.userDAO = new UserDAOImpl();
+            preloadUniqueFields();  // we preload the unique usernames and fields so nothing new pops up after tomcat server is restarted every time
         }
 
-        if (!emails.add(email)) {
-            throw new IllegalArgumentException("Duplicate email");
+        private void preloadUniqueFields() {
+            List<UserDTO> userDTOs = new ArrayList<>();
+
+            // lambda function
+            userDTOs.forEach(userDTO -> {
+                usernames.add(userDTO.getUsername());
+                emails.add(userDTO.getEmail());
+            });
         }
 
-        try {
+        public boolean add(UserCredentialDTO userCredentialDTO, UserDTO userDTO)  {
+            // checking that username or email is unique
+            String username = userCredentialDTO.getUsername();
+            String email = userDTO.getEmail();
+
+            if (!usernames.add(username)) {
+                throw new DuplicateUsernameException("Username" + username + " already exists");
+            }
+
+            if (!emails.add(email)) {
+                throw new DuplicateEmailException("Email " + email + " already exists");
+            }
+
             // if manager is logged in
-            //   if (validateManager(userDTO)) {
+           // validateManager(userDTO);
+
             // first, generating salt and hashing password using password manager method
             String hashedPassword = PasswordManager.saltAndHashPassword(userCredentialDTO.getPassword());
             // will make user to entity using user mapper
@@ -88,113 +88,108 @@ public class UserServiceImpl implements UserService {
 
             // then finally the send mail utility
             EmailUtility.sendMail(emailBase.getReceiver(), emailBase.getSubject(), emailBase.getBody());
-                return true;
+            return true;
         }
-        catch (SQLException ex) {
-            usernames.remove(username);
-            emails.remove(email);
-            throw ex;
-        }
-    }
 
-    @Override
-    public boolean update(UserDTO userDTO) throws SQLException {
-        try {
-            // if manager is logged in
-            // if (validateManager(userDTO)) {
+        @Override
+        public boolean update(UserDTO userDTO)  {
+
             // fetching existing user
-            User existingUser = userDAO.searchById( userDTO.getUserId());
+            User existingUser = userDAO.searchById(userDTO.getUserId());
 
             // if it doesnt exist
             if (existingUser == null) {
-                throw new IllegalArgumentException("User not found");
+                throw new UserNotFoundException("User not found");
             }
             // if it exists then update the fields
             // using mapper to update
             return userDAO.update( UserMapper.toUpdatedUser(existingUser, userDTO));
         }
-        catch (SQLException ex) {
-            LOG.log(Level.INFO, "Something went wrong with updating the user: " + ex.getMessage(), ex);
-            throw ex;
-        }
-    }
 
-    @Override
-    public boolean delete(int id) throws SQLException {
-        try  {
+        @Override
+        public boolean delete(int id)  {
+
+        if (id <= 0) { throw new IllegalArgumentException("User ID is invalid"); }
+
         // if the user for the specific PK exists, delete the user
-        if (userDAO.existsByPrimaryKey( id))
-        {
-            return userDAO.delete( id);
-        }}
-        catch (SQLException ex) {
-            throw new SQLException(ex.getMessage());
-        }
-
-        return false;
+            if (!userDAO.existsByPrimaryKey(id)) {
+                throw new UserNotFoundException("User not found");
+            }
+            return userDAO.delete(id);
     }
 
     @Override
-    public boolean existsByPrimaryKey(int primaryKey) throws SQLException {
-        try
+    public boolean existsByPrimaryKey(int primaryKey)  {
+        if (primaryKey <= 0)
         {
-            return userDAO.existsByPrimaryKey( primaryKey);
+            throw new IllegalArgumentException("User ID is invalid");
         }
-        catch (Exception ex)
-        {
-            throw new SQLException(ex.getMessage());
-        }
+
+        return userDAO.existsByPrimaryKey(primaryKey);
     }
 
     // searching methods
     @Override
-    public UserDTO searchById(int id) throws SQLException {
-        return UserMapper.toUserDTO(userDAO.searchById( id));
+    public UserDTO searchById(int id) {
+        if (id <= 0) {
+            throw new IllegalArgumentException("User ID is invalid");
+        }
+        User user = userDAO.searchById(id);
+
+        if (user == null) {
+            throw new UserNotFoundException("User not found with ID: " + id);
+        }
+
+        return UserMapper.toUserDTO(user);
     }
 
     @Override
-    public UserDTO findByUsername(String username) throws Exception {
-        try
+    public UserDTO findByUsername(String username) {
+        if (username == null)
         {
-            return UserMapper.toUserDTO(userDAO.findByUsername( username));
+            throw new IllegalArgumentException("Username is invalid");
         }
-        catch (Exception ex)
+
+        User user = userDAO.findByUsername(username);
+        if (user == null)
         {
-            throw new Exception(ex.getMessage());
+            throw new UserNotFoundException("User not found");
         }
+        return UserMapper.toUserDTO(user);
     }
 
     @Override
-    public UserDTO findByEmail(String email) throws Exception {
-        try
+    public UserDTO findByEmail(String email) {
+        if (email == null)
         {
-            return UserMapper.toUserDTO(userDAO.findByEmail( email));
+            throw new IllegalArgumentException("Email is invalid");
         }
-        catch (Exception ex)
+
+        User user = userDAO.findByEmail(email);
+        if (user == null)
         {
-            throw new Exception(ex.getMessage());
+            throw new UserNotFoundException("User not found");
         }
+        return UserMapper.toUserDTO(user);
     }
 
     @Override
-    public List<UserDTO> searchUsers(String query) throws Exception {
-        return UserMapper.toDTOList(userDAO.searchUsers( query));
+    public List<UserDTO> searchUsers(String query) {
+        return UserMapper.toDTOList(userDAO.searchUsers(query));
     }
 
     @Override
-    public List<UserDTO> getAll(Map<String, String> searchParams) throws SQLException {
-        try
-        {
-            return UserMapper.toDTOList(userDAO.getAll( searchParams));
-        }
-        catch (Exception ex)
-        {
-            throw new SQLException(ex.getMessage());
-        }
+    public List<UserDTO> getAll(Map<String, String> searchParams)  {
+        return UserMapper.toDTOList(userDAO.getAll( searchParams));
     }
 
     @Override
-    public boolean changePassword(String username, String password) throws Exception {
+    public boolean changePassword(String username, String password) {
+
+        if (!userDAO.existByUsername(username)) {
+            throw new UserNotFoundException("User for username: " + username + " not found");
+        }
+
         // we need to hash the password before we store it
         String hashedPassword = PasswordManager.saltAndHashPassword(password);
         userDAO.changePassword(username, hashedPassword);
@@ -204,12 +199,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void sendWelcomeUserEmail(UserDTO userDTO) throws SQLException {
-
-    }
+    public void sendWelcomeUserEmail(UserDTO userDTO)  {}
 
     @Override
-    public void sendPasswordChangeEmail(UserDTO userDTO) throws SQLException {
+    public void sendPasswordChangeEmail(UserDTO userDTO)  {
         // sending email
         // sending the email
         // using the creator method for welcoming user email
@@ -222,8 +215,28 @@ public class UserServiceImpl implements UserService {
         EmailUtility.sendMail(emailBase.getReceiver(), emailBase.getSubject(), emailBase.getBody());
     }
 
+    @Override
+    public boolean existsByUsername(String username) {
+        if (username == null || username.isBlank()) {
+            throw new IllegalArgumentException("Username is invalid");
+        }
+        return userDAO.existByUsername(username);
+    }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("Email is invalid");
+        }
+        return userDAO.existByEmail(email);
+    }
+
     // method to validate that user is a manager logged in
-    private boolean validateManager(UserDTO manager) throws SQLException {
-        return manager.getRole() == Role.Manager && manager.getUsername() != null;
+    private void validateManager(UserDTO manager) {
+        if (manager == null ||
+                manager.getRole() != Role.Manager ||
+                manager.getUsername() == null) {
+            throw new UnauthorizedRoleException("Only managers can create user accounts");
+        }
     }
 }

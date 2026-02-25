@@ -3,11 +3,14 @@ package business.service.impl;
 import business.service.GuestService;
 import dto.GuestDTO;
 import entity.Guest;
+import exception.EntityNotFoundException;
+import exception.guest.DuplicateGuestRegNumException;
+import exception.guest.GuestNotFoundException;
+import exception.service.DuplicateEmailException;
 import mapper.GuestMapper;
 import persistence.dao.GuestDAO;
 import persistence.dao.impl.GuestDAOImpl;
 
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,98 +26,112 @@ public class GuestServiceImpl implements GuestService {
     }
 
     @Override
-    public boolean update(GuestDTO guestDTO) throws SQLException {
-        try {
-            return guestDAO.update(GuestMapper.toUpdatedGuest(guestDTO));
-        }
-        catch (SQLException ex) {
-            LOG.log(Level.INFO, "Something went wrong with updating the guest");
-            throw new SQLException(ex.getMessage());
-        }
+    public boolean update(GuestDTO guestDTO)  {
+        return guestDAO.update(GuestMapper.toUpdatedGuest(guestDTO));
     }
 
     @Override
-    public boolean delete(int id) throws SQLException {
-        try  {
-            // if the guest for the specific PK exists, delete the user
-            if (guestDAO.existsByPrimaryKey( id))
-            {
-                return guestDAO.delete( id);
-            }}
-        catch (SQLException ex) {
-            throw new SQLException(ex.getMessage());
-        }
-        return false;
-    }
-
-    @Override
-    public GuestDTO searchById(int id) throws SQLException {
-        return GuestMapper.toGuestDTO(guestDAO.searchById(id));
-    }
-
-    @Override
-    public List<GuestDTO> getAll(Map<String, String> searchParams) throws SQLException {
-        try {
-            Map<String, String> filters = (searchParams!= null) ? new HashMap<>(searchParams) : new HashMap<>();
-
-            return GuestMapper.toGuestDTOList(guestDAO.getAll(filters));
-        }
-        catch (SQLException e)
+    public boolean delete(int id)  {
+        if (id <=0 )
         {
-            throw new SQLException(e.getMessage());
+            throw new IllegalArgumentException("Invalid guest ID");
         }
-    }
 
-    @Override
-    public boolean existsByPrimaryKey(int primaryKey) throws SQLException {
-        try
+        // if the guest for the specific PK exists, delete the user
+        if (!guestDAO.existsByPrimaryKey(id))
         {
-            return guestDAO.existsByPrimaryKey(primaryKey);
+            throw new GuestNotFoundException("Guest Not Found for ID: " + id);
         }
-        catch (Exception ex)
+        return guestDAO.delete(id);
+    }
+
+    @Override
+    public GuestDTO searchById(int id)  {
+        if (id <= 0 )
         {
-            throw new SQLException(ex.getMessage());
+            throw new IllegalArgumentException("Invalid guest ID");
         }
-    }
-
-    @Override
-    public boolean add(GuestDTO guestDTO) throws SQLException {
         try {
-            // ensuring reg num is unique
-            if (validateRegistrationNumber(guestDTO.getRegistrationNumber())) {
-                LOG.log(Level.WARNING, "Invalid registration number");
-                return false;}
-
-            if (guestDAO.findByEmail(guestDTO.getEmail())) {
-                LOG.log(Level.WARNING, "Email already exists");
-                return false; // email already exists
-            }
-            Guest guest = GuestMapper.toGuest(guestDTO);
-            LOG.log(Level.INFO, "Guest has been registered successfully:" + guest);
-            return guestDAO.add(guest);
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, "Error registering guest in service layer", ex);
-            throw new SQLException(ex.getMessage());
+            Guest guest = guestDAO.searchById(id);
+            return GuestMapper.toGuestDTO(guest);
+        } catch (EntityNotFoundException e) {
+            LOG.log(Level.WARNING, "Guest Not Found for ID: " + id, e);
+            throw new GuestNotFoundException("Guest for ID: " + id + " not found");
         }
     }
 
     @Override
-    public Integer findGuestIdByRegistrationNumber(String registrationNumber) throws SQLException {
-        try {
-            return guestDAO.findGuestIdByRegistrationNumber(registrationNumber);
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, "Error finding guest in service layer");
-            throw new SQLException(ex.getMessage());
+    public List<GuestDTO> getAll(Map<String, String> searchParams)  {
+        Map<String, String> filters = (searchParams!= null) ? new HashMap<>(searchParams) : new HashMap<>();
+        return GuestMapper.toGuestDTOList(guestDAO.getAll(filters));
+    }
+
+    @Override
+    public boolean existsByPrimaryKey(int primaryKey)  {
+
+        if (primaryKey <= 0)
+        {
+            throw new IllegalArgumentException("Invalid guest ID");
         }
+
+        return guestDAO.existsByPrimaryKey(primaryKey);
     }
 
     @Override
-    public String findGuestRegNumById(int id) throws SQLException {
-        return guestDAO.findGuestRegNumById(id);
+    public boolean add(GuestDTO guestDTO)  {
+        // ensuring reg num is unique
+        if(guestDAO.existsByRegistrationNumber(guestDTO.getRegistrationNumber()))
+        {
+            throw new DuplicateGuestRegNumException("Registration Number " + guestDTO.getRegistrationNumber() + " already exists");
+        }
+
+        if (guestDAO.findByEmail(guestDTO.getEmail())) {
+            throw new DuplicateEmailException("Email" + guestDTO.getEmail() + " is already registered into system"); // email already exists
+        }
+
+        Guest guest = GuestMapper.toGuest(guestDTO);
+        LOG.log(Level.INFO, "Guest has been registered successfully:" + guest);
+        return guestDAO.add(guest);
     }
 
     @Override
-    public boolean validateRegistrationNumber(String registrationNumber) throws SQLException {
-        return guestDAO.findByRegistrationNumber(registrationNumber);
+    public Integer findGuestIdByRegistrationNumber(String registrationNumber)  {
+        if  (registrationNumber == null || registrationNumber.isEmpty() ) { throw new IllegalArgumentException("Invalid guest registration number"); }
+
+        int guestId = guestDAO.findGuestIdByRegistrationNumber(registrationNumber);
+        if (guestId < 0) {
+            throw new GuestNotFoundException("Guest ID Not Found for Reg Num: " + registrationNumber);
+        }
+        return guestId;
+
+    }
+
+    @Override
+    public String findGuestRegNumById(int id) {
+
+        if  (id <=0 ) { throw new IllegalArgumentException("Invalid guest ID");}
+
+        String guestRegNum = guestDAO.findGuestRegNumById(id);
+        if (guestRegNum == null) {
+            throw new GuestNotFoundException("Guest Reg Num Not Found for ID: " + id);
+        }
+        return guestRegNum;
+    }
+
+    @Override
+    public boolean validateRegistrationNumber(String registrationNumber)  {
+
+        if (registrationNumber == null || registrationNumber.isEmpty())
+        {
+            throw new IllegalArgumentException("Invalid registration number");
+        }
+
+        boolean validRegNum = guestDAO.existsByRegistrationNumber(registrationNumber);
+
+        if (!validRegNum)
+        {
+            throw new GuestNotFoundException("Guest Not Found for Registration Number: " + registrationNumber);
+        }
+        return true;
     }
 }
