@@ -92,7 +92,7 @@ public class ReservationServlet extends HttpServlet {
             // getting the required parameters
             int roomId = Integer.parseInt(request.getParameter("roomId"));
             LOG.log(Level.INFO, "Room Id: " + roomId);
-
+            LOG.log(Level.INFO, "Guest num:" + request.getParameter("guestRegNumber"));
             // getting guest id by reservation number
             Integer guestIdObj = guestService.findGuestIdByRegistrationNumber(request.getParameter("guestRegNumber"));
             if (guestIdObj == null) {
@@ -100,7 +100,7 @@ public class ReservationServlet extends HttpServlet {
                 return;
             }
             int guestId = guestIdObj;
-
+            LOG.log(Level.INFO, "Guest id: " + guestId);
             String reservationNum = request.getParameter("reservationNumber");
             int numAdults = Integer.parseInt(request.getParameter("numAdults"));
             int numChildren = Integer.parseInt(request.getParameter("numChildren"));
@@ -112,10 +112,11 @@ public class ReservationServlet extends HttpServlet {
             // getting the amenities with prices
             // this gets the values of the amenities
             String[] selectedAmenities = request.getParameterValues("amenities");
-            List<String> selectedAmenitiesList = Arrays.asList(selectedAmenities);
-            if (selectedAmenitiesList != null) {
-                Collections.emptyList();
-            }
+            LOG.log(Level.INFO, "Amenities: " + Arrays.toString(selectedAmenities));
+            List<String> selectedAmenitiesList =
+                selectedAmenities != null
+                        ? Arrays.asList(selectedAmenities)
+                        : new ArrayList<>();
 
             // do validation
 

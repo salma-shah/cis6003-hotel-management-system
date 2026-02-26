@@ -99,12 +99,11 @@ public class GuestServiceImpl implements GuestService {
     public Integer findGuestIdByRegistrationNumber(String registrationNumber)  {
         if  (registrationNumber == null || registrationNumber.isEmpty() ) { throw new IllegalArgumentException("Invalid guest registration number"); }
 
-        int guestId = guestDAO.findGuestIdByRegistrationNumber(registrationNumber);
-        if (guestId < 0) {
+        Integer guestId = guestDAO.findGuestIdByRegistrationNumber(registrationNumber);
+        if (guestId == null) {
             throw new GuestNotFoundException("Guest ID Not Found for Reg Num: " + registrationNumber);
         }
         return guestId;
-
     }
 
     @Override

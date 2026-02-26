@@ -81,7 +81,7 @@ public class UserServiceImpl implements UserService {
             // sending email
             // sending the email
             // using the creator method for welcoming user email
-            EmailFactory emailFactory = new WelcomeEmailFactory((userDTO.getFirstName() + " " + userDTO.getLastName()), userDTO.getEmail(), userDTO.getUsername(), userCredentialDTO.getPassword());
+            EmailFactory emailFactory = new WelcomeEmailFactory((userDTO.getFirstName() + " " + userDTO.getLastName()), userDTO.getEmail(), userDTO.getUsername());
 
             // then using the base interface
             EmailBase emailBase = emailFactory.createEmail();

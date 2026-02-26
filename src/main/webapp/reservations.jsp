@@ -261,6 +261,14 @@
                         <input type="text" id="guestId" readonly class="form-control">
                     </div>
                     <div class="form-group">
+                        <label>Room Type</label>
+                        <input type="text" id="roomType" readonly class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Room Number</label>
+                        <input type="text" id="roomNum" readonly class="form-control">
+                    </div>
+                    <div class="form-group">
                         <label>Room ID</label>
                         <input type="text" id="roomId" readonly class="form-control">
                     </div>
@@ -491,6 +499,12 @@
 
                 document.getElementById("guestId").value =
                     data.reservationDTO.guestId;
+
+                document.getElementById("roomType").value =
+                    data.roomTypeName + " Room";
+
+                document.getElementById("roomNum").value =
+                    data.roomNum;
 
                 document.getElementById("roomId").value =
                     data.reservationDTO.roomId;

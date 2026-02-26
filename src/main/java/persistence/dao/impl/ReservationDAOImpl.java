@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ReservationDAOImpl implements ReservationDAO {
@@ -191,11 +192,14 @@ public class ReservationDAOImpl implements ReservationDAO {
                 "r.num_adults, r.num_children, r.status AS res_status, r.date_of_res, " +
                 "b.id AS b_id, b.reservation_id, b.guest_id AS b_guest_id, b.stay_cost, b.total_amount, b.tax, b.discount, b.status AS bill_status, " +
                 "p.payment_id, p.bill_id, p.payment_method, p.payment_date, p.amount, " +
-                "g.registration_number, g.id AS g_guest_id, g.first_name, g.last_name, g.address, g.email, g.nic, g.passport_number, g.contact_number " +
+                "g.registration_number, g.id AS g_guest_id, g.first_name, g.last_name, g.address, g.email, g.nic, g.passport_number, g.contact_number, " +
+                "rt.name AS rt_name, rm.room_number " +
                 "FROM reservation r " +
                 " LEFT JOIN bill b ON r.id = b.reservation_id " +
                 " LEFT JOIN payment p ON b.id = p.bill_id " +
                 " LEFT JOIN guest g ON r.guest_id = g.id " +
+                " LEFT JOIN room rm ON r.room_id = rm.room_id " +
+                " LEFT JOIN room_type rt ON rm.room_type_id = rt.room_type_id " +
                 " WHERE r.id = ?";
 
         try(Connection conn = DBConnection.getInstance().getConnection()) {
@@ -203,7 +207,7 @@ public class ReservationDAOImpl implements ReservationDAO {
                     resultSet ->
                     {
                         if (!resultSet.next()) {
-                            throw new EntityNotFoundException("Reservation not found" + id);
+                            throw new EntityNotFoundException("Reservation not found for ID: " + id);
                         }
 
                         LocalDateTime dateTime = resultSet.getTimestamp("date_of_res").toLocalDateTime();
@@ -236,6 +240,8 @@ public class ReservationDAOImpl implements ReservationDAO {
                                     resultSet.getString("payment_method"));
                         }
 
+                        String roomTypeName = resultSet.getString("rt_name");
+                        int roomNum = resultSet.getInt("room_number");
                         // guest dto building
                         GuestDTO guestDTO = null;
                         if (resultSet.getObject("g_guest_id") != null) {
@@ -250,11 +256,12 @@ public class ReservationDAOImpl implements ReservationDAO {
                                     .registrationNumber(resultSet.getString("registration_number"))
                                     .email(resultSet.getString("email")).build();
                         }
-                        return new ReservationAggregrateDTO(reservationDTO, billDTO, paymentDTO, guestDTO);
+                        return new ReservationAggregrateDTO(reservationDTO, billDTO, paymentDTO, guestDTO, roomTypeName, roomNum);
                     }, id);
         }
         catch (SQLException ex)
         {
+            LOG.log(Level.SEVERE, ex.getMessage(), ex);
             throw new DataAccessException("Error retrieving reservation's data from database", ex);
         }
     }

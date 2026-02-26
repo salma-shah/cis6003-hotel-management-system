@@ -52,7 +52,7 @@ public class AuthServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
+            throws IOException, ServletException {
 
         // logs for debugging
 //        LOG.log(Level.INFO, "Handling POST request for authentication purposes.");
@@ -79,7 +79,7 @@ public class AuthServlet extends HttpServlet {
 
 
     // method for login so that we can reuse these methods in doGet and doPost both
-    private void login(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    private void login(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
             LOG.log(Level.INFO, "Login request received");
 
@@ -88,9 +88,10 @@ public class AuthServlet extends HttpServlet {
             String password = request.getParameter("password");
 
             // validating the input
-            if (username == null || password == null || username.isEmpty() || password.isEmpty()) {
-               response.sendRedirect(request.getContextPath() + "/auth/login?error=empty_fields");
-               return;
+            if (username == null || password == null || username.trim().isEmpty() || password.trim().isEmpty()) {
+                request.setAttribute("emptyFields", "Please enter username and password");
+                request.getRequestDispatcher("/login.jsp").forward(request, response);
+                return;
             }
 
             UserCredentialDTO credentials= new UserCredentialDTO(username, password);
@@ -99,11 +100,7 @@ public class AuthServlet extends HttpServlet {
             // using password manager class
             //  the service will do it
 
-            UserDTO user =  authService.login(credentials);
-            if  (user == null) {
-                response.sendRedirect(request.getContextPath() + "/auth/login?error=invalid_credentials");
-                return;
-            }
+            UserDTO user = authService.login(credentials);
 
             // if credentials are correct, then the user will be taken to dashboard
             // create session and passing use details
@@ -114,7 +111,6 @@ public class AuthServlet extends HttpServlet {
             session.setAttribute("username", user.getUsername());
             session.setAttribute("userRole", user.getRole().name());
             response.sendRedirect(request.getContextPath() + "/dashboard.jsp");
-
     }
 
     // logout method

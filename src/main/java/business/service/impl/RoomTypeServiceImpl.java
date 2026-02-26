@@ -29,7 +29,7 @@ public class RoomTypeServiceImpl implements RoomTypeService {
     @Override
     public RoomTypeDTO getByRoomId(int id)  {
         if (id <=0 ) { throw new IllegalArgumentException("Room ID is invalid");}
-        RoomType roomType = roomTypeDAO.searchById(id);
+        RoomType roomType = roomTypeDAO.findByRoomId(id);
         return RoomTypeMapper.toRoomTypeDTO(roomType);
     }
 

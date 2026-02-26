@@ -73,15 +73,10 @@
             font-size: 14px;
         }
 
-        .form-error {
-            margin-top: 12px;
-            padding: 10px 14px;
-            border-radius: 6px;
-            background-color: #fdecea;
-            color: #b42318;
-            border: 1px solid #f5c2c7;
-            font-size: 0.95rem;
-            font-weight: 500;
+        .error-message {
+            color: darkred;
+            font-size: 13px;
+            margin-top: 4px;
         }
 
         .form-error i {
@@ -105,18 +100,27 @@
         <form action="<c:url value='/auth/login' />" method="post" id="loginForm">
         <div class="mb-3">
                 <label>Username</label>
-                <input type="text" class="form-control" id="username" name="username" required>
+                <input type="text" class="form-control" id="username" name="username">
+            <div class="error-message" id="emptyUsernameError" style="display: none" ></div>
             </div>
+
 
             <div class="mb-3">
                 <label>Password</label>
                 <div style="position: relative;">
-                    <input type="password" class="form-control" id="password" name="password" required>
+                    <input type="password" class="form-control" id="password" name="password">
                     <button type="button" id="togglePassword" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer;">
                         <i class="bi bi-eye" id="eyeIcon"></i>
                     </button>
+                    <div class="error-message" id="emptyPasswordError" style="display: none" ></div>
                 </div>
             </div>
+
+            <c:if test="${not empty pageContext.exception}">
+                <div style="color: darkred">
+                ${pageContext.exception.message}
+                </div>
+            </c:if>
 
             <div class="text-center">
                 <button type="submit" class="btn btn-light login-btn" >
@@ -125,35 +129,10 @@
             </div>
         </form>
 
-<%-- ensuring input is valid  --%>
-
-<c:if test="${not empty param.error}">
-    <c:choose>
-        <c:when test="${param.error == 'empty_fields'}">
-            <p class="form-error"> Please provide both username and password.</p>
-        </c:when>
-    </c:choose>
-    <c:choose>
-        <c:when test="${param.error == 'invalid_credentials'}">
-            <p class="form-error"> You have entered an invalid username or password.</p>
-        </c:when>
-    </c:choose>
-<%--    <c:choose>--%>
-<%--        <c:when test="${param.error == 'user_not_found'}">--%>
-<%--            <p class="form-error"> User could not be found.</p>--%>
-<%--        </c:when>--%>
-<%--    </c:choose>--%>
-    <c:choose>
-        <c:when test="${param.error == 'system_error'}">
-            <p class="form-error"> Something went wrong. We apologize.</p>
-        </c:when>
-    </c:choose>
-    <c:otherwise>
-        <p class="form-error">Login failed. Please try again.</p>
-    </c:otherwise>
-</c:if>
     </div>
 </div>
+
+
 
 <%--if user enters password, they may toggle the eye icon and choose between viewing the password text or not--%>
 <%--this controls showing/not showing the text --%>
@@ -175,6 +154,35 @@
             eyeIcon.classList.remove('bi-eye-slash');
             eyeIcon.classList.add('bi-eye');
         }
+        });
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const form = document.getElementById("loginForm");
+
+            form.addEventListener("submit", (e) => {
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                let valid = false;
+
+                if (!username) {
+                    const usernameError = document.getElementById("emptyUsernameError");
+                    usernameError.style.display = "block";
+                    document.getElementById("emptyUsernameError").textContent = "Username is required";
+                    valid = true;
+                }
+
+                if (!password) {
+                    const usernameError = document.getElementById("emptyPasswordError");
+                    usernameError.style.display = "block";
+                    document.getElementById("emptyPasswordError").textContent = "Password is required";
+                    valid = true;
+                }
+
+                if (valid) {
+                    e.preventDefault();
+                }
+            });
+
         });
 </script>
 </body>

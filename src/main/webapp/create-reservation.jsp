@@ -593,7 +593,7 @@
     <script>
         const reservationNum = "${param.reservationNum}";
         const totalCost = "${param.totalCost}";
-        const guestId = "${param.guestId}";
+        let guestId = "${param.guestId}";
 
         if (reservationNum) {
             const confirmPayment = confirm(

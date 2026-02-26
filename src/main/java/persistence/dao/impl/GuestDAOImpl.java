@@ -51,6 +51,7 @@ public class GuestDAOImpl implements GuestDAO {
         }
         catch(SQLException ex)
         {
+            LOG.log(Level.SEVERE, "There was an error finding the guest by reg number", ex);
             throw new DataAccessException("There was an error finding the guest by reg number", ex);
         }
     }

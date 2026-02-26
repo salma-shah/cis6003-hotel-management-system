@@ -107,9 +107,7 @@ public class ReservationServiceImpl implements ReservationService {
     public boolean makeReservation(ReservationDTO reservationDTO, List<String> selectedAmenities)  {
 
         // checking if res num is unique
-            if (validateResNum(reservationDTO.getReservationNumber())) {
-                return false;
-            }
+        validateResNum(reservationDTO.getReservationNumber());
 
              // checking if dates are valid
             if (!validateReservationDates(reservationDTO)) return false;
