@@ -187,7 +187,7 @@ public class ReservationDAOImpl implements ReservationDAO {
     }
 
     @Override
-    public ReservationAggregrateDTO findFullReservation(int id)  {
+    public ReservationAggregateDTO findFullReservation(int id)  {
         String sql = "SELECT r.id AS r_id, r.guest_id AS r_guest_id, r.room_id, r.reservation_number, r.checkin_date, r.checkout_date, r.total_cost," +
                 "r.num_adults, r.num_children, r.status AS res_status, r.date_of_res, " +
                 "b.id AS b_id, b.reservation_id, b.guest_id AS b_guest_id, b.stay_cost, b.total_amount, b.tax, b.discount, b.status AS bill_status, " +
@@ -256,7 +256,7 @@ public class ReservationDAOImpl implements ReservationDAO {
                                     .registrationNumber(resultSet.getString("registration_number"))
                                     .email(resultSet.getString("email")).build();
                         }
-                        return new ReservationAggregrateDTO(reservationDTO, billDTO, paymentDTO, guestDTO, roomTypeName, roomNum);
+                        return new ReservationAggregateDTO(reservationDTO, billDTO, paymentDTO, guestDTO, roomTypeName, roomNum);
                     }, id);
         }
         catch (SQLException ex)

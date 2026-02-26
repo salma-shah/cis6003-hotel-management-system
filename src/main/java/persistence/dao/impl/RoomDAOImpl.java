@@ -22,11 +22,6 @@ import java.util.stream.Collectors;
     public class RoomDAOImpl implements RoomDAO {
         // enabling logging in tomcat server
         private static final Logger LOG = Logger.getLogger(RoomDAOImpl.class.getName());
-        private final RoomTypeDAO roomTypeDAO ;
-
-        public RoomDAOImpl() {
-            this.roomTypeDAO = new  RoomTypeDAOImpl();
-        }
 
         @Override
         public boolean add(Room entity)  {

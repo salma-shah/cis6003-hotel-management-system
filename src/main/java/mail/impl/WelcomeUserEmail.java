@@ -31,7 +31,7 @@ public class WelcomeUserEmail implements EmailBase {
                 "Here is your username for login: \n\n" +
                 "Username: " + username + "\n" +
                 "Please contact the manager for information about your password. Afterwards, log into your account and change your password to secure your account.\n\n" +
-                "We are happy to welcome you to our team. Please contact us if you have any questions." + "\n\n" +
+                "We are happy to welcome you to our team. Please contact us if you have any questions or submit a query form here: http://localhost:8080/ocean_view_hotel_war_exploded/help" + "\n\n" +
                 "Regards," + "\n" +
                 "Ocean View Resort Team\n" +
                 "Galle\n" +

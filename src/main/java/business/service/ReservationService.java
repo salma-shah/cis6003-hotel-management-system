@@ -2,7 +2,7 @@ package business.service;
 
 import business.service.helper.CRUDService;
 import constant.ReservationStatus;
-import dto.ReservationAggregrateDTO;
+import dto.ReservationAggregateDTO;
 import dto.ReservationDTO;
 
 import java.time.LocalDate;
@@ -15,6 +15,6 @@ public interface ReservationService extends CRUDService<ReservationDTO> {
     Integer findResIdByReservationNumber(String resNum) ;
     double calculateTotalCostForStay(double basePricePerNight, LocalDate startDate, LocalDate endDate, List<String> selectedAmenities) ;
     ReservationDTO getByReservationNumber(String resNum) ;
-    ReservationAggregrateDTO getFullReservation(int id) ;
+    ReservationAggregateDTO getFullReservation(int id) ;
     boolean updateReservationStatus(int id, ReservationStatus status) ;
 }

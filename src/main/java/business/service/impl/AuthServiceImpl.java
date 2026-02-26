@@ -11,7 +11,7 @@ import security.PasswordManager;
 import business.service.AuthService;
 
 public class AuthServiceImpl implements AuthService {
-    private final UserDAOImpl  userDAO = new UserDAOImpl();
+    private final UserDAOImpl userDAO = new UserDAOImpl();
 
     @Override
     public UserDTO login(UserCredentialDTO credentials) {

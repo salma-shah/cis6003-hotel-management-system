@@ -11,7 +11,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializer;
 import constant.ReservationStatus;
-import dto.ReservationAggregrateDTO;
+import dto.ReservationAggregateDTO;
 import dto.ReservationDTO;
 import dto.RoomTypeDTO;
 
@@ -232,7 +232,7 @@ public class ReservationServlet extends HttpServlet {
         LOG.log(Level.INFO, "ID: " + id);
 
         // getting the full details using res aggregate
-        ReservationAggregrateDTO reservationAggregrateDTO = reservationService.getFullReservation(id);
+        ReservationAggregateDTO reservationAggregateDTO = reservationService.getFullReservation(id);
 
         // converting dates into serializable
         Gson gson = new GsonBuilder()
@@ -246,7 +246,7 @@ public class ReservationServlet extends HttpServlet {
 
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        String json = gson.toJson(reservationAggregrateDTO);
+        String json = gson.toJson(reservationAggregateDTO);
         response.getWriter().write(json);
         LOG.log(Level.INFO, "Full details found: " + json);
     }

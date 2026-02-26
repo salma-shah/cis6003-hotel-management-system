@@ -267,7 +267,7 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
-    public ReservationAggregrateDTO getFullReservation(int id)  {
+    public ReservationAggregateDTO getFullReservation(int id)  {
         if (id <= 0)
         {
             throw new IllegalArgumentException("Invalid reservation id");

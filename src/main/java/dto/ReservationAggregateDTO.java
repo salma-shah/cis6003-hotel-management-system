@@ -1,6 +1,6 @@
 package dto;
 
-public class ReservationAggregrateDTO implements SuperDTO {
+public class ReservationAggregateDTO implements SuperDTO {
     private final ReservationDTO reservationDTO;
     private final BillDTO billDTO;
     private final PaymentDTO paymentDTO;
@@ -8,7 +8,7 @@ public class ReservationAggregrateDTO implements SuperDTO {
     private final String roomTypeName;
     private final int roomNum;
 
-    public ReservationAggregrateDTO(ReservationDTO reservationDTO, BillDTO billDTO, PaymentDTO paymentDTO, GuestDTO guestDTO, String roomTypeName
+    public ReservationAggregateDTO(ReservationDTO reservationDTO, BillDTO billDTO, PaymentDTO paymentDTO, GuestDTO guestDTO, String roomTypeName
     , int roomNum) {
         this.reservationDTO = reservationDTO;
         this.billDTO = billDTO;
