@@ -1,6 +1,11 @@
 package persistence.dao.impl;
 
+import constant.PaymentStatus;
+import constant.ReservationStatus;
 import db.DBConnection;
+import dto.GuestHistoryDTO;
+import dto.ReservationDTO;
+import dto.ReservationHistoryDTO;
 import entity.Guest;
 import exception.db.DataAccessException;
 import exception.EntityNotFoundException;
@@ -11,6 +16,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -212,6 +218,67 @@ public class GuestDAOImpl implements GuestDAO {
             throw new DataAccessException("There was an error finding an existing guest by primary key: " + primaryKey, ex);
         }
     }
+
+    @Override
+    public GuestHistoryDTO getGuestHistoryById(int id) {
+
+            String sql = "SELECT r.id, r.guest_id, r.room_id, r.reservation_number, r.total_cost, r.date_of_res, " +
+                    "r.checkin_date, r.checkout_date, r.num_adults, r.num_children, r.status, " +
+                    "rt.name as room_type_name, " +
+                    " b.total_amount, b.status AS bill_status FROM reservation r " +
+                    " LEFT JOIN bill b ON  r.id = b.reservation_id " +
+                    " LEFT JOIN room rm ON r.room_id = rm.room_id " +
+                    " LEFT JOIN room_type rt ON rm.room_type_id = rt.room_type_id " +
+                    " WHERE r.guest_id = ?";
+
+        try(Connection connection = DBConnection.getInstance().getConnection())
+        {
+            return QueryHelper.executeQuery(connection, sql, resultSet ->
+            {
+                List<ReservationHistoryDTO> historyList = new ArrayList<>();
+
+                while (resultSet.next()) {
+
+                    //  int guestId = resultSet.getInt("guest_id");
+                    LocalDateTime dateTime = resultSet.getTimestamp("date_of_res").toLocalDateTime();
+                    ReservationDTO reservationDTO = new ReservationDTO(
+                            resultSet.getInt("id"), resultSet.getInt("guest_id"), resultSet.getInt("room_id"),
+                            resultSet.getString("reservation_number"), resultSet.getDouble("total_cost"),
+                            dateTime,
+                            resultSet.getDate("checkin_date").toLocalDate(),
+                            resultSet.getDate("checkout_date").toLocalDate(),
+                            resultSet.getInt("num_adults"),
+                            resultSet.getInt("num_children"),
+                            ReservationStatus.valueOf(resultSet.getString("status")));
+
+                    double billTotal = resultSet.getDouble("total_amount");
+                    String roomTypeName = resultSet.getString("room_type_name");
+
+                    // payment status of a bill
+                    PaymentStatus paymentStatus = null;
+                    String billStatus = resultSet.getString("bill_status");
+
+                    if (billStatus != null) {
+                        paymentStatus = PaymentStatus.valueOf(billStatus);
+                    }
+
+                    // adding to the list
+                    historyList.add(new ReservationHistoryDTO(reservationDTO, billTotal, paymentStatus, roomTypeName));
+                }
+
+                if (historyList.isEmpty()) {
+                    return null;
+                }
+
+                return new GuestHistoryDTO(id, historyList);
+        }, id);
+        }
+        catch (SQLException ex)
+        {
+            throw new EntityNotFoundException("There was an error finding the guest history for guest id: " + id, ex);
+        }
+    }
+
     private Guest mapResultSetToGuest(ResultSet resultSet) {
         try {
             Date dobDate = resultSet.getDate("dob");

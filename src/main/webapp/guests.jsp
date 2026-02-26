@@ -109,6 +109,76 @@
             background-color: #4CAF50 !important;
         }
 
+        .history-modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            overflow-y: auto;
+        }
+
+        .history-modal-content {
+            background: #ffffff;
+            width: 85%;
+            max-width: 1200px;
+            margin: 60px auto;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.3);
+        }
+
+        .history-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 15px;
+        }
+
+        .history-body {
+            margin-top: 25px;
+        }
+
+        .reservation-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .reservation-summary {
+            background: #f5f7fa;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .reservation-summary:hover {
+            background: #e9eef5;
+        }
+
+        .reservation-details {
+            display: none;
+            padding: 20px;
+            background: #ffffff;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .details-item {
+            font-size: 14px;
+        }
+
     </style>
 </head>
 
@@ -231,6 +301,19 @@
     </div>
 </div>
 
+<%--guest history modal--%>
+<div id="historyModal" class="history-modal">
+    <div class="history-modal-content">
+        <div class="history-modal-header">
+            <h2>Guest Reservation History</h2>
+            <span class="close-btn" onclick="closeModal('historyModal')">&times;</span>
+        </div>
+
+        <div id="historyContent" class="modal-body">
+            <!-- reservations will be populated here -->
+        </div>
+    </div>
+</div>
 
 <script>
     document.addEventListener("DOMContentLoaded", () => {
@@ -357,7 +440,81 @@
 
     // history modal
     function openHistoryModal(guestId){
+        document.getElementById("historyModal").style.display = "block";
+        loadGuestHistory(guestId);
+    }
 
+
+    // loading guest history
+    function loadGuestHistory(guestId) {
+        const guestHistoryId = parseInt(guestId);
+        if (isNaN(parseInt(guestHistoryId)) || guestHistoryId <=0) {
+            alert("Invalid guest ID.")
+            return;
+        }
+
+        fetch('<c:url value="/guest/history?id=" />' + guestHistoryId)
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                const container = document.getElementById("historyContent");
+                container.innerHTML = "";
+
+                if (!data) {
+                    container.innerHTML = `<p>No reservation history</p>`;
+                    return;
+                }
+
+                console.log("FULL DATA:", data);
+                console.log("RES LIST:", data.reservations.reservations);
+
+                data.reservations.forEach(function(res, index) {
+                    console.log("Checking reservation:", index, res);
+                });
+
+                data.reservations.forEach(function(res) {
+                    console.log(res);
+                    var card =
+                        "<div class='reservation-card'>" +
+
+                        "<div class='reservation-summary' onclick='toggleDetails(this)'>" +
+                        "<div>Reservation: " + res.reservations.reservationNumber + "</div>" +
+                        "<div>" + res.reservations.checkInDate + " &#8594; " + res.reservations.checkOutDate + "</div>" +
+                        "</div>" +
+
+                        "<div class='reservation-details'>" +
+                        "<div class='details-grid'>" +
+
+                        "<div class='details-item'><strong>Room Type:</strong> " + res.roomTypeName + "</div>" +
+                        "<div class='details-item'><strong>Stay total Cost:</strong> LKR " + res.reservations.totalCost + "</div>" +
+                        "<div class='details-item'><strong>Status:</strong> " + res.reservations.status + "</div>" +
+                        "<div class='details-item'><strong>Adults:</strong> " + res.reservations.numOfAdults + "</div>" +
+                        "<div class='details-item'><strong>Children:</strong> " + res.reservations.numOfChildren + "</div>" +
+
+                        "<div class='details-item'><strong>Total Amount:</strong> " + (res.totalAmount != null ? res.totalAmount : "N/A") + "</div>" +
+                        "<div class='details-item'><strong>Payment Status:</strong> " + (res.paymentStatus != null ? res.paymentStatus : "Pending") + "</div>" +
+
+                        "</div>" +
+
+                        "</div>" +
+
+                        "</div>";
+
+                    document.getElementById("historyContent").innerHTML += card;
+
+                });
+
+            })
+    }
+
+    function toggleDetails(element) {
+        const details = element.nextElementSibling;
+
+        if (details.style.display === "block") {
+            details.style.display = "none";
+        } else {
+            details.style.display = "block";
+        }
     }
 
     // closing all modals
@@ -367,7 +524,7 @@
 
     // closes modal if user clicks outside it
     window.onclick = function(event) {
-        ["viewAndEditModal", "deleteModal"].forEach(id => {
+        ["viewAndEditModal", "deleteModal", "historyModal"].forEach(id => {
             let modal = document.getElementById(id);
             if(event.target === modal) modal.style.display = "none";
         });

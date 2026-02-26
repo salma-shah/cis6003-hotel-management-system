@@ -2,6 +2,7 @@ package business.service.impl;
 
 import business.service.GuestService;
 import dto.GuestDTO;
+import dto.GuestHistoryDTO;
 import entity.Guest;
 import exception.EntityNotFoundException;
 import exception.guest.DuplicateGuestRegNumException;
@@ -133,5 +134,11 @@ public class GuestServiceImpl implements GuestService {
             throw new GuestNotFoundException("Guest Not Found for Registration Number: " + registrationNumber);
         }
         return true;
+    }
+
+    @Override
+    public GuestHistoryDTO getGuestHistoryById(int id) {
+        if  (id <=0 ) { throw new IllegalArgumentException("Invalid guest ID");}
+        return guestDAO.getGuestHistoryById(id);
     }
 }

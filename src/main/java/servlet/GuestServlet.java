@@ -4,6 +4,7 @@ import business.service.GuestService;
 import business.service.impl.GuestServiceImpl;
 import com.google.gson.*;
 import dto.GuestDTO;
+import dto.GuestHistoryDTO;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -84,6 +85,9 @@ public class GuestServlet extends HttpServlet {
                 break;
             case "/get":
                 getGuestDetails(request, response);
+                break;
+            case "/history":
+                getGuestHistory(request, response);
                 break;
             default:
                 LOG.log(Level.SEVERE, "Unsupported path: " + path);
@@ -288,5 +292,39 @@ public class GuestServlet extends HttpServlet {
                 LOG.log(Level.INFO, "Guest ID:" + guestId + " was not deleted.");
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
             }
+    }
+
+    // guest history
+    private void getGuestHistory(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        LOG.log(Level.INFO, "Getting guest history method reached...");
+        String id = request.getParameter("id");
+        LOG.log(Level.INFO, "Guest ID passed is: " + id);
+        int guestId = Integer.parseInt(id);
+        LOG.log(Level.INFO, "Getting guest history for guest ID :" + guestId);
+
+        GuestHistoryDTO guestHistory = guestService.getGuestHistoryById(guestId);
+        if (guestHistory == null) {
+            request.setAttribute("rooms", "No rooms found");
+        }
+
+        // converting user to JSON for JavaScript to recognize
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        // converting dob into being serializable
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapter(Date.class, (JsonSerializer<Date>) (src, typeOfSrc, context) ->
+                        new JsonPrimitive(new SimpleDateFormat("yyyy-MM-dd").format(src)))
+                .registerTypeAdapter(LocalDateTime.class, (JsonSerializer<LocalDateTime>) (src, typeOfSrc, context) ->
+                        new JsonPrimitive(src.toString()))
+                .registerTypeAdapter(LocalDate.class, (JsonSerializer<LocalDate>) (src, typeOfSrc, context) ->
+                        new JsonPrimitive(src.toString()))
+                .create();
+
+        // using Gson to serialize
+        String guestHistoryJSON = gson.toJson(guestHistory);
+        response.getWriter().write(guestHistoryJSON);
+        LOG.log(Level.INFO, "Guest history JSON sent: " + guestHistoryJSON);
+
     }
 }
