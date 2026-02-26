@@ -21,7 +21,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -56,20 +55,11 @@ public class ReservationServlet extends HttpServlet {
                 request.getRequestDispatcher("/create-reservation.jsp").forward(request, response);
                 break;
             case "/all":
-                try {
                     getAllReservations(request, response);
                     break;
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
             case "/details":
-                try {
                     getFullDetailsForReservations(request,response);
                     break;
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
-
             default:
                 LOG.log(Level.SEVERE, "Unsupported path: " + path);
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -87,31 +77,22 @@ public class ReservationServlet extends HttpServlet {
                 makeReservation(request, response);
                 break;
             case "/calculate":
-                try {
                     calculateAmenities(request, response);
                     break;
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
             case "/status":
-                try {
                     updateStatus(request, response);
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
                 break;
         }
     }
 
     // making a reservation
     private void makeReservation(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        try {
             LOG.log(Level.INFO, "Making reservation method reached...");
 
             // getting the required parameters
             int roomId = Integer.parseInt(request.getParameter("roomId"));
             LOG.log(Level.INFO, "Room Id: " + roomId);
-
+            LOG.log(Level.INFO, "Guest num:" + request.getParameter("guestRegNumber"));
             // getting guest id by reservation number
             Integer guestIdObj = guestService.findGuestIdByRegistrationNumber(request.getParameter("guestRegNumber"));
             if (guestIdObj == null) {
@@ -119,7 +100,7 @@ public class ReservationServlet extends HttpServlet {
                 return;
             }
             int guestId = guestIdObj;
-
+            LOG.log(Level.INFO, "Guest id: " + guestId);
             String reservationNum = request.getParameter("reservationNumber");
             int numAdults = Integer.parseInt(request.getParameter("numAdults"));
             int numChildren = Integer.parseInt(request.getParameter("numChildren"));
@@ -131,10 +112,11 @@ public class ReservationServlet extends HttpServlet {
             // getting the amenities with prices
             // this gets the values of the amenities
             String[] selectedAmenities = request.getParameterValues("amenities");
-            List<String> selectedAmenitiesList = Arrays.asList(selectedAmenities);
-            if (selectedAmenitiesList != null) {
-                Collections.emptyList();
-            }
+            LOG.log(Level.INFO, "Amenities: " + Arrays.toString(selectedAmenities));
+            List<String> selectedAmenitiesList =
+                selectedAmenities != null
+                        ? Arrays.asList(selectedAmenities)
+                        : new ArrayList<>();
 
             // do validation
 
@@ -152,13 +134,10 @@ public class ReservationServlet extends HttpServlet {
             else {
                 LOG.log(Level.SEVERE, "Reservation made failed...");
             }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     // calculating only amenities cost to display dynamically
-    private void calculateAmenities(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException {
+    private void calculateAmenities(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String[] amenities = request.getParameterValues("amenities");
         List<String> list = amenities != null
                 ? Arrays.asList(amenities)
@@ -185,11 +164,10 @@ public class ReservationServlet extends HttpServlet {
     }
 
     // getting all reservations
-    private void getAllReservations(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException {
+    private void getAllReservations(HttpServletRequest request, HttpServletResponse response) throws ServletException,IOException {
         LOG.log(Level.INFO, "Getting all reservations...");
         Map<String, String> searchParams = new HashMap<>();
 
-        try {
             String resNum = request.getParameter("resSearchInput");
             String status = request.getParameter("statusInput");
             String checkIn = request.getParameter("checkInDate");
@@ -245,14 +223,10 @@ public class ReservationServlet extends HttpServlet {
             request.setAttribute("reservations", reservations);
             LOG.log(Level.INFO, "Reservations found: " + reservations.size());
             request.getRequestDispatcher("/reservations.jsp").forward(request, response);
-        }
-        catch (Exception ex) {
-            LOG.warning(ex.getMessage());
-        }
     }
 
     // getting full details for a reservation
-    private void getFullDetailsForReservations(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException {
+    private void getFullDetailsForReservations(HttpServletRequest request, HttpServletResponse response) throws IOException {
         LOG.log(Level.INFO, "Getting full details for reservations...");
         int id = Integer.parseInt(request.getParameter("id"));
         LOG.log(Level.INFO, "ID: " + id);
@@ -278,7 +252,7 @@ public class ReservationServlet extends HttpServlet {
     }
 
     // updating a reservation's status
-    private void updateStatus(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException {
+    private void updateStatus(HttpServletRequest request, HttpServletResponse response) throws IOException {
         LOG.log(Level.INFO, "Updating status of reservations...");
 
         int id = Integer.parseInt(request.getParameter("id"));

@@ -1,5 +1,7 @@
 package db;
 
+import exception.db.DatabaseConnectionException;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -26,23 +28,24 @@ public class DBConnection {
     // public method to return the instance
     public static DBConnection getInstance() {
         if (instance == null) {
-            // we make it synchorinzied
+            // we make it synchronized
             // thread safe
             synchronized (DBConnection.class) {
-                if (instance == null) {}
-            instance = new DBConnection();
-        }
+                if (instance == null) {
+                    instance = new DBConnection();
+                }
+            }
         }
         return instance;
     }
 
     // method to establish the connection to the database
-    public Connection getConnection() throws SQLException {
+    public Connection getConnection() {
         try {
             return DriverManager.getConnection(DB_URL, USER, PASSWORD);
         }
         catch (SQLException ex) {
-            throw new SQLException("Error getting connection to database" + ex.getMessage());
+            throw new DatabaseConnectionException("Error getting connection to database" + ex.getMessage());
         }
     }
 

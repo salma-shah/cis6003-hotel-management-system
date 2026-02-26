@@ -11,7 +11,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,9 +32,8 @@ public class HelpServlet extends HttpServlet {
             path = "/";
         }
 
-        switch (path) {
-            case "/":
-                req.getRequestDispatcher("/help.jsp").forward(req, resp);
+        if (path.equals("/")) {
+            req.getRequestDispatcher("/help.jsp").forward(req, resp);
         }
 
     }
@@ -47,19 +45,15 @@ public class HelpServlet extends HttpServlet {
             path = "/";
         }
 
-        switch (path) {
-            case "/contact-form":
-                createContactForm(req, resp);
-                break;
-
-            default:
+        if (path.equals("/contact-form")) {
+            createContactForm(req, resp);
+        } else {
             LOG.log(Level.SEVERE, "Unsupported path: " + path);
             resp.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
 
     private void createContactForm(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        try {
             String message = req.getParameter("message");
 
             // ensuring user is logged in
@@ -85,9 +79,5 @@ public class HelpServlet extends HttpServlet {
             } else {
                 req.getRequestDispatcher("/login.jsp").forward(req, resp);
             }
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, ex.getMessage(), ex);
-            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
     }
 }

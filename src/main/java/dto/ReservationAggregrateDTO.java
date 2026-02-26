@@ -1,16 +1,21 @@
 package dto;
 
-public class ReservationAggregrateDTO {
+public class ReservationAggregrateDTO implements SuperDTO {
     private final ReservationDTO reservationDTO;
     private final BillDTO billDTO;
     private final PaymentDTO paymentDTO;
     private final GuestDTO guestDTO;
+    private final String roomTypeName;
+    private final int roomNum;
 
-    public ReservationAggregrateDTO(ReservationDTO reservationDTO, BillDTO billDTO, PaymentDTO paymentDTO, GuestDTO guestDTO) {
+    public ReservationAggregrateDTO(ReservationDTO reservationDTO, BillDTO billDTO, PaymentDTO paymentDTO, GuestDTO guestDTO, String roomTypeName
+    , int roomNum) {
         this.reservationDTO = reservationDTO;
         this.billDTO = billDTO;
         this.guestDTO = guestDTO;
         this.paymentDTO = paymentDTO;
+        this.roomTypeName = roomTypeName;
+        this.roomNum = roomNum;
     }
 
     public ReservationDTO getReservationDTO() {
@@ -27,5 +32,12 @@ public class ReservationAggregrateDTO {
 
     public PaymentDTO getPaymentDTO() {
         return paymentDTO;
+    }
+
+    public String getRoomTypeName() {
+        return roomTypeName;
+    }
+    public int getRoomNum() {
+        return roomNum;
     }
 }

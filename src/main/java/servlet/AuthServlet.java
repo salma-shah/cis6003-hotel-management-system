@@ -52,7 +52,7 @@ public class AuthServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
+            throws IOException, ServletException {
 
         // logs for debugging
 //        LOG.log(Level.INFO, "Handling POST request for authentication purposes.");
@@ -66,24 +66,21 @@ public class AuthServlet extends HttpServlet {
         }
 
        // setting the methods based on the paths
-        switch (path) {
-            case "/login":
-                login(request, response);
-                break;
-//            case "/logout":
+        if (path.equals("/login")) {
+            login(request, response);
+            //            case "/logout":
 //                logout(request, response);
 //                break;
-            default:
-                LOG.log(Level.SEVERE, "Unsupported path: " + path);
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        } else {
+            LOG.log(Level.SEVERE, "Unsupported path: " + path);
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
 
 
     // method for login so that we can reuse these methods in doGet and doPost both
-    private void login(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        try
-        {
+    private void login(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+
             LOG.log(Level.INFO, "Login request received");
 
             // getting form parameters from the form
@@ -91,9 +88,10 @@ public class AuthServlet extends HttpServlet {
             String password = request.getParameter("password");
 
             // validating the input
-            if (username == null || password == null || username.isEmpty() || password.isEmpty()) {
-               response.sendRedirect(request.getContextPath() + "/auth/login?error=empty_fields");
-               return;
+            if (username == null || password == null || username.trim().isEmpty() || password.trim().isEmpty()) {
+                request.setAttribute("emptyFields", "Please enter username and password");
+                request.getRequestDispatcher("/login.jsp").forward(request, response);
+                return;
             }
 
             UserCredentialDTO credentials= new UserCredentialDTO(username, password);
@@ -102,11 +100,7 @@ public class AuthServlet extends HttpServlet {
             // using password manager class
             //  the service will do it
 
-            UserDTO user =  authService.login(credentials);
-            if  (user == null) {
-                response.sendRedirect(request.getContextPath() + "/auth/login?error=invalid_credentials");
-                return;
-            }
+            UserDTO user = authService.login(credentials);
 
             // if credentials are correct, then the user will be taken to dashboard
             // create session and passing use details
@@ -117,19 +111,11 @@ public class AuthServlet extends HttpServlet {
             session.setAttribute("username", user.getUsername());
             session.setAttribute("userRole", user.getRole().name());
             response.sendRedirect(request.getContextPath() + "/dashboard.jsp");
-        }
-        catch (Exception e)
-        {
-            LOG.log(Level.SEVERE, "Login failed", e);
-            response.sendRedirect(request.getContextPath() + "/login.jsp?error=system_error");
-        }
     }
 
     // logout method
     private void logout(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        try
-        {
-            LOG.log(Level.INFO, "Logout request received");
+          LOG.log(Level.INFO, "Logout request received");
 
             // getting current session
             HttpSession session = request.getSession();
@@ -155,12 +141,7 @@ public class AuthServlet extends HttpServlet {
             {
                 LOG.log(Level.INFO, "No active session was found to invalidate for logout request.");
             }
-            }
-        catch (Exception e)
-        {
-            LOG.log(Level.SEVERE, "There was an error during logout: ", e.getMessage());
-            response.sendRedirect(request.getContextPath() + "/auth/login?error=system_error");
-        }
+
     }
 }
 

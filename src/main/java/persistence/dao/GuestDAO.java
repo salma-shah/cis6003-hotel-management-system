@@ -1,14 +1,13 @@
 package persistence.dao;
 
+import dto.GuestHistoryDTO;
 import entity.Guest;
 import persistence.dao.helper.CRUDDAO;
 
-import java.sql.SQLException;
-
 public interface GuestDAO extends CRUDDAO<Guest> {
-    boolean findByRegistrationNumber(String registrationNumber) throws SQLException;
-    Integer findGuestIdByRegistrationNumber(String registrationNumber) throws SQLException;
-    boolean findByEmail(String email) throws SQLException;
-    String findGuestRegNumById(int id) throws SQLException;
-
+    boolean existsByRegistrationNumber(String registrationNumber);
+    Integer findGuestIdByRegistrationNumber(String registrationNumber) ;
+    boolean findByEmail(String email) ;
+    String findGuestRegNumById(int id) ;
+    GuestHistoryDTO getGuestHistoryById(int id) ;
 }

@@ -62,14 +62,14 @@
         <h4 class="form-title">
             <i class="bi bi-house-add"></i>  Create New Room
         </h4>
-        <form id="registerForm" action="<c:url value='/room/create' />" method="post" enctype="multipart/form-data">
+        <form id="registerForm" action="<c:url value='/room/create' />" method="post">
         <div class="mb-3">
             <label class="form-label">Room Type</label>
-            <select name="type" id="type" class="form-select" required>
+            <select name="roomTypeId" id="roomTypeId" class="form-select" required>
                 <option value="">Select room type</option>
-                <option value="Standard">Standard</option>
-                <option value="Deluxe">Deluxe</option>
-                <option value="Suite">Suite</option>
+                <option value="1">Standard</option>
+                <option value="2">Deluxe</option>
+                <option value="3">Suite</option>
             </select>
             <div class="form-error d-none" id="typeError">Please enter the room type.</div>
         </div>
@@ -111,9 +111,9 @@
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label class="form-label">Max Occupancy</label>
-                        <input type="number" name="maxOccupancy" id="maxOccupancy" class="form-control" required>
-                        <div class="form-error d-none" id="maxOccupancyError">Please enter maximum occupancy.</div>
+                        <label class="form-label">Room Number</label>
+                        <input type="text" name="roomNum" id="roomNum" class="form-control" required>
+                        <div class="form-error d-none" id="roomNumError">Please enter the room number.</div>
                     </div>
 
                     <div class="col-md-6 mb-3">

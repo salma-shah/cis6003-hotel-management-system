@@ -1,5 +1,7 @@
 package business.service.impl;
 
+import exception.user.InvalidUserCredentialsException;
+import exception.user.UserNotFoundException;
 import persistence.dao.impl.UserDAOImpl;
 import dto.UserCredentialDTO;
 import dto.UserDTO;
@@ -8,45 +10,27 @@ import mapper.UserMapper;
 import security.PasswordManager;
 import business.service.AuthService;
 
-import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 public class AuthServiceImpl implements AuthService {
-    // enabling logging in tomcat server
-    private static final Logger LOG = Logger.getLogger(AuthServiceImpl.class.getName());
-  //  private final Connection connection = DBConnection.getInstance().getConnection();
     private final UserDAOImpl  userDAO = new UserDAOImpl();
 
     @Override
-    public UserDTO login(UserCredentialDTO credentials) throws SQLException {
+    public UserDTO login(UserCredentialDTO credentials) {
         if (credentials == null) {
-            return null;
+            throw new IllegalArgumentException("Username and password are required");
         }
-
-        try {
             User user = userDAO.findByUsername( credentials.getUsername());
-
             if (user == null) {
-                return null;
+                throw new UserNotFoundException("User not found");
             }
 
             boolean passwordValid = PasswordManager.checkPassword(credentials.getPassword(), user.getPassword());
 
             if (!passwordValid) {
-                throw new IllegalArgumentException("Invalid password");
+                throw new InvalidUserCredentialsException("Invalid password or username.");
             }
 
             // mapping entity to DTO
             return UserMapper.toUserDTO(user);
-        }
-        catch (
-                SQLException ex
-        )
-            {
-            LOG.log(Level.SEVERE, "Login failed", ex);
-            throw new SQLException(ex.getMessage());
-            }
     }
 
 }

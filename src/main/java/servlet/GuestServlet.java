@@ -4,6 +4,7 @@ import business.service.GuestService;
 import business.service.impl.GuestServiceImpl;
 import com.google.gson.*;
 import dto.GuestDTO;
+import dto.GuestHistoryDTO;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -12,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.logging.Level;
@@ -83,6 +85,9 @@ public class GuestServlet extends HttpServlet {
             case "/get":
                 getGuestDetails(request, response);
                 break;
+            case "/history":
+                getGuestHistory(request, response);
+                break;
             default:
                 LOG.log(Level.SEVERE, "Unsupported path: " + path);
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -91,7 +96,6 @@ public class GuestServlet extends HttpServlet {
 
     // registering a guest
     private void registerGuest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        try {
             LOG.log(Level.INFO, "Registering guest");
 
             // getting parameters
@@ -105,10 +109,7 @@ public class GuestServlet extends HttpServlet {
             String registrationNumber = request.getParameter("registrationNumber");
             String dateOfBirth = request.getParameter("dob");
             String nationality = request.getParameter("nationality");
-
-            // converting dob to dto
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            Date dob = sdf.parse(dateOfBirth);
+            LocalDate dob = LocalDate.parse(dateOfBirth);
 
             // validation
 
@@ -125,14 +126,10 @@ public class GuestServlet extends HttpServlet {
                 LOG.log(Level.SEVERE, "Failed to register guest");
             }
 
-        } catch (Exception ex) {
-            LOG.warning(ex.getMessage());
-        }
     }
 
     // retrieving and displaying all guests
-    private void getAllGuests(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        try {
+    private void getAllGuests(HttpServletRequest request, HttpServletResponse response) throws ServletException,IOException {
             LOG.log(Level.INFO, "Getting all guests");
             Map<String, String> searchParams = new HashMap<>();
 
@@ -175,6 +172,8 @@ public class GuestServlet extends HttpServlet {
                             new JsonPrimitive(new SimpleDateFormat("yyyy-MM-dd").format(src)))
                     .registerTypeAdapter(LocalDateTime.class, (JsonSerializer<LocalDateTime>) (src, typeOfSrc, context) ->
                             new JsonPrimitive(src.toString()))
+                    .registerTypeAdapter(LocalDate.class, (JsonSerializer<LocalDate>) (src, typeOfSrc, context) ->
+                            new JsonPrimitive(src.toString()))
                     .create();
 
             // this is if js sends a search request
@@ -193,10 +192,6 @@ public class GuestServlet extends HttpServlet {
             request.setAttribute("guests", guests);
             LOG.log(Level.INFO, "Guests found: " + guests.size());
             request.getRequestDispatcher("/guests.jsp").forward(request, response);
-        }
-        catch (Exception ex) {
-            LOG.warning(ex.getMessage());
-        }
     }
 
     // getting a single guest's details
@@ -210,7 +205,6 @@ public class GuestServlet extends HttpServlet {
         int guestId = Integer.parseInt(id);
         LOG.log(Level.INFO, "Getting guest details for guest ID :" + guestId);
 
-        try {
             if (guestId == 0) {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The guestID is missing.");
                 return;
@@ -234,6 +228,8 @@ public class GuestServlet extends HttpServlet {
                             new JsonPrimitive(new SimpleDateFormat("yyyy-MM-dd").format(src)))
                     .registerTypeAdapter(LocalDateTime.class, (JsonSerializer<LocalDateTime>) (src, typeOfSrc, context) ->
                             new JsonPrimitive(src.toString()))
+                    .registerTypeAdapter(LocalDate.class, (JsonSerializer<LocalDate>) (src, typeOfSrc, context) ->
+                            new JsonPrimitive(src.toString()))
                     .create();
 
             // using Gson to serialize
@@ -241,11 +237,6 @@ public class GuestServlet extends HttpServlet {
             response.getWriter().write(guestJSON);
             LOG.log(Level.INFO, "Guest JSON sent: " + guestJSON);
 
-        }
-        catch (Exception ex) {
-            LOG.log(Level.SEVERE, "Error fetching guest details: " + ex);
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Server error");
-        }
     }
 
     // updating a guest's details
@@ -254,8 +245,6 @@ public class GuestServlet extends HttpServlet {
         String id = (request.getParameter("guestId"));
         int guestId = Integer.parseInt(id);
 
-        try
-        {
             GuestDTO guest = new GuestDTO.GuestDTOBuilder().id(guestId)
                     .firstName(request.getParameter("firstName"))
                     .lastName(request.getParameter("lastName"))
@@ -277,18 +266,13 @@ public class GuestServlet extends HttpServlet {
                 LOG.log(Level.INFO, "Details of guest ID: " + guestId + " was not updated");
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
             }
-        }
-        catch (Exception ex) {
-            LOG.log(Level.SEVERE, "Error updating the guest details: " + ex);
-        }
 
     }
 
     // deleting guest
     private void deleteGuest(HttpServletRequest request, HttpServletResponse response) throws IOException {
         LOG.log(Level.INFO, "Deleting guest method reached...");
-        try
-        {
+
             String id = request.getParameter("guestId");
             int guestId = Integer.parseInt(id);
             if (guestId == 0) {
@@ -307,10 +291,39 @@ public class GuestServlet extends HttpServlet {
                 LOG.log(Level.INFO, "Guest ID:" + guestId + " was not deleted.");
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
             }
+    }
+
+    // guest history
+    private void getGuestHistory(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        LOG.log(Level.INFO, "Getting guest history method reached...");
+        String id = request.getParameter("id");
+        LOG.log(Level.INFO, "Guest ID passed is: " + id);
+        int guestId = Integer.parseInt(id);
+        LOG.log(Level.INFO, "Getting guest history for guest ID :" + guestId);
+
+        GuestHistoryDTO guestHistory = guestService.getGuestHistoryById(guestId);
+        if (guestHistory == null) {
+            request.setAttribute("rooms", "No rooms found");
         }
-        catch (Exception ex) {
-            LOG.log(Level.SEVERE, "Error deleting guest:" +  ex);
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
+
+        // converting user to JSON for JavaScript to recognize
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        // converting dob into being serializable
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapter(Date.class, (JsonSerializer<Date>) (src, typeOfSrc, context) ->
+                        new JsonPrimitive(new SimpleDateFormat("yyyy-MM-dd").format(src)))
+                .registerTypeAdapter(LocalDateTime.class, (JsonSerializer<LocalDateTime>) (src, typeOfSrc, context) ->
+                        new JsonPrimitive(src.toString()))
+                .registerTypeAdapter(LocalDate.class, (JsonSerializer<LocalDate>) (src, typeOfSrc, context) ->
+                        new JsonPrimitive(src.toString()))
+                .create();
+
+        // using Gson to serialize
+        String guestHistoryJSON = gson.toJson(guestHistory);
+        response.getWriter().write(guestHistoryJSON);
+        LOG.log(Level.INFO, "Guest history JSON sent: " + guestHistoryJSON);
+
     }
 }

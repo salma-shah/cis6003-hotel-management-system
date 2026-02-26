@@ -2,13 +2,12 @@ package business.service.impl;
 
 import business.service.RoomTypeService;
 import dto.RoomTypeDTO;
+import entity.RoomType;
 import mapper.RoomTypeMapper;
 import persistence.dao.RoomTypeDAO;
 import persistence.dao.impl.RoomTypeDAOImpl;
 
-import java.sql.SQLException;
 import java.util.List;
-import java.util.logging.Logger;
 
 public class RoomTypeServiceImpl implements RoomTypeService {
     private final RoomTypeDAO roomTypeDAO;
@@ -18,22 +17,22 @@ public class RoomTypeServiceImpl implements RoomTypeService {
     }
 
     @Override
-    public RoomTypeDTO getById(int id) throws SQLException {
-      return RoomTypeMapper.toRoomTypeDTO(roomTypeDAO.searchById(id));
+    public RoomTypeDTO getById(int id)  {
+
+        if (id <=0 ) { throw new IllegalArgumentException("RoomType ID is invalid");}
+        return RoomTypeMapper.toRoomTypeDTO(roomTypeDAO.searchById(id));
     }
 
     @Override
-    public RoomTypeDTO getByRoomId(int id) throws SQLException {
-        return RoomTypeMapper.toRoomTypeDTO(roomTypeDAO.findByRoomId(id));
+    public RoomTypeDTO getByRoomId(int id)  {
+        if (id <=0 ) { throw new IllegalArgumentException("Room ID is invalid");}
+        RoomType roomType = roomTypeDAO.findByRoomId(id);
+        return RoomTypeMapper.toRoomTypeDTO(roomType);
     }
 
     @Override
-    public List<RoomTypeDTO> getAll() throws SQLException {
+    public List<RoomTypeDTO> getAll()  {
         return RoomTypeMapper.roomTypeDTOList(roomTypeDAO.getAll(null));
     }
 
-//    private RoomTypeDTO mapToDTO(RoomType entity) {
-//        return new RoomTypeDTO.Builder().roomTypeId(entity.getRoomTypeId()).roomTypeName(entity.getRoomTypeName())
-//                        .basePricePerNight(entity.getBasePricePerNight()).build();
-//    }
 }

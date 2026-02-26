@@ -1,8 +1,8 @@
 package dto;
 
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 public class GuestDTO implements SuperDTO
 {
@@ -14,7 +14,7 @@ public class GuestDTO implements SuperDTO
     private final String address;
     private final String email, nationality;
     private final String nic, passportNumber;
-    private final Date dob;
+    private final LocalDate dob;
     private final LocalDateTime createdAt, updatedAt;
 
     public int getId() {
@@ -57,7 +57,7 @@ public class GuestDTO implements SuperDTO
         return passportNumber;
     }
 
-    public Date getDob() {
+    public LocalDate getDob() {
         return dob;
     }
 
@@ -113,7 +113,7 @@ public class GuestDTO implements SuperDTO
         private String firstName, lastName, contactNumber, address, email;
         private String nic, nationality;
         private String passportNumber;
-        private Date dob;
+        private LocalDate dob;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
 
@@ -154,7 +154,7 @@ public class GuestDTO implements SuperDTO
             this.passportNumber = passportNumber;
             return this;
         }
-        public GuestDTO.GuestDTOBuilder dob(Date dob) {
+        public GuestDTO.GuestDTOBuilder dob(LocalDate dob) {
             this.dob = dob;
             return this;
         }

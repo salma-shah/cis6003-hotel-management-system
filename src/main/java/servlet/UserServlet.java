@@ -49,7 +49,7 @@ public class UserServlet extends HttpServlet {
             case "/register":   // this is for registering users
                 register(request, response);
                 break;
-            case "/delete":   // this is for deleting a user ; since html forms dont have DELETE,
+            case "/delete":   // this is for deleting a user ; since HTML forms dont have DELETE,
                     deleteUser(request, response);   // we access it using POST method
                 request.getRequestDispatcher("/user-accounts.jsp").forward(request, response);
                 break;
@@ -57,13 +57,8 @@ public class UserServlet extends HttpServlet {
                 updateUser(request, response);
                 break;
             case "/change-password":
-                try {
                     changePassword(request,response);
                     break;
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-
             default:
                 LOG.log(Level.SEVERE, "Unsupported path: " + path);
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -108,8 +103,6 @@ public class UserServlet extends HttpServlet {
 
     // crating  a new user account
     private void register(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        try
-        {
           LOG.log(Level.INFO, "Registering user");
 
             String username = request.getParameter("username");
@@ -124,13 +117,13 @@ public class UserServlet extends HttpServlet {
             }
 
           // then we check if username or email already exists
-            if (userService.findByUsername(username) != null )
+            if (userService.existsByUsername(username) )
             {
                 response.sendRedirect(request.getContextPath() + "/user/register?error=username_used");
                 return;
             }
 
-            if (userService.findByEmail(email) != null )
+            if (userService.existsByUsername(email) )
             {
                 response.sendRedirect(request.getContextPath() + "/user/register?error=email_used");
                 return;
@@ -165,17 +158,10 @@ public class UserServlet extends HttpServlet {
                LOG.log(Level.INFO, "User could not be registered successfully nor was email sent.");
                response.sendRedirect(request.getContextPath() + "/user/register?error=system_error");
             }
-        }
-        catch (Exception e)
-            {
-            LOG.warning(e.getMessage());
-            }
     }
 
     private void getAllUsers(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         LOG.log(Level.INFO, "Getting all users");
-
-        try {
 
             List<UserDTO> users = userService.getAll(null);
             request.setAttribute("users", users);
@@ -189,11 +175,6 @@ public class UserServlet extends HttpServlet {
                 LOG.log(Level.INFO, "Users found: " + users);
                 request.getRequestDispatcher("/user-accounts.jsp").forward(request, response);
             }
-        }
-        catch (Exception ex) {
-            LOG.log(Level.SEVERE, "Error fetching users:" +  ex);
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
     }
 
     // passing user details to the user acc modal
@@ -207,7 +188,6 @@ public class UserServlet extends HttpServlet {
         int userId = Integer.parseInt(id);
         LOG.log(Level.INFO, "Getting user details for user ID :" + userId);
 
-        try {
             if (userId == 0) {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The userID is missing.");
                 return;
@@ -221,7 +201,7 @@ public class UserServlet extends HttpServlet {
                 return;
             }
 
-            // converting user to JSON for javascript to recognize
+            // converting user to JSON for JS to recognize
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
 
@@ -229,12 +209,6 @@ public class UserServlet extends HttpServlet {
             String userJson = new com.google.gson.Gson().toJson(user);
             response.getWriter().write(userJson);
             LOG.log(Level.INFO, "User JSON sent: " + userJson);
-
-        }
-        catch (Exception ex) {
-            LOG.log(Level.SEVERE, "Error fetching user details: " + ex);
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Server error");
-        }
     }
 
     // updating user account's details
@@ -243,8 +217,6 @@ public class UserServlet extends HttpServlet {
         String id = (request.getParameter("userId"));
         int userId = Integer.parseInt(id);
 
-        try
-        {
             UserDTO user = new UserDTO.UserDTOBuilder().userId(userId)
                     .firstName(request.getParameter("firstName"))
                     .lastName(request.getParameter("lastName"))
@@ -263,17 +235,11 @@ public class UserServlet extends HttpServlet {
                 LOG.log(Level.INFO, "User details of userID: " + userId + "was not updated");
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
             }
-        }
-        catch (Exception ex) {
-            LOG.log(Level.SEVERE, "Error updating the user details: " + ex);
-        }
     }
 
     // deleting user method
     private void deleteUser(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         LOG.log(Level.INFO, "Deleting user");
-        try
-        {
             String id = request.getParameter("userId");
             int userId = Integer.parseInt(id);
             if (userId == 0) {
@@ -292,18 +258,11 @@ public class UserServlet extends HttpServlet {
                 LOG.log(Level.INFO, "User ID:" + userId + " was not deleted.");
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
             }
-        }
-        catch (Exception ex) {
-            LOG.log(Level.SEVERE, "Error deleting user:" +  ex);
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
     }
 
     private void searchUsers(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         LOG.log(Level.INFO, "Searching users...");
 
-        try
-        {
             List<UserDTO> users = userService.searchUsers(request.getParameter("q"));
             if (users == null) {
                 users = Collections.emptyList();
@@ -314,15 +273,9 @@ public class UserServlet extends HttpServlet {
                 String userJson = new com.google.gson.Gson().toJson(users);
                 response.getWriter().write(userJson);
                 LOG.log(Level.INFO, "Users JSON sent: " + userJson);
-        }
-
-        catch (Exception ex) {
-            LOG.log(Level.SEVERE, "Error searching users: " + ex);
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
     }
 
-    private void changePassword(HttpServletRequest request, HttpServletResponse response) throws Exception {
+    private void changePassword(HttpServletRequest request, HttpServletResponse response) throws IOException {
         LOG.log(Level.INFO, "Changing password...");
         String username = request.getParameter("username");
         String password = request.getParameter("newPw");
