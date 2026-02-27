@@ -3,7 +3,9 @@ package business.service.impl;
 import business.service.RoomService;
 import dto.AmenityDTO;
 import dto.RoomDTO;
+import dto.UserDTO;
 import entity.Room;
+import exception.room.DuplicateRoomNumberException;
 import exception.room.RoomNotFoundException;
 import exception.service.BusinessValidationException;
 import exception.service.CheckOutDateBeforeCheckInException;
@@ -14,6 +16,7 @@ import persistence.dao.impl.RoomDAOImpl;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -22,12 +25,27 @@ public class RoomServiceImpl implements RoomService {
     private final RoomDAO roomDAO;
   //  private final List<Room> rooms = new ArrayList<>();
     private static final Logger LOG = Logger.getLogger(RoomServiceImpl.class.getName());
+    private final Set<String> roomNumbers = ConcurrentHashMap.newKeySet();
 
     public RoomServiceImpl() {
         this.roomDAO = new RoomDAOImpl();
+        preloadUniqueFields();  // preloading the room numbers to ensure no duplicate room numbers while saving a room
     }
 
+    private void preloadUniqueFields() {
+        List<RoomDTO> roomDTOS = new ArrayList<>();
+
+        // lambda function
+        roomDTOS.forEach(roomDTO -> {
+            roomNumbers.add(roomDTO.getRoomNum());;
+        });
+    }
+
+
     public boolean add(RoomDTO roomDTO) {
+        if (!roomNumbers.add(roomDTO.getRoomNum())) {
+            throw new DuplicateRoomNumberException("The room number " + roomDTO.getRoomNum() + " is already in use");
+        }
 
         // otherwise, room will be added
         Room roomEntity = RoomMapper.toRoom(roomDTO);
@@ -40,6 +58,14 @@ public class RoomServiceImpl implements RoomService {
         Room roomEntity = RoomMapper.toRoom(roomDTO);
         if (roomDAO.add(roomEntity)) { return roomDAO.getLastInsertedId();}
         return 0;
+    }
+
+    @Override
+    public boolean existsByRoomNumber(String roomNumber) {
+        if (roomNumber == null || roomNumber.isEmpty()) {
+            throw new IllegalArgumentException("The room number is invalid");
+        }
+        return roomDAO.existsByRoomNum(roomNumber);
     }
 
     @Override

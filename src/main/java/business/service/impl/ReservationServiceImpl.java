@@ -290,4 +290,17 @@ public class ReservationServiceImpl implements ReservationService {
 
             return reservationDAO.updateReservationStatus(id, status);
     }
+
+    @Override
+    public Map<String, Integer> getReservationCountByStatus(LocalDate currentDate) {
+        Map<String, Integer> reservationStatusBreakdown = reservationDAO.getReservationCountByStatus(currentDate);
+        Map<String, Integer> counts = new HashMap<>();
+        // reservations statuses
+        counts.put("Confirmed", reservationStatusBreakdown.getOrDefault("Confirmed", 0));
+        counts.put("Cancelled", reservationStatusBreakdown.getOrDefault("Cancelled", 0));
+        counts.put("CheckedIn", reservationStatusBreakdown.getOrDefault("CheckedIn", 0));
+        counts.put("CheckedOut", reservationStatusBreakdown.getOrDefault("CheckedOut", 0));
+        return counts;
+
+    }
 }

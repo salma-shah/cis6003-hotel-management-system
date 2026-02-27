@@ -13,8 +13,10 @@ import persistence.dao.ReservationDAO;
 import persistence.dao.helper.QueryHelper;
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -277,6 +279,29 @@ public class ReservationDAOImpl implements ReservationDAO {
         catch (SQLException e)
         {
             throw new DataAccessException("Failed to update reservation status", e);
+        }
+    }
+
+    @Override
+    public Map<String, Integer> getReservationCountByStatus(LocalDate currentDate) {
+        try(Connection connection = DBConnection.getInstance().getConnection()) {
+            return QueryHelper.executeQuery(connection, "SELECT status, COUNT(*) FROM reservation WHERE DATE(date_of_res) = ? " +
+                            "GROUP BY status",
+                    rs ->
+                    {
+                        Map<String, Integer> map = new HashMap<>();
+                        while(rs.next()) {
+                            String status = rs.getString(1);
+                            int count = rs.getInt(2);
+                            map.put(status, count);
+                        }
+                        return map;
+                    }, currentDate
+
+                    );
+        }
+        catch (SQLException e) {
+            throw new DataAccessException("Error getting total reservations");
         }
     }
 

@@ -42,7 +42,7 @@ public class RoomServlet extends HttpServlet {
         this.roomService = new RoomServiceImpl();
     }
 
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         LOG.log(Level.INFO, "DO POST is being hit.");
         String path = request.getPathInfo();
 
@@ -80,39 +80,57 @@ public class RoomServlet extends HttpServlet {
             case "/all":
                 getAllRooms(request, response);
                 break;
-//            case "/get":
-//                getUserDetails(request, response);
-//                break;
+            case "/room-num-check":
+                checkRoomNum(request, response);
+                break;
             default:
                 LOG.log(Level.SEVERE, "Unsupported path: " + path);
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
 
-    private void createRoom(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    private void createRoom(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
             LOG.log(Level.INFO, "Creating room...");
 
-            // ensuring all fields are filled
-            // do validation
+          // ensuring all fields are filled
+        // do validation
+        String roomNum = request.getParameter("roomNum");
+        int floorNum = Integer.parseInt(request.getParameter("floorNum"));
+        String roomStatusStr = request.getParameter("roomStatus");
+        int roomTypeId =  Integer.parseInt(request.getParameter("roomTypeId"));
 
+        if (roomNum == null || roomNum.isEmpty() || floorNum <= 0 || roomTypeId <= 0 || roomStatusStr == null || roomStatusStr.isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/room/create?error=empty_fields");
+            return;
+        }
 
+        if (floorNum > 15)
+        {
+            response.sendRedirect(request.getContextPath() + "/room/create?error=invalid_floor");
+            return;
+        }
+        RoomStatus roomStatus = RoomStatus.valueOf(roomStatusStr);
+        checkRoomNum(request, response);
         // if everything correct, we save the room
-            // setting room TYPE first
+        // setting room TYPE first
             RoomTypeDTO roomTypeDTO = new RoomTypeDTO.Builder().roomTypeId(Integer.parseInt(request.getParameter("roomTypeId"))).build();
 
             RoomDTO roomDTO = new RoomDTO.RoomDTOBuilder()
-                    .floorNum(Integer.parseInt(request.getParameter("floorNum")))
-                    .roomNum((request.getParameter("roomNum")))
-                    .roomStatus(RoomStatus.valueOf(request.getParameter("status")))
+                    .floorNum(floorNum)
+                    .roomNum(roomNum)
+                    .roomStatus(roomStatus)
                     .roomType(roomTypeDTO)
                     .build();
 
             boolean createdRoom = roomService.add(roomDTO);
             if (createdRoom) {
                 LOG.log(Level.INFO, "Room created successfully!");
+                response.sendRedirect(request.getContextPath() + "/room/create?success=true");
             }
             else {
                 LOG.log(Level.SEVERE, "Failed to create room!");
+                response.sendRedirect(request.getContextPath() + "/room/create?error=system_error");
+                return;
             }
 
             // now we handle images
@@ -283,7 +301,6 @@ public class RoomServlet extends HttpServlet {
             request.setAttribute("rooms", rooms);
             request.getRequestDispatcher("/rooms.jsp").forward(request, response);
         }
-
     // deleting a room method
     private void deleteRoom(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         LOG.log(Level.INFO, "Deleting room...");
@@ -306,4 +323,27 @@ public class RoomServlet extends HttpServlet {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
             }
     }
+
+    private void checkRoomNum(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        LOG.log(Level.INFO, "Checking room num...");
+
+        String roomNum = request.getParameter("roomNum");
+        boolean roomNumExists = false;
+
+        //  we check if username or email already exists
+        if (roomNum != null)
+        {
+            roomNumExists = roomService.existsByRoomNumber(roomNum);
+        }
+
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        String json = "{"
+                + "\"roomNumExists\": " + roomNumExists
+                + "}";
+
+        response.getWriter().write(json);
+    }
 }
+
+

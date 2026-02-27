@@ -7,6 +7,7 @@ import dto.ReservationDTO;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 public interface ReservationService extends CRUDService<ReservationDTO> {
     boolean makeReservation(ReservationDTO entity, List<String> selectedAmenities) ;
@@ -17,4 +18,5 @@ public interface ReservationService extends CRUDService<ReservationDTO> {
     ReservationDTO getByReservationNumber(String resNum) ;
     ReservationAggregateDTO getFullReservation(int id) ;
     boolean updateReservationStatus(int id, ReservationStatus status) ;
+    Map<String, Integer> getReservationCountByStatus(LocalDate currentDate) ;
 }

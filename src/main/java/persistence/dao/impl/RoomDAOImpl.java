@@ -240,7 +240,21 @@ import java.util.stream.Collectors;
         }
     }
 
-    @Override
+        @Override
+        public boolean existsByRoomNum(String roomNum) {
+            try(Connection connection = DBConnection.getInstance().getConnection())
+            {
+                return QueryHelper.executeQuery(connection, "SELECT 1 from room where room_number = ?",
+                        rs -> rs.next(), roomNum
+                        );
+            }
+            catch (SQLException ex)
+            {
+                throw new DataAccessException("There was an error finding the room number: ", ex);
+            }
+        }
+
+        @Override
     public List<Amenity> getAmenitiesByRoomID(int roomID)  {
         try (Connection conn = DBConnection.getInstance().getConnection()) {
             List<Amenity> amenities = new ArrayList<>();
