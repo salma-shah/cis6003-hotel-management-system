@@ -7,23 +7,35 @@ import entity.Guest;
 import exception.EntityNotFoundException;
 import exception.guest.DuplicateGuestRegNumException;
 import exception.guest.GuestNotFoundException;
-import exception.service.DuplicateEmailException;
 import mapper.GuestMapper;
 import persistence.dao.GuestDAO;
 import persistence.dao.impl.GuestDAOImpl;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class GuestServiceImpl implements GuestService {
     private static final Logger LOG = Logger.getLogger(GuestServiceImpl.class.getName());
     private final GuestDAO guestDAO;
+    private final Set<String> emails = ConcurrentHashMap.newKeySet();
+    private final Set<String> regNums = ConcurrentHashMap.newKeySet();
+    private final Set<String> nics = ConcurrentHashMap.newKeySet();
+
+    private void preloadUniqueFields() {
+        List<GuestDTO> guestDTOS = getAll(null);
+        // lambda function
+        guestDTOS.forEach(guestDTO -> {
+            nics.add(guestDTO.getNic());
+            regNums.add(guestDTO.getRegistrationNumber());
+            emails.add(guestDTO.getEmail());
+        });
+    }
 
     public GuestServiceImpl() {
         this.guestDAO = new GuestDAOImpl();
+        preloadUniqueFields();
     }
 
     @Override
@@ -86,13 +98,28 @@ public class GuestServiceImpl implements GuestService {
             throw new DuplicateGuestRegNumException("Registration Number " + guestDTO.getRegistrationNumber() + " already exists");
         }
 
-        if (guestDAO.findByEmail(guestDTO.getEmail())) {
-            throw new DuplicateEmailException("Email" + guestDTO.getEmail() + " is already registered into system"); // email already exists
+        findGuestByEmail(guestDTO.getEmail());
+        if (guestDTO.getNic() != null)
+        {
+            findGuestByNic(guestDTO.getNic());
+        }
+
+        if (guestDTO.getPassportNumber() != null)
+        {
+            findGuestByPassport(guestDTO.getPassportNumber());
         }
 
         Guest guest = GuestMapper.toGuest(guestDTO);
         LOG.log(Level.INFO, "Guest has been registered successfully:" + guest);
-        return guestDAO.add(guest);
+        boolean successfulReg= guestDAO.add(guest);
+        if (!successfulReg)
+        {
+            return false;
+        }
+        if (guestDTO.getNic() != null) nics.add(guestDTO.getNic());
+        if (guestDTO.getEmail() != null) emails.add(guestDTO.getEmail());
+        if (guestDTO.getRegistrationNumber() != null) regNums.add(guestDTO.getRegistrationNumber());
+        return true;
     }
 
     @Override
@@ -139,5 +166,32 @@ public class GuestServiceImpl implements GuestService {
     public GuestHistoryDTO getGuestHistoryById(int id) {
         if  (id <=0 ) { throw new IllegalArgumentException("Invalid guest ID");}
         return guestDAO.getGuestHistoryById(id);
+    }
+
+    @Override
+    public boolean findGuestByEmail(String email) {
+        if (email == null || email.isEmpty())
+        {
+            throw new IllegalArgumentException("Invalid guest email");
+        }
+        return guestDAO.findByField("email", email);
+    }
+
+    @Override
+    public boolean findGuestByNic(String nic) {
+        if (nic == null && nic.isBlank())
+        {
+            throw new IllegalArgumentException("Invalid guest nic");
+        }
+        return guestDAO.findByField("nic", nic);
+    }
+
+    @Override
+    public boolean findGuestByPassport(String passport) {
+       if (passport == null && passport.isBlank())
+       {
+           throw new IllegalArgumentException("Invalid guest passport");
+       }
+       return guestDAO.findByField("passport_number", passport);
     }
 }

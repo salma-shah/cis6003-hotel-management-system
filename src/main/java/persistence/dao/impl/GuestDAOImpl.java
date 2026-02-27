@@ -75,15 +75,15 @@ public class GuestDAOImpl implements GuestDAO {
     }
 
     @Override
-    public boolean findByEmail(String email)  {
+    public boolean findByField(String fieldName, String fieldValue)  {
         try(Connection conn = DBConnection.getInstance().getConnection())
         {
             return QueryHelper.executeQuery(conn,
-                    "SELECT 1 FROM guest WHERE email=?", rs -> rs.next(), email);
+                    "SELECT 1 FROM guest WHERE " + fieldName + " = ? LIMIT 1", rs -> rs.next(), fieldValue);
         }
         catch (SQLException ex)
         {
-            throw new DataAccessException("There was an error finding the guest by email", ex);
+            throw new DataAccessException("There was an error finding the guest by the field: " + fieldName + " =", ex);
         }
     }
 

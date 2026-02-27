@@ -85,6 +85,9 @@ public class GuestServlet extends HttpServlet {
             case "/get":
                 getGuestDetails(request, response);
                 break;
+            case "/check-email":
+                validateGuestIdentificationFields(request, response);
+                break;
             case "/history":
                 getGuestHistory(request, response);
                 break;
@@ -109,10 +112,39 @@ public class GuestServlet extends HttpServlet {
             String registrationNumber = request.getParameter("registrationNumber");
             String dateOfBirth = request.getParameter("dob");
             String nationality = request.getParameter("nationality");
-            LocalDate dob = LocalDate.parse(dateOfBirth);
+            LocalDate dob = null;
+
+            if (dateOfBirth != null && !dateOfBirth.isEmpty()) {
+                dob = LocalDate.parse(dateOfBirth);
+            }
 
             // validation
+           if (firstName == null || lastName == null || email == null || contactNumber == null || registrationNumber == null) {
+               response.sendRedirect(request.getContextPath() + "/guest/register?error=empty_fields");
+               return;
+           }
 
+           if (passportNumber == null && nic == null){
+               response.sendRedirect(request.getContextPath() + "/guest/register?error=empty_guest_identification");
+               return;
+           }
+
+           String passportRegex = "^[A-Za-z0-9]{6,9}$";
+           String nicRegex= "^\\d{9,12}[vV]?$";
+
+           if (nic != null && !nic.isEmpty()) {
+               if (!nic.matches(nicRegex)) {
+                   response.sendRedirect(request.getContextPath() + "/guest/register?error=invalid_nic");
+                   return;
+               }
+           }
+
+           if (passportNumber != null && !passportNumber.isEmpty()) {
+               if (!passportNumber.matches(passportRegex)) {
+                   response.sendRedirect(request.getContextPath() + "/guest/register?error=invalid_passport");
+                   return;
+               }
+           }
 
             // creating
             GuestDTO guestDTO = new GuestDTO.GuestDTOBuilder().firstName(firstName).lastName(lastName)
@@ -122,8 +154,10 @@ public class GuestServlet extends HttpServlet {
             boolean successfulReg = guestService.add(guestDTO);
             if (successfulReg) {
                 LOG.log(Level.INFO, "Successfully registered guest" + guestDTO);
+                response.sendRedirect(request.getContextPath() + "/guest/register?success=true");
             } else {
                 LOG.log(Level.SEVERE, "Failed to register guest");
+                response.sendRedirect(request.getContextPath() + "/guest/register?error=system_error");
             }
 
     }
@@ -245,6 +279,42 @@ public class GuestServlet extends HttpServlet {
         String id = (request.getParameter("guestId"));
         int guestId = Integer.parseInt(id);
 
+        String firstName = request.getParameter("firstName");
+        String lastName = request.getParameter("lastName");
+        String contactNumber = request.getParameter("contactNumber");
+        String passportNumber = request.getParameter("passportNumber");
+        String email = request.getParameter("email");
+        String nic = request.getParameter("nic");
+
+        // validation
+        if (firstName == null || lastName == null || email == null || contactNumber == null ||
+        firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() || contactNumber.isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/guest/all?error=empty_fields");
+            return;
+        }
+
+        if (passportNumber == null && nic == null){
+            response.sendRedirect(request.getContextPath() + "/guest/all?error=empty_guest_identification");
+            return;
+        }
+
+        String passportRegex = "^[A-Za-z0-9]{6,9}$";
+        String nicRegex= "^\\d{9,12}[vV]?$";
+
+        if (nic != null && !nic.isEmpty()) {
+            if (!nic.matches(nicRegex)) {
+                response.sendRedirect(request.getContextPath() + "/guest/all?error=invalid_nic");
+                return;
+            }
+        }
+
+        if (passportNumber != null && !passportNumber.isEmpty()) {
+            if (!passportNumber.matches(passportRegex)) {
+                response.sendRedirect(request.getContextPath() + "/guest/all?error=invalid_passport");
+                return;
+            }
+        }
+
             GuestDTO guest = new GuestDTO.GuestDTOBuilder().id(guestId)
                     .firstName(request.getParameter("firstName"))
                     .lastName(request.getParameter("lastName"))
@@ -259,12 +329,12 @@ public class GuestServlet extends HttpServlet {
             boolean isUpdated = guestService.update(guest);
             if (isUpdated) {
                 LOG.log(Level.INFO, "Guest with ID: " + guestId + "was updated successfully");
-                response.sendRedirect(request.getContextPath() + "/guest/all");
+                response.sendRedirect(request.getContextPath() + "/guest/all?success=true");
             }
             else
             {
                 LOG.log(Level.INFO, "Details of guest ID: " + guestId + " was not updated");
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                response.sendRedirect(request.getContextPath() + "/guest/all?error=system_error");
             }
 
     }
@@ -284,12 +354,12 @@ public class GuestServlet extends HttpServlet {
             if (isDeleted)
             {
                 LOG.log(Level.INFO, "Guest ID:" + guestId + " was deleted successfully");
-                response.sendRedirect(request.getContextPath() + "/guest/all");
+                response.sendRedirect(request.getContextPath() + "/guest/all?success=success_delete");
             }
             else
             {
                 LOG.log(Level.INFO, "Guest ID:" + guestId + " was not deleted.");
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                response.sendRedirect(request.getContextPath() + "/guest/all?error=system_error");
             }
     }
 
@@ -324,6 +394,44 @@ public class GuestServlet extends HttpServlet {
         String guestHistoryJSON = gson.toJson(guestHistory);
         response.getWriter().write(guestHistoryJSON);
         LOG.log(Level.INFO, "Guest history JSON sent: " + guestHistoryJSON);
+
+    }
+
+    // validing guest input
+    private void validateGuestIdentificationFields(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        LOG.log(Level.INFO, "Validating guest email...");
+
+        String email = request.getParameter("email");
+        String passport = request.getParameter("passportNumber");
+        String nic = request.getParameter("nic");
+        boolean nicExists = false;
+        boolean passportExists = false;
+        boolean emailExists = false;
+
+        if (email != null && !email.isEmpty())
+        {
+            emailExists = guestService.findGuestByEmail(email);
+        }
+
+        if (passport != null && !passport.isEmpty())
+        {
+            passportExists = guestService.findGuestByPassport(passport);
+        }
+
+        if (nic != null && !nic.isEmpty())
+        {
+            nicExists = guestService.findGuestByNic(nic);
+        }
+
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        String json = "{"
+                + "\"emailExists\": " + emailExists + ", "
+                + "\"nicExists\": " + nicExists + ", "
+                + "\"passportExists\": " + passportExists
+                + "}";
+
+        response.getWriter().write(json);
 
     }
 }

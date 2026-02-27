@@ -1,6 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-
+<%@ page isELIgnored="false" %>
 <head>
     <title>Create Room</title>
 
@@ -8,7 +8,6 @@
           href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-
     <style>
         .content {
             margin-left: 240px;
@@ -62,7 +61,7 @@
         <h4 class="form-title">
             <i class="bi bi-house-add"></i>  Create New Room
         </h4>
-        <form id="registerForm" action="<c:url value='/room/create' />" method="post">
+        <form id="createRoomForm" action="<c:url value='/room/create' />" method="post">
         <div class="mb-3">
             <label class="form-label">Room Type</label>
             <select name="roomTypeId" id="roomTypeId" class="form-select" required>
@@ -77,7 +76,7 @@
             <div class="mb-3">
                 <label class="form-label">Description</label>
                 <input type="text" name="desc" id="desc" class="form-control" required>
-                <div class="form-error d-none" id="descError">Please enter a descrption for the room.</div>
+                <div class="form-error d-none" id="descError">Please enter a description for the room.</div>
             </div>
 
             <div class="row">
@@ -161,5 +160,71 @@
     </div>
 </div>
 
+<script>
+    let roomNumValid = false;
+
+    document.getElementById("floorNum").addEventListener("blur", function() {
+        const floorNum = document.getElementById('floorNum').value;
+        const floorNumError = document.getElementById("floorNumError");
+        if (floorNum > 15)
+        {
+            floorNumError.innerText = "Maximum number of floors is 15.";
+            floorNumError.classList.remove("d-none");
+        }
+        else {
+
+            floorNumError.classList.add("d-none");
+        }
+    })
+
+    document.getElementById("roomNum").addEventListener("blur", checkAvailability);
+    async function checkAvailability() {
+        const params = new URLSearchParams();
+        params.append("roomNum", document.getElementById("roomNum").value.trim());
+
+        const url = '<c:url value="/room/room-num-check" />?' + params.toString();
+        const response = await fetch(url);
+        const data = await response.json();
+
+        roomNumValid = !data.roomNumExists;
+        const roomNumError = document.getElementById("roomNumError");
+        if (roomNumValid) {roomNumError.classList.add("d-none");}
+        else {
+            roomNumError.innerText = "Room Number already exists";
+            roomNumError.classList.remove("d-none");
+        }
+
+        document.getElementById("createRoomForm").addEventListener("submit", function (e) {
+            if (!roomNumValid) {
+                e.preventDefault();
+                alert("Please fix the errors before submitting");
+            }
+        })
+    }
+
+    const servletParams = new URLSearchParams(window.location.search);
+    const error = servletParams.get("error");
+    const success = servletParams.get("success");
+
+    if (error === "system_error")
+    {
+        alert("Something went wrong with creating the room!")
+    }
+    if (error === "empty_fields")
+    {
+        alert("Fields cannot be left empty.");
+    }
+    if (error === "invalid_floor")
+    {
+        alert("Maximum number of floors in the building is 15");
+    }
+    if (success === "true")
+    {
+        alert("Room was successfully created!");
+        window.location.href = "${pageContext.request.contextPath}/room/all";
+    }
+
+</script>
+
 </body>
-</html>
+

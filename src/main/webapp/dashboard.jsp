@@ -158,26 +158,26 @@
             <div class="row g-4">
                 <div class="col-md-3">
                     <div class="stat-card">
-                        <p>Pending</p>
-                        <h3><c:out value="${reservationCounts['Pending']}" /></h3>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stat-card">
                         <p>Confirmed</p>
-                        <h3><c:out value="${reservationCounts['Confirmed']}" /></h3>
+                        <h3><c:out value="${reservationCount.Confirmed}" /></h3>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="stat-card ">
                         <p>Checked-In</p>
-                        <h3><c:out value="${reservationCounts['CheckedIn']}" /></h3>
+                        <h3><c:out value="${reservationCount.CheckedIn}" /></h3>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="stat-card ">
                         <p>Checked-Out</p>
-                        <h3><c:out value="${reservationCounts['CheckedOut']}" /></h3>
+                        <h3><c:out value="${reservationCount.CheckedOut}" /></h3>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card ">
+                        <p>Cancelled</p>
+                        <h3><c:out value="${reservationCount.Cancelled}" /></h3>
                     </div>
                 </div>
             </div>
@@ -198,15 +198,12 @@
                     <p><a href="<c:url value='/guest/register' />">Register Guest</a></p>
                 </div>
                 <div class="quick-link-card">
-                    <i class="bi bi-credit-card-2-front"></i>
-                    <p><a href="<c:url value='/payment' />">Make Payment</a></p>
-                </div>
-                <div class="quick-link-card">
                     <i class="bi bi-house-door"></i>
                     <p><a href="<c:url value='/room/all' />">Room Management</a></p>
                 </div>
             </div>
         </div>
+
 
         <!-- most recent rservations -->
         <div class="content-card">
@@ -256,6 +253,24 @@
                 if(event.target === modal) modal.style.display = "none";
             });
         }
+
+        const params = new URLSearchParams(window.location.search);
+        const error = params.get('error');
+        const success = params.get('success');
+
+        if (success === "true") {
+            alert("Password was changed successfully!");
+        }
+        if (error === "empty_fields") {
+            alert("Username or password cannot be empty!");
+        }
+        if (error === "system_error") {
+            alert("Something went wrong.")
+        }
+        if (error === "weak_password") {
+            alert("Password has to be 8 characters long and contain numbers and letters.")
+        }
+
     </script>
 </div>
 </body>

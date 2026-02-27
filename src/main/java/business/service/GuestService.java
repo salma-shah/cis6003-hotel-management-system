@@ -10,4 +10,7 @@ public interface GuestService extends CRUDService<GuestDTO> {
     Integer findGuestIdByRegistrationNumber(String registrationNumber);
     String findGuestRegNumById(int id);
     GuestHistoryDTO getGuestHistoryById(int id);
+    boolean findGuestByEmail(String email);
+    boolean findGuestByNic(String nic);
+    boolean findGuestByPassport(String passport);
 }
