@@ -397,7 +397,7 @@ public class GuestServlet extends HttpServlet {
 
     }
 
-    // validing guest input
+    // validating guest input
     private void validateGuestIdentificationFields(HttpServletRequest request, HttpServletResponse response) throws IOException {
         LOG.log(Level.INFO, "Validating guest email...");
 

@@ -1,5 +1,8 @@
 package servlet;
 
+import business.service.ReservationService;
+import business.service.UserService;
+import business.service.impl.ReservationServiceImpl;
 import constant.Role;
 import dto.UserCredentialDTO;
 import dto.UserDTO;
@@ -11,8 +14,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,22 +26,17 @@ public class UserServlet extends HttpServlet {
 
     // enabling logging in tomcat server
     private static final Logger LOG = Logger.getLogger(UserServlet.class.getName());
-    private UserServiceImpl userService;
+    private UserService userService;
+    private ReservationService reservationService;
 
     @Override
     public void init() {
         this.userService = new UserServiceImpl();
+        this.reservationService = new ReservationServiceImpl();
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
-        // logs for debugging
-//        System.err.println("DO POST IS BEING HIT");
-//        LOG.log(Level.INFO, "Handling POST request for registration purposes.");
-//        LOG.info("ServletPath = " + request.getServletPath());
-//        LOG.info("PathInfo = " + request.getPathInfo());
-//        LOG.log(Level.INFO, "Context path = " + request.getContextPath());
 
         String path = request.getPathInfo();
 
@@ -51,7 +51,6 @@ public class UserServlet extends HttpServlet {
                 break;
             case "/delete":   // this is for deleting a user ; since HTML forms dont have DELETE,
                     deleteUser(request, response);   // we access it using POST method
-                request.getRequestDispatcher("/user-accounts.jsp").forward(request, response);
                 break;
             case "/update":
                 updateUser(request, response);
@@ -70,7 +69,6 @@ public class UserServlet extends HttpServlet {
 
         // logs for debugging
         // System.err.println("DO GET IS BEING HIT");
-        // request.getRequestDispatcher("/register.jsp").forward(request, response);
 
         String path = request.getPathInfo();
 
@@ -93,8 +91,12 @@ public class UserServlet extends HttpServlet {
             case "/search":
                 searchUsers(request, response);
                 break;
+            case "/check-duplicate":
+                checkForDuplicateCredentials(request, response);
+                break;
             case "/dashboard":
-                request.getRequestDispatcher("/dashboard.jsp").forward(request, response);
+                getDashboardCount(request, response);
+                break;
             default:
                 LOG.log(Level.SEVERE, "Unsupported path: " + path);
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -108,34 +110,39 @@ public class UserServlet extends HttpServlet {
             String username = request.getParameter("username");
             String email = request.getParameter("email");
             String password = request.getParameter("password");
-            Role role = Role.valueOf(request.getParameter("role"));
+            String roleStr = request.getParameter("role");
+            String firstName = request.getParameter("firstName");
+            String lastName = request.getParameter("lastName");
+            String address = request.getParameter("address");
+            String contactNumber = request.getParameter("contactNumber");
 
           //   ensuring the main fields are not empty
-            if (username == null || email == null || password == null || username.isEmpty() ||  email.isEmpty() || password.isEmpty()) {
+            if (username == null || email == null || roleStr == null || password == null || username.isEmpty() ||  email.isEmpty() || password.isEmpty()
+                    || firstName == null || lastName == null || address == null || contactNumber == null ||
+                    firstName.isEmpty() || lastName.isEmpty() || roleStr.isEmpty() || address.isEmpty() || contactNumber.isEmpty()
+            ) {
                 response.sendRedirect(request.getContextPath() + "/user/register?error=invalid_input");
                 return;
             }
 
-          // then we check if username or email already exists
-            if (userService.existsByUsername(username) )
-            {
-                response.sendRedirect(request.getContextPath() + "/user/register?error=username_used");
-                return;
-            }
+//            // checking password valid
+//            String passwordRegex = "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$";
+//            if (!password.matches(passwordRegex)) {
+//                response.sendRedirect(request.getContextPath() + "/user/register?error=weak_password");
+//                return;
+//            }
 
-            if (userService.existsByUsername(email) )
-            {
-                response.sendRedirect(request.getContextPath() + "/user/register?error=email_used");
-                return;
-            }
+            checkForDuplicateCredentials(request, response);
+
+            Role role = Role.valueOf(request.getParameter("role"));
 
             // if everything is correct, then new user will be registered
-            UserDTO userDTO = new UserDTO.UserDTOBuilder().username(request.getParameter("username"))
-                    .email(request.getParameter("email"))
-                    .firstName(request.getParameter("firstName"))
-                    .lastName(request.getParameter("lastName"))
-                    .address(request.getParameter("address"))
-                    .contactNumber(request.getParameter("contactNumber"))
+            UserDTO userDTO = new UserDTO.UserDTOBuilder().username(username)
+                    .email(email)
+                    .firstName(firstName)
+                    .lastName(lastName)
+                    .address(address)
+                    .contactNumber(contactNumber)
                     .role(role)
                     .build();
 
@@ -149,8 +156,7 @@ public class UserServlet extends HttpServlet {
            {
                LOG.log(Level.INFO, "User registered successfully.");
                LOG.log(Level.INFO, "Email sent successfully.");
-
-               // response.sendRedirect(request.getContextPath() + "/user/register?success=true");
+               response.sendRedirect(request.getContextPath() + "/user/register?success=true");
            }
            // failed to do so
            else
@@ -158,6 +164,36 @@ public class UserServlet extends HttpServlet {
                LOG.log(Level.INFO, "User could not be registered successfully nor was email sent.");
                response.sendRedirect(request.getContextPath() + "/user/register?error=system_error");
             }
+    }
+
+    private void checkForDuplicateCredentials(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        LOG.log(Level.INFO, "Checking for duplicate credentials");
+
+        String username = request.getParameter("username");
+        String email = request.getParameter("email");
+        boolean usernameExists = false;
+        boolean emailExists = false;
+
+        //  we check if username or email already exists
+        if (username != null || !username.isEmpty())
+        {
+           usernameExists = userService.existsByUsername(username);
+        }
+
+        if (email != null || !email.isEmpty())
+        {
+            emailExists = userService.existsByEmail(email);
+        }
+
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        String json = "{"
+                + "\"usernameExists\": " + usernameExists + ","
+                + "\"emailExists\": " + emailExists
+                + "}";
+
+        response.getWriter().write(json);
+
     }
 
     private void getAllUsers(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -217,6 +253,24 @@ public class UserServlet extends HttpServlet {
         String id = (request.getParameter("userId"));
         int userId = Integer.parseInt(id);
 
+        String firstName = request.getParameter("firstName");
+        String lastName = request.getParameter("lastName");
+        String address = request.getParameter("address");
+        String contactNumber = request.getParameter("contactNumber");
+
+        if (firstName == null || lastName == null || address == null || contactNumber == null ||
+        firstName.isEmpty() || lastName.isEmpty() || address.isEmpty() || contactNumber.isEmpty())
+        {
+            response.sendRedirect(request.getContextPath() + "/user/all?error=empty_fields");
+            return;
+        }
+
+        String contactNumRegex = "^(\\+94|0)?7[0-9]{8}$";
+            if (!contactNumber.matches(contactNumRegex)) {
+                response.sendRedirect(request.getContextPath() + "/user/all?error=invalid_contact");
+                return;
+            }
+
             UserDTO user = new UserDTO.UserDTOBuilder().userId(userId)
                     .firstName(request.getParameter("firstName"))
                     .lastName(request.getParameter("lastName"))
@@ -228,12 +282,12 @@ public class UserServlet extends HttpServlet {
             boolean isUpdated = userService.update(user);
             if (isUpdated) {
                 LOG.log(Level.INFO, "User with ID: " + userId + "was updated successfully");
-            //   request.getRequestDispatcher("/user-accounts.jsp").forward(request, response);
+                response.sendRedirect(request.getContextPath() + "/user/all?success=true");
             }
             else
             {
                 LOG.log(Level.INFO, "User details of userID: " + userId + "was not updated");
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                response.sendRedirect(request.getContextPath() + "/user/all?system_error");
             }
     }
 
@@ -251,7 +305,7 @@ public class UserServlet extends HttpServlet {
             if (isDeleted)
             {
                 LOG.log(Level.INFO, "User ID:" + userId + " was deleted successfully");
-                request.getRequestDispatcher("/user-accounts.jsp").forward(request, response);
+                response.sendRedirect(request.getContextPath() + "/user/all?success=deleted");
             }
             else
             {
@@ -280,13 +334,37 @@ public class UserServlet extends HttpServlet {
         String username = request.getParameter("username");
         String password = request.getParameter("newPw");
 
+        if (username == null || password == null || password.isEmpty() || username.isEmpty())
+        {
+            response.sendRedirect(request.getContextPath() + "/user/dashboard?error=empty_fields");
+            return;
+        }
+
+        String passwordRegex = "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$";
+        if (!password.matches(passwordRegex)) {
+            response.sendRedirect(request.getContextPath() + "/user/dashboard?error=weak_password");
+            return;
+        }
+
         // changing password method
         boolean passwordChanged  = userService.changePassword(username,password);
         if (passwordChanged) {
             LOG.log(Level.INFO, "Password changed successfully");
+            response.sendRedirect(request.getContextPath() + "/user/dashboard?success=true");
         }
         else {
             LOG.log(Level.INFO, "Password could not be changed.");
+            response.sendRedirect(request.getContextPath() + "/user/dashboard?error=system_error");
         }
     }
+
+    private void getDashboardCount(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        LOG.log(Level.INFO, "Getting dashboard count...");
+
+        LocalDate currentDate = LocalDate.now();
+        Map<String, Integer> reservationCountByStatus = reservationService.getReservationCountByStatus(currentDate);
+        request.setAttribute("reservationCount", reservationCountByStatus);
+        request.getRequestDispatcher("/dashboard.jsp").forward(request, response);
+    }
+
 }

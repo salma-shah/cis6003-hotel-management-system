@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ page isELIgnored="false" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -106,56 +107,56 @@
                     <div class="form-group">
                         <label for="firstName">First Name</label>
                         <input type="text" id="firstName" name="firstName" placeholder="Enter first name" required>
-                        <div class="error-message" id="firstNameError"></div>
+                        <div class="error-message" id="firstNameError">First name is required</div>
                     </div>
-
+                <br>
                     <div class="form-group">
                         <label for="lastName">Last Name</label>
                         <input type="text" id="lastName" name="lastName" placeholder="Enter last name" required>
-                        <div class="error-message" id="lastNameError"></div>
+                        <div class="error-message" id="lastNameError">Last name is required</div>
                     </div>
-
+                <br>
                     <div class="form-group">
                         <label for="contactNumber">Contact Number</label>
                         <input type="tel" id="contactNumber" name="contactNumber" placeholder="Enter contact number" required>
-                        <div class="error-message" id="contactError"></div>
+                        <div class="error-message" id="contactError">Contact number is required</div>
                     </div>
-
+                <br>
                     <div class="form-group">
                         <label for="address">Address</label>
                         <input type="text" id="address" name="address" placeholder="Enter address" required>
                     </div>
-
+                <br>
                     <div class="form-group">
                         <label for="email">Email</label>
                         <input type="email" id="email" name="email" placeholder="Enter email" required>
-                        <div class="error-message" id="emailError"></div>
+                        <div class="error-message" id="emailError">Email is required</div>
                     </div>
-
+                <br>
                     <div class="form-group">
                         <label for="nic">NIC</label>
                         <input type="text" id="nic" name="nic" placeholder="Enter NIC">
                         <div class="error-message" id="nicError"></div>
                     </div>
-
+                <br>
                     <div class="form-group">
                         <label for="passportNumber">Passport Number</label>
                         <input type="text" id="passportNumber" name="passportNumber" placeholder="Enter passport number">
                         <div class="error-message" id="passportError"></div>
                     </div>
-
+                <br>
                 <div class="form-group">
                     <label for="passportNumber">Nationality</label>
                     <input type="text" id="nationality" name="nationality" placeholder="Enter nationality">
                     <div class="error-message" id="nationError"></div>
                 </div>
-
+<br>
                     <div class="form-group">
                         <label for="dob">Date of Birth</label>
-                        <input type="date" id="dob" name="dob" required>
+                        <input type="date" id="dob" name="dob">
                         <div class="error-message" id="dobError"></div>
                     </div>
-
+                <br>
                 <div class="d-flex justify-content-end">
                     <button type="submit" class="btn enter-btn">Register Guest</button>
                 </div>
@@ -165,16 +166,41 @@
 </div>
 
 <script>
+    let emailExists = false;
+    let passportExists = false;
+    let nicExists = false;
     document.addEventListener("DOMContentLoaded", () => {
         const form = document.getElementById("registerGuestForm");
 
         form.addEventListener("submit", (e) => {
             let valid = true;
-            document.querySelectorAll(".error-message").forEach(el => el.textContent = "");
+            document.querySelectorAll(".error-message").forEach(el => {
+                el.style.display = "none";
+            });
 
+            const firstName = document.getElementById("firstName").value;
+            const lastName = document.getElementById("lastName").value;
+            const email = document.getElementById("email").value;
+            const contactNumber = document.getElementById("contactNumber").value;
             const nic = document.getElementById("nic").value.trim();
             const passport = document.getElementById("passportNumber").value.trim();
             const dob = document.getElementById("dob").value;
+
+            if (!firstName) {
+                document.getElementById("firstNameError").style.display = "block";
+            }
+
+            if (!lastName) {
+                document.getElementById("lastNameError").style.display = "block";
+            }
+
+            if (!email) {
+                document.getElementById("emailError").style.display = "block";
+            }
+
+            if (!contactNumber) {
+                document.getElementById("contactError").style.display = "block";
+            }
 
             // nic validation
             if (nic) {
@@ -212,6 +238,12 @@
             }
 
             if (!valid) e.preventDefault();
+
+            if (passportExists || emailExists || nicExists) {
+                e.preventDefault();
+                alert("Please fix the errors before submitting");
+            }
+
         });
 
         document.getElementById("generateRegBtn")
@@ -227,7 +259,90 @@
                     });
             });
 
+        document.getElementById("email").addEventListener("blur", checkAvailability);
+        document.getElementById("nic").addEventListener("blur", checkAvailability);
+        document.getElementById("passportNumber").addEventListener("blur", checkAvailability);
+
     });
+
+
+    async function checkAvailability() {
+
+        if (!email && !nic && passportNumber) return;
+
+        const params = new URLSearchParams();
+        params.append("email", document.getElementById("email").value.trim());
+        params.append("nic", document.getElementById("nic").value.trim());
+        params.append("passportNumber", document.getElementById("passportNumber").value.trim());
+
+        const url = '<c:url value="/guest/check-email" />?' + params.toString();
+        const response = await fetch(url);
+        const data = await response.json();
+
+        const emailValid = !data.emailExists;
+        const emailErrorBox = document.getElementById("emailError");
+        if (emailValid) {
+            emailErrorBox.classList.add("d-none");
+        } else {
+            emailErrorBox.innerText = "Email is already taken";
+            emailErrorBox.classList.remove("d-none");
+        }
+
+        const passportValid = !data.passportExists;
+        const passportErrorBox = document.getElementById("passportError");
+        if (passportValid) {
+            passportErrorBox.classList.add("d-none");
+        } else {
+            passportErrorBox.innerText = "Passport number already registered in system";
+            passportErrorBox.classList.remove("d-none");
+        }
+
+        const nicValid = !data.nicExists;
+        const nicErrorBox = document.getElementById("nicError");
+        if (nicValid) {
+            nicErrorBox.classList.add("d-none");
+        } else {
+            nicErrorBox.innerText = "NIC already registered in system";
+            nicErrorBox.classList.remove("d-none");
+        }
+    }
+
+
+    // servlet params
+    const params = new URLSearchParams(window.location.search);
+    const error = params.get('error');
+    const success = params.get('success');
+
+    if (success === "true") {
+        alert("Guest was registered successfully!")
+        window.location.href = "${pageContext.request.contextPath}/guest/all";
+    }
+
+    if (error === "empty_fields") {
+        alert("Basic guest information is required.")
+    }
+
+    if (error === "empty_guest_identification")
+    {
+        alert("NIC or Passport Number required");
+    }
+
+    if (error === "system_error")
+    {
+        alert("Something went wrong! We apologize!")
+    }
+
+    if (error === "invalid_nic")
+    {
+        alert("NIC number is invalid.")
+    }
+
+    if (error === "invalid_passport")
+    {
+        alert("Passport number is invalid.")
+    }
+
+
 </script>
 </body>
 </html>

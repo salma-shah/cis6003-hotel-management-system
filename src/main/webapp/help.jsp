@@ -160,6 +160,11 @@
             <form method="post" action="<c:url value='/help/contact-form' />">
                 <label for="message">Message</label>
                 <textarea id="message" name="message" rows="5" placeholder="Write your message here..." required></textarea>
+                <span style="color: darkred"> ${emptyMsgError} </span>
+                <br>
+                <span style="color: darkred"> ${userInvalidError} </span>
+                <span style="color: darkgreen"> ${successfulFormMsg} </span>
+                <span style="color: darkred"> ${formError} </span>
                 <br>
                 <br>
                 <h5>Our team will get back to you soon!</h5>

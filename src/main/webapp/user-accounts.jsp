@@ -293,7 +293,6 @@
         });
     });
 
-
     // viewing modal
     function openViewAndEditModal(userId) {
         // validate userId
@@ -349,6 +348,33 @@
             if(event.target === modal) modal.style.display = "none";
         });
     }
+
+    // response from servlet
+    const servletParams = new URLSearchParams(window.location.search);
+    const error = servletParams.get("error");
+    const success = servletParams.get("success");
+
+    if (error === "system_error")
+    {
+        alert("Something went wrong with updating the user details!")
+    }
+    if (error === "empty_fields")
+    {
+        alert("Fields cannot be left empty.");
+    }
+    if (error === "invalid_contact")
+    {
+        alert("Local number is required.");
+    }
+    if (success === "true")
+    {
+        alert("User details were successfully updated!");
+    }
+    if (success === "deleted")
+    {
+        alert("The user account was deleted.");
+    }
+
 </script>
 
 

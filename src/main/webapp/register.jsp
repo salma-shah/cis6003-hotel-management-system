@@ -1,6 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-
+<%@page isELIgnored="false"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -51,6 +51,17 @@
             font-weight: 500;
         }
 
+        .form-success {
+            margin-top: 12px;
+            padding: 10px 14px;
+            border-radius: 6px;
+            background-color: #dadfce;
+            color: #22a10f;
+            border: 1px solid #6c8e50;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
     </style>
 </head>
 
@@ -66,16 +77,20 @@
         </h4>
 
         <form id="registerForm" action="<c:url value='/user/register' />" method="post">
+            <div class="form-error d-none" id="errorMsg"></div>
+            <div class="form-success d-none" id="successMsg"></div>
+            <div class="form-error d-none" id="systemError"></div>
+            <br>
             <div class="mb-3">
                 <label class="form-label">Username</label>
-                <input type="text" name="username" id="username"class="form-control" required>
-                <div class="form-error d-none" id="usernameError">Please enter a username</div>
+                <input type="text" name="username" id="username"class="form-control" onblur="checkAvailability()" required>
+                <div class="form-error d-none" id="usernameError">Username already taken.</div>
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Password</label>
                 <input type="password" name="password" id="password" class="form-control" required>
-                <div class="form-error d-none" id="passwordError">Please enter a password</div>
+                <div class="form-error d-none" id="passwordError">Password has to be at least 8 characters</div>
             </div>
 
             <div class="row">
@@ -88,14 +103,14 @@
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Last Name</label>
                     <input type="text" name="lastName" id="lastName" class="form-control" required>
-                    <div class="form-error d-none" id="lastName">Please enter the last name</div>
+                    <div class="form-error d-none" id="lastNameError">Please enter the last name</div>
                 </div>
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Email</label>
-                <input type="email" id="email" name="email" class="form-control" required>
-                <div class="form-error d-none" id="emailError">Please enter a valid email</div>
+                <input type="email" id="email" name="email" class="form-control" onblur="checkAvailability()" required>
+                <div class="form-error d-none" id="emailError">Email already taken.</div>
             </div>
 
             <div class="mb-3">
@@ -110,14 +125,12 @@
                 <div class="form-error d-none" id="addressError">Please enter address</div>
             </div>
 
-
             <div class="mb-4">
                 <label class="form-label">Role</label>
                 <select name="role" id="role" class="form-select" required>
                     <option value="">Select role</option>
                     <option value="Manager">Manager</option>
                     <option value="User">Receptionist</option>
-<%--                    <option value="STAFF">Staff</option>--%>
                 </select>
                 <div class="form-error d-none" id="roleError">Please select a role</div>
             </div>
@@ -130,6 +143,112 @@
         </form>
     </div>
 </div>
+
+<script>
+    let usernameValid = false;
+    let emailValid = false;
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const passwordValue = document.getElementById('password');
+        passwordValue.addEventListener("input", function() {
+            const value = passwordValue.value.trim();
+            const passwordError = document.getElementById("passwordError");
+            const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+
+            if (!regex.test(value)) {
+                passwordError.innerHTML = "Password must be at least 8 characters and include letters and numbers.";
+                passwordError.classList.remove("d-none");
+            } else {
+                passwordError.classList.add("d-none");
+            }
+        });
+    })
+
+    // this is frontend validation
+    document.getElementById("registerForm").addEventListener("submit", function(e) {
+        let isValid = true;
+        const firstName = document.getElementById('firstName').value.trim();
+        const lastName = document.getElementById('lastName').value.trim();
+        const username = document.getElementById('username').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value.trim();
+        const address = document.getElementById('address').value.trim();
+        const contactNumber = document.getElementById('contactNumber').value.trim();
+
+        if (!firstName || !lastName || !username || !email || !password || !address || !contactNumber) {
+        isValid = false;
+        }
+
+        if (!isValid) {
+        e.preventDefault();
+        const errorBox = document.getElementById("errorMsg");
+        errorBox.innerHTML = "Please fill all fields.";
+        errorBox.classList.remove("d-none");
+        }
+
+        if (!usernameValid || !emailValid) {
+            e.preventDefault();
+            alert("Please fix the errors before submitting");
+        }
+
+    });
+
+    document.getElementById("username").addEventListener("blur", checkAvailability);
+    document.getElementById("email").addEventListener("blur", checkAvailability);
+    async function checkAvailability() {
+        const params = new URLSearchParams();
+        params.append("username", document.getElementById("username").value.trim());
+        params.append("email", document.getElementById("email").value.trim());
+
+        const url = '<c:url value="/user/check-duplicate" />?' + params.toString();
+        const response = await fetch(url);
+        const data = await response.json();
+
+        usernameValid = !data.usernameExists;
+        const usernameErrorBox = document.getElementById("usernameError");
+        if (usernameValid) {usernameErrorBox.classList.add("d-none");}
+        else {
+            usernameErrorBox.innerText = "Username already taken";
+            usernameErrorBox.classList.remove("d-none");
+            }
+
+            emailValid = !data.emailExists;
+            const emailErrorBox = document.getElementById("emailError");
+            if (emailValid) {
+                emailErrorBox.classList.add("d-none");
+            } else {
+                emailErrorBox.innerText = "Email is already taken";
+                emailErrorBox.classList.remove("d-none");
+            }
+    }
+
+
+    // this checks based on the servlet response
+    const params = new URLSearchParams(window.location.search);
+    const error = params.get('error');
+    const success = params.get('success');
+
+    if (error  === "invalid_input") {
+    document.getElementById("errorMsg").innerHTML = "Please fill all the fields.";
+    document.getElementById("errorMsg").classList.remove('d-none');
+    }
+
+    if (success  === "true") {
+    document.getElementById("successMsg").innerHTML = "The user account was successfully created and email has been sent!";
+    document.getElementById("successMsg").classList.remove('d-none');
+    }
+
+    if (error  === "system_error") {
+    document.getElementById("systemError").innerHTML = "Something went wrong. The user account could not be created.";
+    document.getElementById("systemError").classList.remove('d-none');
+    }
+    //
+    // if (error  === "weak_password") {
+    //     document.getElementById("passportError").innerHTML = "Password must be at least 8 characters and include letters and numbers.";
+    //     document.getElementById("passwordError").classList.remove('d-none');
+    // }
+
+</script>
 
 </body>
 </html>
