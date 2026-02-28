@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.chrono.ChronoLocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -45,11 +46,42 @@ public class CheckRoomAvailabilityServlet extends HttpServlet {
     private void getAvailableRooms(HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.setContentType("application/json");
         LOG.log(Level.INFO, "Getting available rooms...");
-
+        LocalDateTime dateOfRes = LocalDateTime.now();
         LocalDate checkIn = LocalDate.parse(request.getParameter("checkIn"));
         LocalDate checkOut = LocalDate.parse(request.getParameter("checkOut"));
         int roomTypeId = Integer.parseInt(request.getParameter("roomTypeId"));
         String[] amenities = request.getParameterValues("amenities");
+//
+//        if (amenities == null || roomTypeId <= 0) {
+//            response.sendRedirect(request.getContextPath() + "/reservation/create?error=empty_room_check_fields");
+//            return;
+//        }
+
+        if (roomTypeId <= 0) {
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            String json = "{\"invalidRoom\": true}";
+            response.getWriter().write(json);
+            return;
+        }
+
+        if (checkIn.isAfter(checkOut)) {
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            String json = "{\"checkInAfterCheckOut\": true}";
+            response.getWriter().write(json);
+            return;
+        }
+
+        if (checkIn.isBefore(ChronoLocalDate.from(dateOfRes)) || checkOut.isBefore(ChronoLocalDate.from(dateOfRes))) {
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            String json = "{\"datesBeforeToday\": true}";
+            response.getWriter().write(json);
+            return;
+        }
+//
+
         List<Integer> amenityIds = new ArrayList<>();
 
         if (amenities != null) {

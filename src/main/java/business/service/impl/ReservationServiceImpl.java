@@ -2,6 +2,7 @@ package business.service.impl;
 
 import business.service.*;
 import business.service.decorators.*;
+import constant.PaymentStatus;
 import constant.ReservationStatus;
 import dto.*;
 import entity.Reservation;
@@ -25,6 +26,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,12 +37,22 @@ public class ReservationServiceImpl implements ReservationService {
     private final RoomService roomService;
     private final GuestService guestService;
     private final RoomTypeService roomTypeService;
+    private final Set<String> resNums = ConcurrentHashMap.newKeySet();
+
+    private void preloadUniqueFields() {
+        List<ReservationDTO> reservationDTOS = getAll(null);
+        // lambda function
+        reservationDTOS.forEach(reservationDTO -> {
+            resNums.add(reservationDTO.getReservationNumber());
+        });
+    }
 
     public ReservationServiceImpl() {
         this.reservationDAO = new ReservationDAOImpl();
         this.roomService = new RoomServiceImpl();
         this.guestService = new GuestServiceImpl();
         this.roomTypeService = new RoomTypeServiceImpl();
+        preloadUniqueFields();
     }
 
     @Override
@@ -107,7 +120,11 @@ public class ReservationServiceImpl implements ReservationService {
     public boolean makeReservation(ReservationDTO reservationDTO, List<String> selectedAmenities)  {
 
         // checking if res num is unique
-        validateResNum(reservationDTO.getReservationNumber());
+       // validateResNum(reservationDTO.getReservationNumber());
+        if (!resNums.add(reservationDTO.getReservationNumber()))
+        {
+            throw new DuplicateResNumException("Duplicate reservation number : " + reservationDTO.getReservationNumber());
+        }
 
              // checking if dates are valid
             if (!validateReservationDates(reservationDTO)) return false;
@@ -159,6 +176,7 @@ public class ReservationServiceImpl implements ReservationService {
             }
             // sending email is successful
             sendSuccessfulResEmail(reservationDTO);
+            if (reservationDTO.getReservationNumber() != null) resNums.add(reservationDTO.getReservationNumber());
             return true;
     }
 
@@ -177,18 +195,16 @@ public class ReservationServiceImpl implements ReservationService {
         return true;
     }
 
-    public boolean validateResNum(String resNum)  {
+    @Override
+    public void validateResNum(String resNum)  {
         if (resNum == null || resNum.isEmpty())
         {
             throw new IllegalArgumentException("Invalid reservation number");
         }
 
-        boolean existingResNum = reservationDAO.validateReservationNumber(resNum);
-        if (existingResNum)
-        {
+        if (reservationDAO.validateReservationNumber(resNum)) {
             throw new DuplicateResNumException("The reservation number " + resNum + " already exists");
         }
-        return true;
     }
 
     @Override
@@ -276,19 +292,29 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
+    public PaymentStatus getPaymentStatusByReservationId(int id) {
+        if (id <= 0)
+        {
+            throw new IllegalArgumentException("Invalid reservation id");
+        }
+        return reservationDAO.findPaymentStatusForReservation(id);
+    }
+
+    @Override
     public boolean updateReservationStatus(int id, ReservationStatus status)  {
 
         if (id <= 0)
         {
             throw new IllegalArgumentException("Invalid reservation id");
         }
+
         if (status != ReservationStatus.CheckedOut && status != ReservationStatus.CheckedIn
         && status != ReservationStatus.Cancelled)
         {
             throw new IllegalArgumentException("Invalid reservation status");
         }
 
-            return reservationDAO.updateReservationStatus(id, status);
+        return reservationDAO.updateReservationStatus(id, status);
     }
 
     @Override

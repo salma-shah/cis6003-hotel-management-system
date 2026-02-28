@@ -155,7 +155,7 @@
         <a class="nav-link" href="<c:url value='/user/all' />">
             <i class="bi bi-gear"></i> Manage User Accounts
         </a>
-           <a class="nav-link" href="reports.jsp">
+           <a class="nav-link" href="<c:url value='/report'/>">
                <i class="bi bi-journal-check"></i>    Generate Reports
            </a>
        </c:if>

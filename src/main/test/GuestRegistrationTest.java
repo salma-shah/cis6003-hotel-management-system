@@ -43,14 +43,9 @@ public class GuestRegistrationTest {
 
     @Test
     public void test_searchByUniqueRegNumber() throws SQLException {
-        GuestDAO guestDAO = new GuestDAOImpl();
         GuestServiceImpl guestService = new GuestServiceImpl();
-        boolean result = guestService.validateRegistrationNumber("OV58e74162-5b98-4d4c-a015-21dd505b44a5");
+        guestService.validateRegistrationNumber("OVHRC5TBANIP");
 
-        if (!result)
-        {
-            assertEquals("OV58e74162-5b98-4d4c-a015-21dd505b44a5", result);
-        }
     }
 
     @Test

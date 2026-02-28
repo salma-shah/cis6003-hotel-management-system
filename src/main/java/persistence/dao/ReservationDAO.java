@@ -1,5 +1,6 @@
 package persistence.dao;
 
+import constant.PaymentStatus;
 import constant.ReservationStatus;
 import dto.ReservationAggregateDTO;
 import entity.Reservation;
@@ -13,6 +14,7 @@ public interface ReservationDAO extends CRUDDAO<Reservation> {
     boolean validateReservationNumber(String resNum) ;
     Integer findReservationIdByReservationNumber(String resNum) ;
     ReservationAggregateDTO findFullReservation(int id) ;
+    PaymentStatus findPaymentStatusForReservation(int id) ;
     boolean updateReservationStatus(int id, ReservationStatus status);
     Map<String, Integer> getReservationCountByStatus(LocalDate currentDate) ;
 

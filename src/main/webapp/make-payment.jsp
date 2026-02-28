@@ -84,7 +84,7 @@
 
             <div class="mb-3">
                 <label class="form-label">Discount (%) </label>
-                <input type="number" step="1" name="discount" id="discount" min="0" max="100" class="form-control" required>
+                <input type="number" step="1" name="discount" id="discount" min="0" max="100" class="form-control">
             </div>
 
             <div class="mb-3">
@@ -94,7 +94,7 @@
 
             <div class="mb-3">
                 <label class="form-label">Total Amount</label>
-                <input type="number" step="0.01" name="amount" id="amount" class="form-control" required>
+                <input type="number" step="0.01" name="amount" id="amount" class="form-control" required readonly>
             </div>
 
             <div class="mb-3">
@@ -147,28 +147,32 @@
 
 <script>
 
+    document.addEventListener("DOMContentLoaded", function() {
+        calculateTotal();
+    })
+
     // calculating the total amount dynamically
     function calculateTotal() {
         const stayCostValue = parseFloat(document.getElementById('stayCost').value);
         const discountValue = parseFloat(document.getElementById('discount').value);
 
-        // tax is 10% of the stay cost
-        const taxCost = stayCostValue * 0.10;
+        // tax is 18% of the stay cost
+        const taxCost = stayCostValue * 0.18;
         document.getElementById('tax').value = taxCost.toFixed(2);
 
+        // converting % discount to decimal
+        const discountPercent = parseFloat(discountValue) || 0;
+        const discount =  stayCostValue * (discountPercent / 100);
+
         // discount applies to the total stay cost
-
-            const discount = stayCostValue * (discountValue / 100);
-            const totalAmountPrice = (stayCostValue + taxCost) - discount;
-
-
+        const totalAmountPrice = (stayCostValue + taxCost) - discount;
         document.getElementById('amount').value = totalAmountPrice.toFixed(2);
     }
 
     // refreshing dynamically every time new value is entered into discount
     document.getElementById('discount').addEventListener('input', calculateTotal)
 
-
+    // if card payment is selected, the card details section will be displayed
     const paymentSelect = document.getElementById("paymentMethod");
     const cardSection = document.getElementById("cardSection");
 
@@ -179,4 +183,23 @@
             cardSection.style.display = "none";
         }
     });
+
+    // servlet resp params
+    const servletParams = new URLSearchParams(window.location.search);
+    const success = servletParams.get("success");
+    const error = servletParams.get("error");
+
+    if (success === "payment_bill_success") {
+        alert("The bill is generated and payment was made successfully!")
+    }
+    if (error === "payment_system_error")
+    {
+        alert("Something went wrong with making the payment.")
+    }
+    if (error === "bill_system_error")
+    {
+        alert("Something went wrong with generating the bill.")
+    }
+
+
 </script>

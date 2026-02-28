@@ -142,7 +142,7 @@
                     <h2>Welcome, <c:out value="${sessionScope.username}" />!</h2>
                 </c:when>
                 <c:otherwise>
-                    <h2>Welcome Guest.</h2>
+                    <h2>Welcome to Ocean View Resort Dashboard</h2>
                 </c:otherwise>
             </c:choose>
             <button class="btn btn-primary" onclick="openChangePwModal()">

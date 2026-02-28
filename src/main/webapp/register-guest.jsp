@@ -185,6 +185,11 @@
             const nic = document.getElementById("nic").value.trim();
             const passport = document.getElementById("passportNumber").value.trim();
             const dob = document.getElementById("dob").value;
+            const regNum = document.getElementById("registrationNumber").value;
+
+            if (!regNum) {
+                document.getElementById("regNumberError").style.display = "block";
+            }
 
             if (!firstName) {
                 document.getElementById("firstNameError").style.display = "block";
@@ -222,7 +227,7 @@
                 valid = false;
             }
 
-            // dob valdiation
+            // dob validation
             if (dob) {
                 const birthDate = new Date(dob);
                 const today = new Date();

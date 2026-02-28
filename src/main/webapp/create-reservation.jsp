@@ -220,6 +220,12 @@
         color: #999;
     }
 
+    .error-message {
+        color: red;
+        font-size: 13px;
+        margin-top: 4px;
+    }
+
 </style>
 </head>
 
@@ -244,6 +250,7 @@
                                 Generate
                             </button>
                         </div>
+                        <span class="error-message" id="resNumError"></span>
                     </div>
 
                     <div class="form-group">
@@ -254,6 +261,7 @@
                             Calculate Total Cost
                         </button>
                     </div>
+                        <span class="error-message" id="totalCostError"></span>
                     </div>
 
                     <div class="form-group">
@@ -276,6 +284,7 @@
                             <option value="2">Deluxe</option>
                             <option value="3">Suite</option>
                         </select>
+                        <span class="error-message" id="roomTypeError"></span>
                     </div>
 
                     <div class="form-group">
@@ -294,20 +303,23 @@
                         <label><input type="checkbox" name="amenities" class="amenity" value="8"> Hammock</label>
                         <label><input type="checkbox" name="amenities" class="amenity" value="10"> Personalized Galle Giftpack</label>
                     </div>
+                        <span class="error-message" id="amenitiesError"></span>
                     </div>
 
                     <div class="form-group">
                         <label>Amenities Cost</label>
-                        <input type="text" name="amenitiesCost" id="amenitiesCost" required>
+                        <input type="text" name="amenitiesCost" id="amenitiesCost" required readonly>
                     </div>
 
                     <div class="form-group">
                         <label>Guest Registration Number</label>
                         <input type="text" name="guestRegNumber" id="guestRegNumber" required>
+                        <span class="error-message" id="guestRegNumError"></span>
                     </div>
 
                     <%--                // storing room id as a hidden value--%>
                     <input type="hidden" name="roomId" id="roomIdInput">
+<%--                    <span class="error-message" id="roomIdError"></span>--%>
 
                     <div class="form-group">
                         <label>First Name</label>
@@ -371,9 +383,9 @@
 
 <script>
     document.getElementById("reservationForm").addEventListener("submit", function (e) {
-
         let valid = true;
 
+        // dates and guests validation
         const checkIn = new Date(document.getElementById("checkInDate").value);
         const checkOut = new Date(document.getElementById("checkOutDate").value);
         const today = new Date();
@@ -401,8 +413,34 @@
 
         if (!valid) {
             e.preventDefault();
-            return;
         }
+
+        // const firstName = document.getElementById("firstName").value;
+        // const lastName = document.getElementById("lastName").value;
+        // const email = document.getElementById("email").value;
+        // const nicOrPassport = document.getElementById("nicOrPassport").value.trim();
+        // const regNum = document.getElementById("registrationNumber").value;
+        //
+        // if (!regNum) {
+        //     document.getElementById("regNumberError").style.display = "block";
+        // }
+        //
+        // if (!firstName) {
+        //     document.getElementById("firstNameError").style.display = "block";
+        // }
+        //
+        // if (!lastName) {
+        //     document.getElementById("lastNameError").style.display = "block";
+        // }
+        //
+        // if (!email) {
+        //     document.getElementById("emailError").style.display = "block";
+        // }
+        //
+        // if (!nicOrPassport)
+        // {
+        //     document.getElementById("nicOrPassportError").style.display = "block";
+        // }
     });
 
     // generating the reservation number
@@ -419,8 +457,29 @@
 
     function checkAvailability() {
 
-            const checkIn = document.getElementById("checkInDate").value;
-            const checkOut = document.getElementById("checkOutDate").value;
+        const today = new Date();
+        const checkInDate = new Date(document.getElementById("checkInDate").value);
+        const checkOutDate = new Date(document.getElementById("checkOutDate").value);
+
+        const checkIn = document.getElementById("checkInDate").value;
+        const checkOut = document.getElementById("checkOutDate").value;
+
+        if (checkInDate < today) {
+            document.getElementById("checkInError").innerText = "Check-in cannot be in the past.";
+            return;
+        }
+        else {
+            document.getElementById("checkInError").style.display = "none";
+        }
+
+        if (checkOutDate <= checkInDate) {
+            document.getElementById("checkOutError").innerText = "Check-out must be after check-in.";
+            return;
+        }
+        else {
+            document.getElementById("checkOutError").style.display = "none";
+        }
+
             const roomTypeId = document.getElementById("roomType").value;
             const amenities = Array.from(document.querySelectorAll(".amenity:checked"))
                 .map(cb => cb.value);
@@ -449,6 +508,22 @@
                     return res.json();
                 })
                 .then(rooms => {
+
+                    if (rooms.checkInAfterCheckOut)
+                    {
+                        alert("Check-in date cannot be after check-out date.")
+                        return;
+                    }
+                    if (rooms.datesBeforeToday)
+                    {
+                        alert("Dates cannot be in the past")
+                        return;
+                    }
+                    if (rooms.invalidRoom)
+                    {
+                        alert("Please select a room type.")
+                    }
+
                     container.innerHTML = ""; // clearing the box area
 
                     // error message
@@ -543,7 +618,7 @@
             return;
         }
 
-        // convering the values to dates
+        // converting the values to dates
         const checkInDate = new Date(checkInValue)
         const checkOutDate = new Date(checkOutValue);
 
@@ -568,8 +643,18 @@
             document.querySelectorAll("input[name='amenities']:checked")
         ).map(cb => cb.value);
 
+        if (selected.length === 0) {
+            alert("Please select the amenities of the room");
+            return;
+        }
         const params = new URLSearchParams();
         selected.forEach(a => params.append("amenities", a));
+
+        const roomId = document.getElementById("roomIdInput").value;
+        if (!roomId) {
+            alert("Please select a room.");
+            return;
+        }
 
         params.append("roomId", document.getElementById("roomIdInput").value);
         params.append("checkInDate", document.getElementById("checkInDate").value);
@@ -586,6 +671,54 @@
             });
     }
 
+    // servlet params
+    const servletParams = new URLSearchParams(window.location.search);
+    const error = servletParams.get("error");
+
+    if (error === "system_error")
+    {
+        alert("Something went wrong! We apologize!")
+    }
+    if (error === "guest_not_found")
+    {
+        alert("Guest registration number was not found.")
+    }
+    if (error === "adult_guest_required")
+    {
+        alert("At least one adult guest is required.")
+    }
+    if (error === "empty_fields")
+    {
+
+    alert("Please fill in all fields")}
+
+    if (error === "checkindate_after_checkout")
+    {
+        alert("Check-in date cannot be after checkout date");
+    }
+    if (error === "dates_in_past")
+    {
+        alert("Dates cannot be in past")
+    }
+
+    if (error === "empty_room_check_fields")
+    {
+        alert("Please select check-in, check-out and room type.")
+    }
+
+    if (error === "invalid_room")
+    {
+        alert("Please select a room for reservation.")
+    }
+    if (error === "empty_cost")
+    {
+        alert("Total Stay cost is required.")
+    }
+    if (error === "duplicate_res_num")
+    {
+        alert("Reservation number already exists. Please generate another one.");
+    }
+
 </script>
 
 <%--%--    // after successful validation and reservation is made, you can choose to make the payment now ;--%>
@@ -597,12 +730,16 @@
 
         if (reservationNum) {
             const confirmPayment = confirm(
-                "The reservation was made successfully!\nDo you want to make the payment now?"
+                "The reservation was made successfully! Email was sent to the guest!\nDo you want to make the payment now?"
             );
 
             if (confirmPayment) {
                 window.location.href =
                     "${pageContext.request.contextPath}/payment/form?reservationNum=" + reservationNum + "&totalCost=" + totalCost + "&guestId=" + guestId;
+            }
+            else
+            {
+                window.location.href = "${pageContext.request.contextPath}/reservation/all";
             }
         }
     </script>

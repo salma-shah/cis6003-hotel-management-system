@@ -1,6 +1,7 @@
 package business.service;
 
 import business.service.helper.CRUDService;
+import constant.PaymentStatus;
 import constant.ReservationStatus;
 import dto.ReservationAggregateDTO;
 import dto.ReservationDTO;
@@ -18,5 +19,7 @@ public interface ReservationService extends CRUDService<ReservationDTO> {
     ReservationDTO getByReservationNumber(String resNum) ;
     ReservationAggregateDTO getFullReservation(int id) ;
     boolean updateReservationStatus(int id, ReservationStatus status) ;
-    Map<String, Integer> getReservationCountByStatus(LocalDate currentDate) ;
+    Map<String, Integer> getReservationCountByStatus(LocalDate currentDate);
+    PaymentStatus getPaymentStatusByReservationId(int id);
+    void validateResNum(String resNum);
 }

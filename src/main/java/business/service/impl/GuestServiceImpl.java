@@ -93,10 +93,16 @@ public class GuestServiceImpl implements GuestService {
     @Override
     public boolean add(GuestDTO guestDTO)  {
         // ensuring reg num is unique
-        if(guestDAO.existsByRegistrationNumber(guestDTO.getRegistrationNumber()))
+
+        if (!regNums.add(guestDTO.getRegistrationNumber()))
         {
             throw new DuplicateGuestRegNumException("Registration Number " + guestDTO.getRegistrationNumber() + " already exists");
         }
+
+//        if(guestDAO.existsByRegistrationNumber(guestDTO.getRegistrationNumber()))
+//        {
+//            throw new DuplicateGuestRegNumException("Registration Number " + guestDTO.getRegistrationNumber() + " already exists");
+//        }
 
         findGuestByEmail(guestDTO.getEmail());
         if (guestDTO.getNic() != null)
@@ -146,20 +152,16 @@ public class GuestServiceImpl implements GuestService {
     }
 
     @Override
-    public boolean validateRegistrationNumber(String registrationNumber)  {
+    public void validateRegistrationNumber(String registrationNumber)  {
 
         if (registrationNumber == null || registrationNumber.isEmpty())
         {
             throw new IllegalArgumentException("Invalid registration number");
         }
 
-        boolean validRegNum = guestDAO.existsByRegistrationNumber(registrationNumber);
-
-        if (!validRegNum)
-        {
-            throw new GuestNotFoundException("Guest Not Found for Registration Number: " + registrationNumber);
+        if (guestDAO.existsByRegistrationNumber(registrationNumber)) {
+            throw new DuplicateGuestRegNumException("Guest with Registration Number: " + registrationNumber + " already exists");
         }
-        return true;
     }
 
     @Override
@@ -179,7 +181,7 @@ public class GuestServiceImpl implements GuestService {
 
     @Override
     public boolean findGuestByNic(String nic) {
-        if (nic == null && nic.isBlank())
+        if (nic == null && nic.isEmpty())
         {
             throw new IllegalArgumentException("Invalid guest nic");
         }

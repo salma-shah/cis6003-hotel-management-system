@@ -110,7 +110,7 @@ public class AuthServlet extends HttpServlet {
             session.setAttribute("userId", user.getUserId());
             session.setAttribute("username", user.getUsername());
             session.setAttribute("userRole", user.getRole().name());
-            response.sendRedirect(request.getContextPath() + "/dashboard.jsp");
+            response.sendRedirect(request.getContextPath() + "/user/dashboard");
     }
 
     // logout method

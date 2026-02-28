@@ -285,7 +285,7 @@ public class ReservationDAOImpl implements ReservationDAO {
     @Override
     public Map<String, Integer> getReservationCountByStatus(LocalDate currentDate) {
         try(Connection connection = DBConnection.getInstance().getConnection()) {
-            return QueryHelper.executeQuery(connection, "SELECT status, COUNT(*) FROM reservation WHERE DATE(date_of_res) = ? " +
+            return QueryHelper.executeQuery(connection, "SELECT status, COUNT(*) FROM reservation WHERE DATE(checkin_date) = ? " +
                             "GROUP BY status",
                     rs ->
                     {
@@ -302,6 +302,25 @@ public class ReservationDAOImpl implements ReservationDAO {
         }
         catch (SQLException e) {
             throw new DataAccessException("Error getting total reservations");
+        }
+    }
+
+
+    @Override
+    public PaymentStatus findPaymentStatusForReservation(int id) {
+        try(Connection connection = DBConnection.getInstance().getConnection())
+        {
+            return QueryHelper.executeQuery(connection, "SELECT status FROM bill WHERE reservation_id = ? ORDER BY created_at DESC LIMIT 1", rs ->
+            {
+                if (rs.next())
+                {
+                    return PaymentStatus.valueOf(rs.getString("status"));
+                } return null;
+            },
+                    id);
+        }
+        catch (SQLException e) {
+            throw new DataAccessException("Error getting the payment status for the reservation", e);
         }
     }
 

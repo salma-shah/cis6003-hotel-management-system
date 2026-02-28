@@ -59,17 +59,26 @@ public class PaymentServlet extends HttpServlet {
             // getting the params
             String resNum = req.getParameter("reservationNum");
             int guestId = Integer.parseInt(req.getParameter("guestId"));
-            double stayCost = Double.parseDouble(req.getParameter("stayCost"));
-            double discount = Double.parseDouble(req.getParameter("discount"));
-            double tax = Double.parseDouble(req.getParameter("tax"));
-            double totalAmount = Double.parseDouble(req.getParameter("amount"));
+            String stayCostStr = req.getParameter("stayCost");
+            String discountStr = req.getParameter("discount");
+            String totalStr = req.getParameter("amount");
+            String taxStr = req.getParameter("tax");
 
-            // validations
+            // discount is optional
+            double discount = 0.0;
+            if (discountStr != null && !discountStr.isEmpty()) discount = Double.parseDouble(discountStr);
 
+           // validations
+            if (stayCostStr == null || totalStr == null || taxStr == null || taxStr.isEmpty() || stayCostStr.isEmpty() || totalStr.isEmpty()) {
+                resp.sendRedirect(req.getContextPath() + "/payment/generate?error=empty_fields");
+                return;
+            }
+
+            double stayCost = Double.parseDouble(stayCostStr);
+            double tax = Double.parseDouble(taxStr);
+            double totalAmount = Double.parseDouble(totalStr);
 
             int billId = billService.generateBill(resNum, guestId, stayCost,tax, discount);
-//            BillDTO billDTO = billService.searchById(billId);
-//            totalAmount = billDTO.getTotalAmount();
             if (billId > 0) {
                 LOG.log(Level.INFO, "Bill generated successfully...");
 
@@ -83,15 +92,17 @@ public class PaymentServlet extends HttpServlet {
                 else
                 {
                     LOG.log(Level.INFO, "Payment failed...");
+                    resp.sendRedirect(req.getContextPath() + "/payment?error=payment_system_error");
                 }
+
                 // generating the pdf for the bill
                 byte[] billPDF = billService.generateBillPDF(billId, resNum, guestId, stayCost, tax, discount, totalAmount);
                 resp.setContentType("application/pdf");
                 resp.setHeader("Content-Disposition", "attachment; filename=OceanView_Bill_ " + billId + "_forRes" + resNum + ".pdf");
                 resp.getOutputStream().write(billPDF);
-
             } else {
                 LOG.log(Level.INFO, "Something went wrong");
+                resp.sendRedirect(req.getContextPath() + "/payment?error=bill_system_error");
             }
     }
 

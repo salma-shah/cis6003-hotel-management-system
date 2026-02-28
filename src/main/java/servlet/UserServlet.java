@@ -364,6 +364,7 @@ public class UserServlet extends HttpServlet {
         LocalDate currentDate = LocalDate.now();
         Map<String, Integer> reservationCountByStatus = reservationService.getReservationCountByStatus(currentDate);
         request.setAttribute("reservationCount", reservationCountByStatus);
+        LOG.log(Level.INFO, "Res count: " + reservationCountByStatus);
         request.getRequestDispatcher("/dashboard.jsp").forward(request, response);
     }
 

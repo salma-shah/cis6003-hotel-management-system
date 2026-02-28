@@ -190,11 +190,9 @@
                     <thead>
                     <tr>
                         <th>Reservation Num</th>
-<%--                        <th>Room Type</th>--%>
                         <th>Start Date</th>
                         <th>End Date</th>
                         <th>Status</th>
-<%--                        <th>Payment Status</th>--%>
                         <th>Actions</th>
                     </tr>
                     </thead>
@@ -202,7 +200,6 @@
                     <c:forEach var="reservation" items="${reservations}">
                         <tr data-name="${reservation.id}">
                             <td>${reservation.reservationNumber}</td>
-<%--                            <td>${reservation.roomId}</td>--%>
                             <td>${reservation.checkInDate}</td>
                             <td>${reservation.checkOutDate}</td>
                             <td>
@@ -484,11 +481,24 @@
 
         checkInDate.addEventListener("change", checkDateChanges);
         checkOutDate.addEventListener("change", checkDateChanges);
+
+        // servlet params
+        // const servletParams = new URLSearchParams(window.location.search);
+        // const error = servletParams.get('error');
+        // const success = servletParams.get('success');
+        //
+        // if (error === "unpaid_bill")
+        // {
+        //
+        // }
+
+
     });
 
     // view res modal
     function openReservationModal(id) {
 
+        const checkOutBtn = document.getElementById("checkOutBtn");
         fetch('<c:url value="/reservation/details?id=" />' + id)
             .then(response => response.json())
             .then(data => {
@@ -549,7 +559,6 @@
 
                 document.getElementById("address").value =
                     data.guestDTO.address;
-
 
 
                 // this bill area is only if a bill for it is made
@@ -629,10 +638,17 @@
         ).then(response => response.json())
             .then(data => {
                 console.log(data);
+                if (data.error)
+                {
+                    alert("Reservation cannot be checked out until its payment is made")
+                    return;
+                }
+
                 if (data.success)
                 {
                     location.reload();
                 }
+
             })
             .catch(err => console.error(err));
     }

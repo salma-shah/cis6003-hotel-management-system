@@ -6,7 +6,7 @@ import dto.GuestHistoryDTO;
 
 public interface GuestService extends CRUDService<GuestDTO> {
     boolean add(GuestDTO guestDTO);
-    boolean validateRegistrationNumber(String registrationNumber);
+    void validateRegistrationNumber(String registrationNumber);
     Integer findGuestIdByRegistrationNumber(String registrationNumber);
     String findGuestRegNumById(int id);
     GuestHistoryDTO getGuestHistoryById(int id);

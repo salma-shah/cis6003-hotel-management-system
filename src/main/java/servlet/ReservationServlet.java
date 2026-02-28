@@ -10,6 +10,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializer;
+import constant.PaymentStatus;
 import constant.ReservationStatus;
 import dto.ReservationAggregateDTO;
 import dto.ReservationDTO;
@@ -24,6 +25,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.chrono.ChronoLocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.logging.Level;
@@ -90,39 +92,81 @@ public class ReservationServlet extends HttpServlet {
             LOG.log(Level.INFO, "Making reservation method reached...");
 
             // getting the required parameters
-            int roomId = Integer.parseInt(request.getParameter("roomId"));
-            LOG.log(Level.INFO, "Room Id: " + roomId);
-            LOG.log(Level.INFO, "Guest num:" + request.getParameter("guestRegNumber"));
+        String reservationNum = request.getParameter("reservationNumber");
+        int numAdults = Integer.parseInt(request.getParameter("numAdults"));
+
+        String numChildrenExists = request.getParameter("numChildren");
+        int numChildren = 0;
+        if (numChildrenExists != null) {
+            numChildren = Integer.parseInt(numChildrenExists);
+        }
+
+        String checkInDate = request.getParameter("checkInDate");
+        String checkOutDate = request.getParameter("checkOutDate");
+        LocalDateTime dateOfRes = LocalDateTime.now();
+
+        // ensuring a room is selected
+        int roomId = Integer.parseInt(request.getParameter("roomId"));
+        if (roomId <= 0)
+        {
+            response.sendRedirect(request.getContextPath() + "/reservation/create?error=invalid_room");
+            return;
+        }
+        String totalPriceStr = request.getParameter("totalCost");
+        String[] selectedAmenities = request.getParameterValues("amenities");
+
+        // validations
+        if (reservationNum == null || reservationNum.isEmpty() || numAdults <= 0 || totalPriceStr == null
+        || checkInDate == null || checkOutDate == null || selectedAmenities == null || selectedAmenities.length == 0) {
+            response.sendRedirect(request.getContextPath() + "/reservation/create?error=empty_fields");
+            return;
+        }
+
+        double totalPrice = Double.parseDouble(request.getParameter("totalCost"));
+        if (totalPrice <= 0)
+        {
+            response.sendRedirect(request.getContextPath() + "/reservation/create?error=empty_cost");
+            return;
+        }
+        LocalDate checkIn = LocalDate.parse(request.getParameter("checkInDate"));
+        LocalDate checkOut = LocalDate.parse(request.getParameter("checkOutDate"));
+
+        if (checkIn.isAfter(checkOut)) {
+            response.sendRedirect(request.getContextPath() + "/reservation/create?error=checkindate_after_checkout");
+            return;
+        }
+
+        if (checkIn.isBefore(ChronoLocalDate.from(dateOfRes)) || checkOut.isBefore(ChronoLocalDate.from(dateOfRes))) {
+            response.sendRedirect(request.getContextPath() + "/reservation/create?error=dates_in_past");
+            return;
+        }
+
+        if (numAdults <= 0 && numChildren >= 1)
+        {
+            response.sendRedirect(request.getContextPath() + "/reservation/create?error=adult_guest_required");
+            return;
+        }
+
             // getting guest id by reservation number
             Integer guestIdObj = guestService.findGuestIdByRegistrationNumber(request.getParameter("guestRegNumber"));
             if (guestIdObj == null) {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Guest not found for registration number: " + guestIdObj);
+                response.sendRedirect(request.getContextPath() + "/reservation/create?error=guest_not_found");
                 return;
             }
             int guestId = guestIdObj;
             LOG.log(Level.INFO, "Guest id: " + guestId);
-            String reservationNum = request.getParameter("reservationNumber");
-            int numAdults = Integer.parseInt(request.getParameter("numAdults"));
-            int numChildren = Integer.parseInt(request.getParameter("numChildren"));
-            double totalPrice = Double.parseDouble(request.getParameter("totalCost"));
-            LocalDate checkInDate = LocalDate.parse(request.getParameter("checkInDate"));
-            LocalDate checkOutDate = LocalDate.parse(request.getParameter("checkOutDate"));
-            LocalDateTime dateOfRes = LocalDateTime.now();
 
             // getting the amenities with prices
             // this gets the values of the amenities
-            String[] selectedAmenities = request.getParameterValues("amenities");
             LOG.log(Level.INFO, "Amenities: " + Arrays.toString(selectedAmenities));
             List<String> selectedAmenitiesList =
                 selectedAmenities != null
                         ? Arrays.asList(selectedAmenities)
                         : new ArrayList<>();
 
-            // do validation
-
 
             // if everything is passed, reservation will be made
-            ReservationDTO reservationDTO = new ReservationDTO(0, guestId, roomId, reservationNum, totalPrice, dateOfRes, checkInDate, checkOutDate, numAdults, numChildren, ReservationStatus.Pending);
+            ReservationDTO reservationDTO = new ReservationDTO(0, guestId, roomId, reservationNum, totalPrice, dateOfRes, checkIn, checkOut, numAdults, numChildren, ReservationStatus.Pending);
             boolean successfulRes = reservationService.makeReservation(reservationDTO, selectedAmenitiesList);
             if (successfulRes) {
                 LOG.log(Level.INFO, "Reservation made successfully...");
@@ -130,9 +174,11 @@ public class ReservationServlet extends HttpServlet {
                 // sending total cost
                 double amenitiesCost = Double.parseDouble(request.getParameter("amenitiesCost"));
                 double totalCost = amenitiesCost + totalPrice;
-                response.sendRedirect(request.getContextPath() + "/create-reservation.jsp?success=true&reservationNum=" + reservationNum + "&totalCost=" + totalCost + "&guestId=" + guestId);  }
-            else {
+                response.sendRedirect(request.getContextPath() + "/reservation/create?success=true&reservationNum=" + reservationNum + "&totalCost=" + totalCost + "&guestId=" + guestId);  }
+            else
+            {
                 LOG.log(Level.SEVERE, "Reservation made failed...");
+                response.sendRedirect(request.getContextPath() + "/reservation/create?error=system_error");
             }
     }
 
@@ -260,6 +306,21 @@ public class ReservationServlet extends HttpServlet {
 
         ReservationStatus status = ReservationStatus.valueOf(request.getParameter("status"));
         LOG.log(Level.INFO, "Status: " + status);
+
+
+        // checking whether a reservation is paid before checkout
+        if (status == ReservationStatus.CheckedOut)
+        {
+            PaymentStatus paymentStatus = reservationService.getPaymentStatusByReservationId(id);
+            if (paymentStatus != PaymentStatus.Paid)
+            {
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
+                String json = "{\"error\": true}";
+                response.getWriter().write(json);
+                return;
+            }
+        }
 
         // updating the status
         boolean updatedStatus = reservationService.updateReservationStatus(id, status);

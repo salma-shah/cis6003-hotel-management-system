@@ -68,7 +68,14 @@ public class BillServiceImpl implements BillService {
            document.add(new Paragraph("Guest ID: " + guestCode).setFontSize(18));
            document.add(new Paragraph("Stay Cost: " + stayCost).setFontSize(18));
            document.add(new Paragraph("Tax: " + tax).setFontSize(18));
-           document.add(new Paragraph("Discount: " + discount).setFontSize(18));
+
+           if (discount <= 0) {
+               String noDiscount = "N/A";
+               document.add(new Paragraph("Discount: " + noDiscount).setFontSize(18));
+           }
+           else {
+               document.add(new Paragraph("Discount: " + discount).setFontSize(18));
+           }
            document.add(new Paragraph("Total Amount: " + totalAmount).setFontSize(18));
 
            document.add(new Paragraph(""));
