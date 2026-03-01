@@ -347,6 +347,11 @@
         alert("Passport number is invalid.")
     }
 
+    if (error === "invalid_email")
+    {
+        alert("Email is invalid.")
+    }
+
 
 </script>
 </body>

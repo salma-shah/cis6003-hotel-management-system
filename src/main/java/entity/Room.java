@@ -76,6 +76,7 @@ public class Room implements SuperEntity {
         this.floorNum = builder.floorNum;
         this.createdAt = builder.createdAt;
         this.updatedAt = builder.updatedAt;
+
     }
 
     // we  apply the builder pattern

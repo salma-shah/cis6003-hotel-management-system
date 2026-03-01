@@ -539,27 +539,49 @@
                 document.getElementById("dateOfRes").value =
                     data.reservationDTO.dateOfReservation;
 
-                document.getElementById("guestReg").value =
-                    data.guestDTO.registrationNumber;
+                // guest details
+                if (data.guestDTO) {
+                    document.getElementById("guestReg").value =
+                        data.guestDTO.registrationNumber;
 
-                document.getElementById("name").value =
-                    data.guestDTO.firstName + " " + data.guestDTO.lastName;
+                    document.getElementById("name").value =
+                        data.guestDTO.firstName + " " + data.guestDTO.lastName;
 
-                document.getElementById("email").value =
-                    data.guestDTO.email;
+                    document.getElementById("email").value =
+                        data.guestDTO.email;
 
-                document.getElementById("contactNumber").value =
-                    data.guestDTO.contactNumber;
+                    document.getElementById("contactNumber").value =
+                        data.guestDTO.contactNumber;
 
-                document.getElementById("passportNum").value =
-                    data.guestDTO.passportNumber ?? 'N/A';
+                    document.getElementById("passportNum").value =
+                        data.guestDTO.passportNumber ?? 'N/A';
 
-                document.getElementById("nic").value =
-                    data.guestDTO.nic ?? 'N/A';
+                    document.getElementById("nic").value =
+                        data.guestDTO.nic ?? 'N/A';
 
-                document.getElementById("address").value =
-                    data.guestDTO.address;
+                    document.getElementById("address").value =
+                        data.guestDTO.address;
+                }
+                else
+                {
+                    document.getElementById("guestReg").value =
+                        'Guest profile was removed from the system';
 
+                    document.getElementById("name").value =
+                        'N/A';
+
+                    document.getElementById("email").value =
+                        'N/A';
+
+                    document.getElementById("contactNumber").value =
+                        'N/A';
+
+                    document.getElementById("passportNum").value = 'N/A';
+
+                    document.getElementById("nic").value = 'N/A';
+
+                    document.getElementById("address").value = 'N/A';
+                }
 
                 // this bill area is only if a bill for it is made
                 if (data.billDTO) {
@@ -646,6 +668,7 @@
 
                 if (data.success)
                 {
+                    alert("Reservation status was updated!")
                     location.reload();
                 }
 

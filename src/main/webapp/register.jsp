@@ -153,7 +153,15 @@
         passwordValue.addEventListener("input", function() {
             const value = passwordValue.value.trim();
             const passwordError = document.getElementById("passwordError");
-            const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+            const regex = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/;
+
+            if (!value){
+                passwordError.innerHTML = "Password is required.";
+                passwordError.classList.remove("d-none");
+            } else {
+                passwordError.classList.add("d-none");
+            }
+
 
             if (!regex.test(value)) {
                 passwordError.innerHTML = "Password must be at least 8 characters and include letters and numbers.";
@@ -242,11 +250,15 @@
     document.getElementById("systemError").innerHTML = "Something went wrong. The user account could not be created.";
     document.getElementById("systemError").classList.remove('d-none');
     }
-    //
-    // if (error  === "weak_password") {
-    //     document.getElementById("passportError").innerHTML = "Password must be at least 8 characters and include letters and numbers.";
-    //     document.getElementById("passwordError").classList.remove('d-none');
-    // }
+
+    if (error  === "weak_password") {
+        document.getElementById("passportError").innerHTML = "Password must be at least 8 characters and include letters and numbers.";
+        document.getElementById("passwordError").classList.remove('d-none');
+    }
+
+    if (error  === "invalid_email") {
+        alert("Please enter a valid email address");
+    }
 
 </script>
 

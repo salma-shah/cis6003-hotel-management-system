@@ -5,6 +5,7 @@ import business.service.impl.GuestServiceImpl;
 import com.google.gson.*;
 import dto.GuestDTO;
 import dto.GuestHistoryDTO;
+import security.EmailValidation;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -145,6 +146,12 @@ public class GuestServlet extends HttpServlet {
                    return;
                }
            }
+
+        // checking email validity
+        if (!EmailValidation.validateEmail(email)) {
+            response.sendRedirect(request.getContextPath() + "/guest/register?error=invalid_email");
+            return;
+        }
 
             // creating
             GuestDTO guestDTO = new GuestDTO.GuestDTOBuilder().firstName(firstName).lastName(lastName)

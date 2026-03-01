@@ -7,6 +7,7 @@ import constant.Role;
 import dto.UserCredentialDTO;
 import dto.UserDTO;
 import business.service.impl.UserServiceImpl;
+import security.EmailValidation;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -126,11 +127,17 @@ public class UserServlet extends HttpServlet {
             }
 
 //            // checking password valid
-//            String passwordRegex = "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$";
-//            if (!password.matches(passwordRegex)) {
-//                response.sendRedirect(request.getContextPath() + "/user/register?error=weak_password");
-//                return;
-//            }
+            String passwordRegex = "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$";
+            if (!password.matches(passwordRegex)) {
+                response.sendRedirect(request.getContextPath() + "/user/register?error=weak_password");
+                return;
+            }
+
+            // checking email validity
+          if (!EmailValidation.validateEmail(email)) {
+              response.sendRedirect(request.getContextPath() + "/user/register?error=invalid_email");
+              return;
+          }
 
             checkForDuplicateCredentials(request, response);
 
