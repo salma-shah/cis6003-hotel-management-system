@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 public class CurrencyConverterServlet extends HttpServlet {
     Logger LOGGER = Logger.getLogger(CurrencyConverterServlet.class.getName());
 
-    private static final String CURRENCY_CONVERTER_API_KEY = "d929bdde24de7770863a8d58";
+    private static final String CURRENCY_CONVERTER_API_KEY = "your_api_key";
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         // converting

@@ -11,8 +11,8 @@ public class DBConnection {
 
     // database connection details and credentials
     private static final String DB_URL = "jdbc:mysql://localhost:3306/ocean_view_hotel_db?useSSL=false&serverTimezone=UTC";
-    private static final String USER = "root";
-    private static final String PASSWORD = "admin12345678";
+    private static final String USER = "your_username";
+    private static final String PASSWORD = "your_password";
     private static volatile DBConnection instance;  // private static field
 
     // private constructor

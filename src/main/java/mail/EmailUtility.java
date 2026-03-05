@@ -17,8 +17,8 @@ public class EmailUtility {
         String status = null;
         try
         {
-            final String sender = "ocean.view.hotel.cis6003@gmail.com";
-            final String password = "tohpobcamqemwzox ";
+            final String sender = "your_email";
+            final String password = "your_app_password";
 
             // configuring stmp properties
             Properties props = new Properties();
