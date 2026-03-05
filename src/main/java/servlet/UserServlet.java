@@ -1,0 +1,378 @@
+package servlet;
+
+import business.service.ReservationService;
+import business.service.UserService;
+import business.service.impl.ReservationServiceImpl;
+import constant.Role;
+import dto.UserCredentialDTO;
+import dto.UserDTO;
+import business.service.impl.UserServiceImpl;
+import security.EmailValidation;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.time.LocalDate;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+@WebServlet(name = "UserServlet", urlPatterns = "/user/*")
+public class UserServlet extends HttpServlet {
+
+    // enabling logging in tomcat server
+    private static final Logger LOG = Logger.getLogger(UserServlet.class.getName());
+    private UserService userService;
+    private ReservationService reservationService;
+
+    @Override
+    public void init() {
+        this.userService = new UserServiceImpl();
+        this.reservationService = new ReservationServiceImpl();
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+        String path = request.getPathInfo();
+
+        if (path == null) {
+            path = "/";
+        }
+
+        // setting the methods based on the paths
+        switch (path) {
+            case "/register":   // this is for registering users
+                register(request, response);
+                break;
+            case "/delete":   // this is for deleting a user ; since HTML forms dont have DELETE,
+                    deleteUser(request, response);   // we access it using POST method
+                break;
+            case "/update":
+                updateUser(request, response);
+                break;
+            case "/change-password":
+                    changePassword(request,response);
+                    break;
+            default:
+                LOG.log(Level.SEVERE, "Unsupported path: " + path);
+                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        }
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+        // logs for debugging
+        // System.err.println("DO GET IS BEING HIT");
+
+        String path = request.getPathInfo();
+
+        if (path == null) {
+            path = "/";
+        }
+
+        // setting the methods based on the paths
+        switch (path) {
+             case "/register":
+             // showing registration form
+            request.getRequestDispatcher("/register.jsp").forward(request, response);
+            break;
+            case "/all":
+                getAllUsers(request, response);
+                break;
+            case "/get":
+                getUserDetails(request, response);
+                break;
+            case "/search":
+                searchUsers(request, response);
+                break;
+            case "/check-duplicate":
+                checkForDuplicateCredentials(request, response);
+                break;
+            case "/dashboard":
+                getDashboardCount(request, response);
+                break;
+            default:
+                LOG.log(Level.SEVERE, "Unsupported path: " + path);
+                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        }
+    }
+
+    // crating  a new user account
+    private void register(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+          LOG.log(Level.INFO, "Registering user");
+
+            String username = request.getParameter("username");
+            String email = request.getParameter("email");
+            String password = request.getParameter("password");
+            String roleStr = request.getParameter("role");
+            String firstName = request.getParameter("firstName");
+            String lastName = request.getParameter("lastName");
+            String address = request.getParameter("address");
+            String contactNumber = request.getParameter("contactNumber");
+
+          //   ensuring the main fields are not empty
+            if (username == null || email == null || roleStr == null || password == null || username.isEmpty() ||  email.isEmpty() || password.isEmpty()
+                    || firstName == null || lastName == null || address == null || contactNumber == null ||
+                    firstName.isEmpty() || lastName.isEmpty() || roleStr.isEmpty() || address.isEmpty() || contactNumber.isEmpty()
+            ) {
+                response.sendRedirect(request.getContextPath() + "/user/register?error=invalid_input");
+                return;
+            }
+
+//            // checking password valid
+            String passwordRegex = "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$";
+            if (!password.matches(passwordRegex)) {
+                response.sendRedirect(request.getContextPath() + "/user/register?error=weak_password");
+                return;
+            }
+
+            // checking email validity
+          if (!EmailValidation.validateEmail(email)) {
+              response.sendRedirect(request.getContextPath() + "/user/register?error=invalid_email");
+              return;
+          }
+
+            checkForDuplicateCredentials(request, response);
+
+            Role role = Role.valueOf(request.getParameter("role"));
+
+            // if everything is correct, then new user will be registered
+            UserDTO userDTO = new UserDTO.UserDTOBuilder().username(username)
+                    .email(email)
+                    .firstName(firstName)
+                    .lastName(lastName)
+                    .address(address)
+                    .contactNumber(contactNumber)
+                    .role(role)
+                    .build();
+
+            UserCredentialDTO userCredentialDTO = new UserCredentialDTO(username, password);
+
+            // now the service will do the registering
+           boolean successRegistration = userService.add(userCredentialDTO, userDTO);
+
+           // successful account registered
+           if (successRegistration)
+           {
+               LOG.log(Level.INFO, "User registered successfully.");
+               LOG.log(Level.INFO, "Email sent successfully.");
+               response.sendRedirect(request.getContextPath() + "/user/register?success=true");
+           }
+           // failed to do so
+           else
+            {
+               LOG.log(Level.INFO, "User could not be registered successfully nor was email sent.");
+               response.sendRedirect(request.getContextPath() + "/user/register?error=system_error");
+            }
+    }
+
+    private void checkForDuplicateCredentials(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        LOG.log(Level.INFO, "Checking for duplicate credentials");
+
+        String username = request.getParameter("username");
+        String email = request.getParameter("email");
+        boolean usernameExists = false;
+        boolean emailExists = false;
+
+        //  we check if username or email already exists
+        if (username != null || !username.isEmpty())
+        {
+           usernameExists = userService.existsByUsername(username);
+        }
+
+        if (email != null || !email.isEmpty())
+        {
+            emailExists = userService.existsByEmail(email);
+        }
+
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        String json = "{"
+                + "\"usernameExists\": " + usernameExists + ","
+                + "\"emailExists\": " + emailExists
+                + "}";
+
+        response.getWriter().write(json);
+
+    }
+
+    private void getAllUsers(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        LOG.log(Level.INFO, "Getting all users");
+
+            List<UserDTO> users = userService.getAll(null);
+            request.setAttribute("users", users);
+
+            if (users.isEmpty())
+            {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            }
+            else
+            {
+                LOG.log(Level.INFO, "Users found: " + users);
+                request.getRequestDispatcher("/user-accounts.jsp").forward(request, response);
+            }
+    }
+
+    // passing user details to the user acc modal
+    private void getUserDetails(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        LOG.log(Level.INFO, "Getting user details method reached...");
+
+        String id = request.getParameter("id");
+        LOG.log(Level.INFO, "User ID passed is: " + id);
+
+        // turning the string into an integer
+        int userId = Integer.parseInt(id);
+        LOG.log(Level.INFO, "Getting user details for user ID :" + userId);
+
+            if (userId == 0) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The userID is missing.");
+                return;
+            }
+
+            // if user id exists, details for that user id will be passed as JSON to frontend
+            UserDTO user = userService.searchById(userId);
+
+            if (user == null) {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "User not found");
+                return;
+            }
+
+            // converting user to JSON for JS to recognize
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+
+            // using Gson to serialize
+            String userJson = new com.google.gson.Gson().toJson(user);
+            response.getWriter().write(userJson);
+            LOG.log(Level.INFO, "User JSON sent: " + userJson);
+    }
+
+    // updating user account's details
+    private void updateUser(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        LOG.log(Level.INFO, "Updating user ID : " + request.getParameter("userId"));
+        String id = (request.getParameter("userId"));
+        int userId = Integer.parseInt(id);
+
+        String firstName = request.getParameter("firstName");
+        String lastName = request.getParameter("lastName");
+        String address = request.getParameter("address");
+        String contactNumber = request.getParameter("contactNumber");
+
+        if (firstName == null || lastName == null || address == null || contactNumber == null ||
+        firstName.isEmpty() || lastName.isEmpty() || address.isEmpty() || contactNumber.isEmpty())
+        {
+            response.sendRedirect(request.getContextPath() + "/user/all?error=empty_fields");
+            return;
+        }
+
+        String contactNumRegex = "^(\\+94|0)?7[0-9]{8}$";
+            if (!contactNumber.matches(contactNumRegex)) {
+                response.sendRedirect(request.getContextPath() + "/user/all?error=invalid_contact");
+                return;
+            }
+
+            UserDTO user = new UserDTO.UserDTOBuilder().userId(userId)
+                    .firstName(request.getParameter("firstName"))
+                    .lastName(request.getParameter("lastName"))
+                    .address(request.getParameter("address"))
+                    .contactNumber(request.getParameter("contactNumber"))
+                    .build();
+
+            // if user exists, fields will be updated
+            boolean isUpdated = userService.update(user);
+            if (isUpdated) {
+                LOG.log(Level.INFO, "User with ID: " + userId + "was updated successfully");
+                response.sendRedirect(request.getContextPath() + "/user/all?success=true");
+            }
+            else
+            {
+                LOG.log(Level.INFO, "User details of userID: " + userId + "was not updated");
+                response.sendRedirect(request.getContextPath() + "/user/all?system_error");
+            }
+    }
+
+    // deleting user method
+    private void deleteUser(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        LOG.log(Level.INFO, "Deleting user");
+            String id = request.getParameter("userId");
+            int userId = Integer.parseInt(id);
+            if (userId == 0) {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                return;
+            }
+
+            boolean isDeleted = userService.delete(userId);
+            if (isDeleted)
+            {
+                LOG.log(Level.INFO, "User ID:" + userId + " was deleted successfully");
+                response.sendRedirect(request.getContextPath() + "/user/all?success=deleted");
+            }
+            else
+            {
+                LOG.log(Level.INFO, "User ID:" + userId + " was not deleted.");
+                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            }
+    }
+
+    private void searchUsers(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        LOG.log(Level.INFO, "Searching users...");
+
+            List<UserDTO> users = userService.searchUsers(request.getParameter("q"));
+            if (users == null) {
+                users = Collections.emptyList();
+            }
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
+
+                String userJson = new com.google.gson.Gson().toJson(users);
+                response.getWriter().write(userJson);
+                LOG.log(Level.INFO, "Users JSON sent: " + userJson);
+    }
+
+    private void changePassword(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        LOG.log(Level.INFO, "Changing password...");
+        String username = request.getParameter("username");
+        String password = request.getParameter("newPw");
+
+        if (username == null || password == null || password.isEmpty() || username.isEmpty())
+        {
+            response.sendRedirect(request.getContextPath() + "/user/dashboard?error=empty_fields");
+            return;
+        }
+
+        String passwordRegex = "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$";
+        if (!password.matches(passwordRegex)) {
+            response.sendRedirect(request.getContextPath() + "/user/dashboard?error=weak_password");
+            return;
+        }
+
+        // changing password method
+        boolean passwordChanged  = userService.changePassword(username,password);
+        if (passwordChanged) {
+            LOG.log(Level.INFO, "Password changed successfully");
+            response.sendRedirect(request.getContextPath() + "/user/dashboard?success=true");
+        }
+        else {
+            LOG.log(Level.INFO, "Password could not be changed.");
+            response.sendRedirect(request.getContextPath() + "/user/dashboard?error=system_error");
+        }
+    }
+
+    private void getDashboardCount(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        LOG.log(Level.INFO, "Getting dashboard count...");
+
+        LocalDate currentDate = LocalDate.now();
+        Map<String, Integer> reservationCountByStatus = reservationService.getReservationCountByStatus(currentDate);
+        request.setAttribute("reservationCount", reservationCountByStatus);
+        LOG.log(Level.INFO, "Res count: " + reservationCountByStatus);
+        request.getRequestDispatcher("/dashboard.jsp").forward(request, response);
+    }
+
+}

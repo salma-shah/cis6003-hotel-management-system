@@ -4,4 +4,48 @@
 
 <web-app>
   <display-name>Archetype Created Web Application</display-name>
+  
+<!--  welcome file -->
+  <welcome-file-list>
+    <welcome-file>index.jsp</welcome-file>
+  </welcome-file-list>
+
+  <error-page>
+    <exception-type>exception.user.UserNotFoundException</exception-type>
+    <location>/login.jsp</location>
+  </error-page>
+
+  <error-page>
+    <exception-type>exception.user.InvalidUserCredentialsException</exception-type>
+    <location>/login.jsp</location>
+  </error-page>
+  
+  <security-constraint>
+    <web-resource-collection>
+      <web-resource-name>/*</web-resource-name>
+    </web-resource-collection>
+    <auth-constraint>
+      <description>These users can access all web pages but need to log in</description>
+      <role-name>User</role-name>
+      <role-name>Manager</role-name>
+    </auth-constraint>
+  </security-constraint>
+
+
+  <login-config>
+    <auth-method>FORM</auth-method>
+    <form-login-config>
+      <form-login-page>/auth</form-login-page>
+      <form-error-page>/index.jsp</form-error-page>
+    </form-login-config>
+  </login-config>
+
+<security-role>
+  <role-name>User</role-name>
+</security-role>
+
+  <security-role>
+    <role-name>Manager</role-name>
+  </security-role>
+
 </web-app>
