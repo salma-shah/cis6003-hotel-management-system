@@ -15,11 +15,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 public class UserDAOImpl implements UserDAO {
-
-    Logger LOG =  Logger.getLogger(UserDAOImpl.class.getName());
     // inserting a new user into the table  = working
     @Override
     public boolean add(User entity)  {
@@ -161,7 +158,7 @@ public class UserDAOImpl implements UserDAO {
         }
         catch (SQLException ex)
         {
-            throw new EntityNotFoundException( "User with username: " + username + " does not exists", ex);
+            throw new EntityNotFoundException( "Error finding user with username: " + username, ex);
         }
     }
 

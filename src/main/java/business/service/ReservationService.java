@@ -16,7 +16,7 @@ public interface ReservationService extends CRUDService<ReservationDTO> {
     void sendSuccessfulResEmail(ReservationDTO entity) ;
     Integer findResIdByReservationNumber(String resNum) ;
     double calculateTotalCostForStay(double basePricePerNight, LocalDate startDate, LocalDate endDate, List<String> selectedAmenities) ;
-    ReservationDTO getByReservationNumber(String resNum) ;
+//    ReservationDTO getByReservationNumber(String resNum) ;
     ReservationAggregateDTO getFullReservation(int id) ;
     boolean updateReservationStatus(int id, ReservationStatus status) ;
     Map<String, Integer> getReservationCountByStatus(LocalDate currentDate);

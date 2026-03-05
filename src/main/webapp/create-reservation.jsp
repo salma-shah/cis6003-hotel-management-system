@@ -307,9 +307,15 @@
                     </div>
 
                     <div class="form-group">
+                        <label>Stay Room Cost</label>
+                        <input type="text" name="stayCost" id="stayCost" required readonly>
+                    </div>
+
+                    <div class="form-group">
                         <label>Amenities Cost</label>
                         <input type="text" name="amenitiesCost" id="amenitiesCost" required readonly>
                     </div>
+
 
                     <div class="form-group">
                         <label>Guest Registration Number</label>
@@ -343,9 +349,8 @@
 
                     <div class="form-group">
                         <label>Adults</label>
-                        <input type="number" name="numAdults" id="adults" min="1" required>
+                        <input type="number" name="numAdults" id="adults" min="1">
                     </div>
-
                     <div class="form-group">
                         <label>Children</label>
                         <input type="number" name="numChildren" id="children" min="0" value="0">
@@ -399,7 +404,7 @@
         }
 
         if (checkOut <= checkIn) {
-            document.getElementById("checkOutError").innerText = "Check-out must be after check-in.";
+            document.getElementById("checkOutError").innerText = "Check-out date must be after check-in date";
             valid = false;
         }
 
@@ -464,16 +469,18 @@
         const checkIn = document.getElementById("checkInDate").value;
         const checkOut = document.getElementById("checkOutDate").value;
 
-        if (checkInDate < today) {
-            document.getElementById("checkInError").innerText = "Check-in cannot be in the past.";
+        if (checkInDate < today || checkOut < today) {
+            document.getElementById("checkInError").innerText = "Dates cannot be in the past.";
+            document.getElementById("checkOutError").innerText = "Dates cannot be in the past.";
             return;
         }
         else {
             document.getElementById("checkInError").style.display = "none";
+            document.getElementById("checkOutError").style.display = "none";
         }
 
         if (checkOutDate <= checkInDate) {
-            document.getElementById("checkOutError").innerText = "Check-out must be after check-in.";
+            document.getElementById("checkOutError").innerText = "Check-out date must be after check-in date";
             return;
         }
         else {
@@ -611,7 +618,9 @@
     function calculateTotalCost(roomTypeId) {
         const checkInValue = document.getElementById("checkInDate").value;
         const checkOutValue = document.getElementById("checkOutDate").value;
+        //const amenitiesCost = document.getElementById("amenitiesCost").value;
         let totalCostField = document.getElementById("totalCost");
+        let stayCost = document.getElementById("stayCost");
 
         if (!checkInValue || !checkOutValue || !roomTypeId) {
             alert("Select check-in, check-out and room type first.");
@@ -630,8 +639,10 @@
         const numOfNights = Math.floor((checkOutDate - checkInDate) / millisecondsPerDay);
         console.log(numOfNights);
         console.log(roomTypeId);
-        // calculating the total cost by taking the base price per night passed
-        totalCostField.value = numOfNights * roomTypeId;
+        // calculating the total stay cost by taking the base price per night passed
+
+       stayCost.value = numOfNights * roomTypeId;
+       // totalCostField.value = stayCost + amenitiesCost;
     }
 
     document.querySelectorAll("input[name='amenities']").forEach(cb => {
@@ -651,6 +662,8 @@
         selected.forEach(a => params.append("amenities", a));
 
         const roomId = document.getElementById("roomIdInput").value;
+        const stayCost = document.getElementById("stayCost").value;
+        const totalCostField = document.getElementById("totalCost");
         if (!roomId) {
             alert("Please select a room.");
             return;
@@ -666,8 +679,12 @@
         })
             .then(res => res.json())
             .then(data => {
-                document.getElementById("amenitiesCost").value =
-                    data.amenitiesCost.toFixed(2);
+                const amenitiesCost = parseFloat(
+                    document.getElementById("amenitiesCost").value = data.amenitiesCost.toFixed(2)
+                );
+
+                const stayCostValue = parseFloat(stayCost);
+                totalCostField.value = (stayCostValue + amenitiesCost).toFixed(2);
             });
     }
 
@@ -689,8 +706,8 @@
     }
     if (error === "empty_fields")
     {
-
-    alert("Please fill in all fields")}
+    alert("Please fill in all fields");
+    }
 
     if (error === "checkindate_after_checkout")
     {

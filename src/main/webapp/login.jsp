@@ -92,7 +92,7 @@
     <!-- heading part of form -->
     <div class="login-header">
         <h1>Welcome to</h1>
-        <h2>Ocean View Hotel</h2>
+        <h2>Ocean View Resort</h2>
     </div>
 
     <!-- form body -->

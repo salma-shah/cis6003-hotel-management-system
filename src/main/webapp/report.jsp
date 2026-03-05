@@ -72,7 +72,7 @@
             </div>
 
             <div class="content-card">
-                <h5>Select Report</h5>
+                <h5>Select Report Type</h5>
 
                 <br>
 
@@ -85,15 +85,15 @@
                 </select>
                 </div>
                 <br>
-                <div>
-            <label for="startDate">Start Date:</label>
-            <input type="date" name="startDate">
-                </div>
-                <br>
-                <div>
-            <label for="endDate">End Date:</label>
-            <input type="date" name="endDate">
-                </div>
+<%--                <div>--%>
+<%--            <label for="startDate">Start Date:</label>--%>
+<%--            <input type="date" name="startDate">--%>
+<%--                </div>--%>
+<%--                <br>--%>
+<%--                <div>--%>
+<%--            <label for="endDate">End Date:</label>--%>
+<%--            <input type="date" name="endDate">--%>
+<%--                </div>--%>
                 <br>
                 <div>
             <button class="enter-btn" type="submit">Generate Report</button>

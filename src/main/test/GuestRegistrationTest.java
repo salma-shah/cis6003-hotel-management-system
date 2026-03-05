@@ -7,7 +7,6 @@ import persistence.dao.impl.GuestDAOImpl;
 import security.GuestRegNumGenerator;
 
 
-import java.sql.SQLException;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -19,7 +18,7 @@ public class GuestRegistrationTest {
 
     // this one should reg a guest successfully
     @Test
-    public void test_successfulGuestRegistration() throws SQLException {
+    public void test_successfulGuestRegistration() {
         GuestDAO guestDAO = new GuestDAOImpl();
         GuestRegNumGenerator guestRegNumGenerator = new GuestRegNumGenerator();
         GuestService guestService = new GuestServiceImpl();
@@ -42,14 +41,14 @@ public class GuestRegistrationTest {
 //    }
 
     @Test
-    public void test_searchByUniqueRegNumber() throws SQLException {
+    public void test_searchByUniqueRegNumber() {
         GuestServiceImpl guestService = new GuestServiceImpl();
         guestService.validateRegistrationNumber("OVHRC5TBANIP");
 
     }
 
     @Test
-    public void test_updateGuestPassportNumber() throws SQLException {
+    public void test_updateGuestPassportNumber() {
         GuestDAO guestDAO = new GuestDAOImpl();
         GuestServiceImpl guestService = new GuestServiceImpl();
         GuestDTO guest = new GuestDTO.GuestDTOBuilder().passportNumber("N1122334455").build();
@@ -61,7 +60,7 @@ public class GuestRegistrationTest {
     }
 
     @Test
-    public void test_getAllGuests() throws SQLException {
+    public void test_getAllGuests() {
         GuestDAO guestDAO = new GuestDAOImpl();
         GuestServiceImpl guestService = new GuestServiceImpl();
         List<GuestDTO> guests = guestService.getAll(null);

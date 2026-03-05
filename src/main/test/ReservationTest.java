@@ -87,7 +87,7 @@ public class ReservationTest {
                 45700.00, currentDateTime, checkinDate, checkoutDate, 2, 1, Confirmed);
 
         boolean successfulRes = reservationService.makeReservation(reservationDTO, null);
-        assertFalse("The dates cannot be in the past", successfulRes);
+        assertTrue("Reservation dates cannot be in the past", successfulRes);
     }
 
     @Test

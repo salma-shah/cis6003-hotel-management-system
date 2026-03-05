@@ -406,7 +406,7 @@ public class GuestServlet extends HttpServlet {
 
     // validating guest input
     private void validateGuestIdentificationFields(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        LOG.log(Level.INFO, "Validating guest email...");
+        LOG.log(Level.INFO, "Validating guest identification fields...");
 
         String email = request.getParameter("email");
         String passport = request.getParameter("passportNumber");

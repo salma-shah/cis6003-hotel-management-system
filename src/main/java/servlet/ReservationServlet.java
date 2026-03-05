@@ -15,6 +15,7 @@ import constant.ReservationStatus;
 import dto.ReservationAggregateDTO;
 import dto.ReservationDTO;
 import dto.RoomTypeDTO;
+import exception.guest.GuestNotFoundException;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -93,20 +94,27 @@ public class ReservationServlet extends HttpServlet {
 
             // getting the required parameters
         String reservationNum = request.getParameter("reservationNumber");
-        int numAdults = Integer.parseInt(request.getParameter("numAdults"));
-
+        String numAdultsStr = request.getParameter("numAdults");
         String numChildrenExists = request.getParameter("numChildren");
         int numChildren = 0;
         if (numChildrenExists != null) {
             numChildren = Integer.parseInt(numChildrenExists);
         }
 
+        if (numAdultsStr == null || numAdultsStr.isEmpty())
+        {
+            response.sendRedirect(request.getContextPath() + "/reservation/create?error=adult_guest_required");
+            return;
+        }
+        int numAdults = Integer.parseInt(request.getParameter("numAdults"));
+
         String checkInDate = request.getParameter("checkInDate");
         String checkOutDate = request.getParameter("checkOutDate");
         LocalDateTime dateOfRes = LocalDateTime.now();
 
         // ensuring a room is selected
-        int roomId = Integer.parseInt(request.getParameter("roomId"));
+        int roomId = 0;
+        roomId = Integer.parseInt(request.getParameter("roomId"));
         if (roomId <= 0)
         {
             response.sendRedirect(request.getContextPath() + "/reservation/create?error=invalid_room");
@@ -122,7 +130,7 @@ public class ReservationServlet extends HttpServlet {
             return;
         }
 
-        double totalPrice = Double.parseDouble(request.getParameter("totalCost"));
+        double totalPrice = Double.parseDouble(request.getParameter("stayCost"));
         if (totalPrice <= 0)
         {
             response.sendRedirect(request.getContextPath() + "/reservation/create?error=empty_cost");
@@ -140,19 +148,16 @@ public class ReservationServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/reservation/create?error=dates_in_past");
             return;
         }
-
-        if (numAdults <= 0 && numChildren >= 1)
-        {
-            response.sendRedirect(request.getContextPath() + "/reservation/create?error=adult_guest_required");
+            // getting guest id by reservation number
+            Integer guestIdObj;
+        try {
+            guestIdObj = guestService.findGuestIdByRegistrationNumber(
+                    request.getParameter("guestRegNumber")
+            );
+        } catch (GuestNotFoundException | IllegalArgumentException e) {
+            response.sendRedirect(request.getContextPath() + "/reservation/create?error=guest_not_found");
             return;
         }
-
-            // getting guest id by reservation number
-            Integer guestIdObj = guestService.findGuestIdByRegistrationNumber(request.getParameter("guestRegNumber"));
-            if (guestIdObj == null) {
-                response.sendRedirect(request.getContextPath() + "/reservation/create?error=guest_not_found");
-                return;
-            }
             int guestId = guestIdObj;
             LOG.log(Level.INFO, "Guest id: " + guestId);
 

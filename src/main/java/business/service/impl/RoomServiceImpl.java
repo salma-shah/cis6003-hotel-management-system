@@ -1,9 +1,10 @@
 package business.service.impl;
 
 import business.service.RoomService;
+import business.service.RoomTypeService;
 import dto.AmenityDTO;
 import dto.RoomDTO;
-import dto.UserDTO;
+import dto.RoomTypeDTO;
 import entity.Room;
 import exception.room.DuplicateRoomNumberException;
 import exception.room.RoomNotFoundException;
@@ -23,12 +24,14 @@ import java.util.stream.Collectors;
 
 public class RoomServiceImpl implements RoomService {
     private final RoomDAO roomDAO;
+    private final RoomTypeService typeService;
   //  private final List<Room> rooms = new ArrayList<>();
     private static final Logger LOG = Logger.getLogger(RoomServiceImpl.class.getName());
     private final Set<String> roomNumbers = ConcurrentHashMap.newKeySet();
 
     public RoomServiceImpl() {
         this.roomDAO = new RoomDAOImpl();
+        this.typeService = new RoomTypeServiceImpl();
         preloadUniqueFields();  // preloading the room numbers to ensure no duplicate room numbers while saving a room
     }
 
@@ -37,7 +40,7 @@ public class RoomServiceImpl implements RoomService {
 
         // lambda function
         roomDTOS.forEach(roomDTO -> {
-            roomNumbers.add(roomDTO.getRoomNum());;
+            roomNumbers.add(roomDTO.getRoomNum());
         });
     }
 
@@ -153,7 +156,11 @@ public class RoomServiceImpl implements RoomService {
         }
 
         int totalGuests = adults + children;
-        int maxOccupancy = roomDTO.getRoomType().getMaxOccupancy();
+        LOG.log(Level.INFO, "The  : " + roomDTO);
+        RoomTypeDTO roomTypeDTO =typeService.getByRoomId(roomDTO.getRoomId());
+        LOG.log(Level.INFO, "The roomType : " + roomTypeDTO);
+        int maxOccupancy = roomTypeDTO.getMaxOccupancy();
+        LOG.log(Level.INFO, "The maxOccupancy : " + maxOccupancy);
 
         // if total guests itself is higher than the max occupancy for a room, not eligible
         if (totalGuests > maxOccupancy)

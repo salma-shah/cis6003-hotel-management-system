@@ -19,7 +19,6 @@ import persistence.dao.UserDAO;
 import persistence.dao.impl.UserDAOImpl;
 import security.PasswordManager;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,7 +30,7 @@ public class UserServiceImpl implements UserService {
     private static final Logger LOG = Logger.getLogger(UserServiceImpl.class.getName());
     private final UserDAO userDAO;
 
-    // setting up hash sets for usernames and emails
+    // setting up sets for usernames and emails
     // preloading them
     private final Set<String> usernames = ConcurrentHashMap.newKeySet();
     private final Set<String> emails = ConcurrentHashMap.newKeySet();
@@ -42,7 +41,7 @@ public class UserServiceImpl implements UserService {
         }
 
         private void preloadUniqueFields() {
-            List<UserDTO> userDTOs = new ArrayList<>();
+            List<UserDTO> userDTOs = getAll(null);
 
             // lambda function
             userDTOs.forEach(userDTO -> {
@@ -199,14 +198,27 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void sendWelcomeUserEmail(UserDTO userDTO)  {}
+    public void sendWelcomeUserEmail(UserDTO userDTO)  {
+        // sending email
+        // sending the email
+        // using the creator method for welcoming user email
+        EmailFactory emailFactory = new WelcomeEmailFactory((userDTO.getFirstName() + " " + userDTO.getLastName()),
+                userDTO.getEmail(), userDTO.getUsername());
+
+        // then using the base interface
+        EmailBase emailBase = emailFactory.createEmail();
+
+        // then finally the send mail utility
+        EmailUtility.sendMail(emailBase.getReceiver(), emailBase.getSubject(), emailBase.getBody());
+    }
 
     @Override
     public void sendPasswordChangeEmail(UserDTO userDTO)  {
         // sending email
         // sending the email
         // using the creator method for welcoming user email
-        EmailFactory emailFactory = new PasswordChangeEmailFactory((userDTO.getFirstName() + " " + userDTO.getLastName()), userDTO.getEmail());
+        EmailFactory emailFactory = new PasswordChangeEmailFactory((userDTO.getFirstName() + " " + userDTO.getLastName()),
+                userDTO.getEmail());
 
         // then using the base interface
         EmailBase emailBase = emailFactory.createEmail();

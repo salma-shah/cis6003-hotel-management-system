@@ -395,6 +395,7 @@
                             "<td>" + guest.email + "</td>" +
                             "<td>" +
                             "<a href='#' onclick=\"openViewAndEditModal('" + guest.id + "')\">View</a> | " +
+                            "<a href='#' onclick=\"openHistoryModal('" + guest.id + "')\">History</a> | " +
                             "<a href='#' onclick=\"openDeleteModal('" + guest.id + "')\">Delete</a>" +
                             "</td>";
 

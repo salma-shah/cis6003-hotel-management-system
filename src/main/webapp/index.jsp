@@ -57,7 +57,7 @@
 <div class="logo-card">
     <img src="images/logo.png" alt="Ocean View Hotel Logo">
 
-    <h1>Ocean View Hotel</h1>
+    <h1>Ocean View Resort</h1>
     <p><b>Comfort</b> 𓆝 <b>Galle</b>  𓆝<b>Experience</b></p>
 
     <a class="btn enter-btn" href="<c:url value='/auth' />" >

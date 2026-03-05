@@ -4,7 +4,7 @@
   <groupId>org.example</groupId>
   <artifactId>ocean-view-hotel</artifactId>
   <packaging>war</packaging>
-  <version>1.10.2</version>
+  <version>1.10.3</version>
   <name>ocean-view-hotel Maven Webapp</name>
   <url>http://maven.apache.org</url>
   <dependencies>
@@ -50,7 +50,7 @@
     <artifactId>jakarta.mail</artifactId>
     <version>2.0.2</version>
     </dependency>
-<!--    pdf dependency-->
+<!--   report & pdf dependency-->
     <dependency>
       <groupId>com.itextpdf</groupId>
       <artifactId>itext7-core</artifactId>

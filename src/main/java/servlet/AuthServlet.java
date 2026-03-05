@@ -136,6 +136,7 @@ public class AuthServlet extends HttpServlet {
                 // now destroying the session
                 session.invalidate();
                 LOG.log(Level.INFO, "Logout successful. Session: " + session.getId() + " was destroyed");
+                response.sendRedirect(request.getContextPath() + "/index.jsp");
             }
             else
             {

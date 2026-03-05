@@ -347,7 +347,7 @@ public class UserServlet extends HttpServlet {
             return;
         }
 
-        String passwordRegex = "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$";
+        String passwordRegex = "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$";
         if (!password.matches(passwordRegex)) {
             response.sendRedirect(request.getContextPath() + "/user/dashboard?error=weak_password");
             return;

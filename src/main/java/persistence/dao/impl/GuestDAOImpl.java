@@ -157,13 +157,6 @@ public class GuestDAOImpl implements GuestDAO {
             // this part states the search params allowed
             List<Object> params = new ArrayList<>();
 
-            // we declare the allowed parameter keys
-//            Set<String> allowedParams = new HashSet<>();
-//            allowedParams.add("nic");
-//            allowedParams.add("passport_number");
-//            allowedParams.add("registration_number");
-//            allowedParams.add("status");
-
             if (searchParams != null && !searchParams.isEmpty()) {
                 for (Map.Entry<String, String> entry : searchParams.entrySet()) {
                     String key = entry.getKey();

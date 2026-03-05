@@ -107,12 +107,12 @@ public class GuestServiceImpl implements GuestService {
         findGuestByEmail(guestDTO.getEmail());
         if (guestDTO.getNic() != null)
         {
-            findGuestByNic(guestDTO.getNic());
+            findGuestByNic(guestDTO.getNic());  // ensuring nic is unique
         }
 
         if (guestDTO.getPassportNumber() != null)
         {
-            findGuestByPassport(guestDTO.getPassportNumber());
+            findGuestByPassport(guestDTO.getPassportNumber());  // ensuring passport num is unique
         }
 
         Guest guest = GuestMapper.toGuest(guestDTO);
@@ -122,9 +122,9 @@ public class GuestServiceImpl implements GuestService {
         {
             return false;
         }
-        if (guestDTO.getNic() != null) nics.add(guestDTO.getNic());
-        if (guestDTO.getEmail() != null) emails.add(guestDTO.getEmail());
-        if (guestDTO.getRegistrationNumber() != null) regNums.add(guestDTO.getRegistrationNumber());
+        if (guestDTO.getNic() != null) nics.add(guestDTO.getNic());  // adding to set
+        if (guestDTO.getEmail() != null) emails.add(guestDTO.getEmail());  // adding to set
+        if (guestDTO.getRegistrationNumber() != null) regNums.add(guestDTO.getRegistrationNumber()); // adding to set
         return true;
     }
 

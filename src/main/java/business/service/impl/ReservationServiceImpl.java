@@ -130,9 +130,9 @@ public class ReservationServiceImpl implements ReservationService {
             if (!validateReservationDates(reservationDTO)) return false;
 
             // checking if room is eligible
-//            int roomId = reservationDTO.getRoomId();
-//            RoomDTO roomDTO = roomService.searchById(roomId);
-//            if (!roomService.isRoomEligible(roomDTO, reservationDTO.getNumOfAdults(), reservationDTO.getNumOfChildren())) {return false;}
+            int roomId = reservationDTO.getRoomId();
+                       RoomDTO roomDTO = roomService.searchById(roomId);
+           //roomService.isRoomEligible(roomDTO, reservationDTO.getNumOfAdults(), reservationDTO.getNumOfChildren());
 
             // checking if room is available
             boolean isAvailable = roomService.isRoomAvailable(reservationDTO.getCheckInDate(), reservationDTO.getCheckOutDate(), reservationDTO.getRoomId());
@@ -145,7 +145,8 @@ public class ReservationServiceImpl implements ReservationService {
             RoomTypeDTO roomTypeDTO = roomTypeService.getByRoomId(reservationDTO.getRoomId());
             double basePrice = roomTypeDTO.getBasePricePerNight();
             // using the calculate total cost method
-            double totalCost = calculateTotalCostForStay(basePrice, reservationDTO.getCheckInDate(), reservationDTO.getCheckOutDate(), selectedAmenities);
+            double totalCost = calculateTotalCostForStay(basePrice, reservationDTO.getCheckInDate(),
+                    reservationDTO.getCheckOutDate(), selectedAmenities);
 
             if (totalCost < 0)
             {
@@ -266,21 +267,21 @@ public class ReservationServiceImpl implements ReservationService {
         return room.getCost() * numOfNights;
     }
 
-    @Override
-    public ReservationDTO getByReservationNumber(String resNum)  {
-        if (resNum == null || resNum.isEmpty())
-        {
-            throw new IllegalArgumentException("Invalid reservation number");
-        }
-
-        Reservation reservation = reservationDAO.findByReservationNumber(resNum);
-        if (reservation == null)
-        {
-            throw new ReservationNotFoundException("Reservation not found");
-        }
-
-        return ReservationMapper.toReservationDTO(reservation);
-    }
+//    @Override
+//    public ReservationDTO getByReservationNumber(String resNum)  {
+//        if (resNum == null || resNum.isEmpty())
+//        {
+//            throw new IllegalArgumentException("Invalid reservation number");
+//        }
+//
+//        Reservation reservation = reservationDAO.findByReservationNumber(resNum);
+//        if (reservation == null)
+//        {
+//            throw new ReservationNotFoundException("Reservation not found");
+//        }
+//
+//        return ReservationMapper.toReservationDTO(reservation);
+//    }
 
     @Override
     public ReservationAggregateDTO getFullReservation(int id)  {

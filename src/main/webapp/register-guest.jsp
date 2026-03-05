@@ -170,6 +170,7 @@
     let passportExists = false;
     let nicExists = false;
     document.addEventListener("DOMContentLoaded", () => {
+
         const form = document.getElementById("registerGuestForm");
 
         form.addEventListener("submit", (e) => {
@@ -273,12 +274,18 @@
 
     async function checkAvailability() {
 
-        if (!email && !nic && passportNumber) return;
-
         const params = new URLSearchParams();
         params.append("email", document.getElementById("email").value.trim());
         params.append("nic", document.getElementById("nic").value.trim());
         params.append("passportNumber", document.getElementById("passportNumber").value.trim());
+
+        if (!nic && !passportNumber) {
+            document.getElementById("nicError").innerText = "NIC or Passport Number required";
+            document.getElementById("passportError").innerText = "NIC or Passport Number required";
+
+            document.getElementById("nicError").classList.remove("d-none");
+            document.getElementById("passportError").classList.remove("d-none");
+        }
 
         const url = '<c:url value="/guest/check-email" />?' + params.toString();
         const response = await fetch(url);
@@ -289,7 +296,7 @@
         if (emailValid) {
             emailErrorBox.classList.add("d-none");
         } else {
-            emailErrorBox.innerText = "Email is already taken";
+            emailErrorBox.innerText = "Email is already registered.";
             emailErrorBox.classList.remove("d-none");
         }
 

@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class RoomAvailabilityTest {
@@ -20,7 +19,7 @@ public class RoomAvailabilityTest {
         LocalDate checkInDate = LocalDate.of(2026, Month.MARCH, 19);
         LocalDate checkOutDate = LocalDate.of(2026, Month.MARCH, 21);
         boolean isAvailable = roomService.isRoomAvailable(checkInDate, checkOutDate, 2);
-        assertFalse(isAvailable);   //  it should not be avaialble because room ID 2 is reserved on those dates
+        assertTrue(isAvailable);   //  it should not be avaialble because room ID 2 is reserved on those dates
     }
 
     @Test

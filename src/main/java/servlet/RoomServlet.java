@@ -95,11 +95,22 @@ public class RoomServlet extends HttpServlet {
           // ensuring all fields are filled
         // do validation
         String roomNum = request.getParameter("roomNum");
+        String floorNumStr = request.getParameter("floorNum");
+        String roomTypeStr = request.getParameter("roomTypeId");
+        String roomStatusStr = request.getParameter("status");
+
+        if (roomNum == null || roomNum.trim().isEmpty() || roomStatusStr == null || roomStatusStr.trim().isEmpty() || roomTypeStr == null || roomTypeStr.trim().isEmpty() ||
+        floorNumStr == null || floorNumStr.trim().isEmpty()) {
+
+            response.sendRedirect(request.getContextPath() + "/room/create?error=empty_fields");
+            return;
+        }
+
         int floorNum = Integer.parseInt(request.getParameter("floorNum"));
-        String roomStatusStr = request.getParameter("roomStatus");
         int roomTypeId =  Integer.parseInt(request.getParameter("roomTypeId"));
 
-        if (roomNum == null || roomNum.isEmpty() || floorNum <= 0 || roomTypeId <= 0 || roomStatusStr == null || roomStatusStr.isEmpty()) {
+        if (floorNum <= 0 || roomTypeId <= 0)
+        {
             response.sendRedirect(request.getContextPath() + "/room/create?error=empty_fields");
             return;
         }

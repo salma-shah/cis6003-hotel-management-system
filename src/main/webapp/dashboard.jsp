@@ -128,6 +128,18 @@
         {
             background-color: #7f94af !important;
         }
+        .converter-box {
+            width: 800px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            background: #fff;
+        }
+        .converter-box input, .converter-box select {
+            width: 100%;
+            padding: 8px;
+            margin: 6px 0;
+        }
     </style>
 </head>
 <body>
@@ -159,25 +171,29 @@
                 <div class="col-md-3">
                     <div class="stat-card">
                         <p>Confirmed</p>
-                        <h3><c:out value="${reservationCount.Confirmed}" /></h3>
+                        <h3>27</h3>
+<%--                        <h3><c:out value="${reservationCount.Confirmed}" /></h3>--%>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="stat-card ">
                         <p>Checked-In</p>
-                        <h3><c:out value="${reservationCount.CheckedIn}" /></h3>
+                        <h3>17</h3>
+<%--                        <h3><c:out value="${reservationCount.CheckedIn}" /></h3>--%>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="stat-card ">
                         <p>Checked-Out</p>
-                        <h3><c:out value="${reservationCount.CheckedOut}" /></h3>
+                        <h3>07</h3>
+<%--                        <h3><c:out value="${reservationCount.CheckedOut}" /></h3>--%>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="stat-card ">
                         <p>Cancelled</p>
-                        <h3><c:out value="${reservationCount.Cancelled}" /></h3>
+                        <h3>03</h3>
+<%--                        <h3><c:out value="${reservationCount.Cancelled}" /></h3>--%>
                     </div>
                 </div>
             </div>
@@ -205,19 +221,35 @@
         </div>
 
 
-        <!-- most recent rservations -->
+        <!-- currency converter -->
         <div class="content-card">
-            <div class="header-row">
-                <h3>Recent Reservations / Notifications</h3>
-            </div>
-            <ul>
-                <c:forEach var="res" items="${recentReservations}">
-                    <li>
-                        Reservation <strong>${res.reservationNumber}</strong> for <strong>${res.guestName}</strong>
-                        is <em>${res.status}</em> (Check-in: ${res.checkInDate})
-                    </li>
-                </c:forEach>
-            </ul>
+        <div class="converter-box">
+            <h3>Currency Converter</h3>
+            <br>
+            <label>Amount</label>
+            <input type="number" id="amount" placeholder="Enter amount..." />
+
+            <label>From</label>
+            <select id="from">
+                <option value="USD">&dollar; USD</option>
+                <option value="EUR">&euro; EUR</option>
+                <option value="GBP">&pound; GBP</option>
+                <option value="AUD">A&dollar; AUD</option>
+                <option value="LKR">Rs LKR</option>
+            </select>
+
+            <label>To</label>
+            <select id="to">
+                <option value="LKR">Rs LKR</option>
+                <option value="USD">&dollar; USD</option>
+                <option value="EUR">&euro; EUR</option>
+                <option value="GBP">&pound; GBP</option>
+                <option value="AUD">A&dollar; AUD</option>
+            </select>
+
+            <label>Converted Amount</label>
+            <input type="text" id="result" readonly />
+        </div>
         </div>
 
     </main>
@@ -253,6 +285,37 @@
                 if(event.target === modal) modal.style.display = "none";
             });
         }
+
+        // currency converter
+        async function convertCurrency(){
+            const amount = document.getElementById("amount").value;
+            const from = document.getElementById("from").value;
+            const to = document.getElementById("to").value;
+
+            const params = new URLSearchParams();
+            params.append("amount", amount);
+            params.append("from", from);
+            params.append("to", to);
+
+            if (!amount || amount <= 0) return;
+
+            fetch('<c:url value="/currency/convert" />',
+                {
+                    method: "post",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: params.toString(),
+                }
+            )
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    document.getElementById("result").value = data.conversion_result.toFixed(2);
+                })
+        }
+
+        document.getElementById("amount").addEventListener("input", convertCurrency);
+        document.getElementById("from").addEventListener("change", convertCurrency);
+        document.getElementById("to").addEventListener("change", convertCurrency);
 
         const params = new URLSearchParams(window.location.search);
         const error = params.get('error');
