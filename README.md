@@ -1,6 +1,4 @@
-(Currently in progress, working on the project step-by-step and aligning it with module lectures) 
-
-# Ocean View Resort (v 1.10.2) 🏝️🍹⛱️🌞🌊 
+# Ocean View Resort (v 1.10.3) 🏝️🍹⛱️🌞🌊 
 A hotel management system that assists staff with handling resort room reservations. From secure user authentication to making reservations with a unique ID and a helpful guide section, the system is user-friendly and meets the requirements. Built with Java EE and MySQL, following a layered architecture, this system is designed to automate and manage room reservations and guest records. 
 
 ## Demo-Video: 
@@ -22,7 +20,7 @@ Ocean View Resort is a popular beachside hotel in Galle, serving hundreds of gue
 ### User management
 * Register new staff accounts with email notifications
 * Update user details like contact number and address
-* Safe session handling and destroying with logout feature
+* Safe session handling and destruction with the logout feature
 * Currency converter to improve staff's daily tasks
 
 ### Room management
@@ -34,14 +32,14 @@ Ocean View Resort is a popular beachside hotel in Galle, serving hundreds of gue
 * Enhancing customer experience by providing an option between NIC or Passport Number for identification purposes
 * CRUD functionalities (Guests are removed permanently when deleted to comply with GDPR standards)
 * Search & Filtering by registration-number, Checked-In / Checked-Out status, and Identification documents
-* Managing guest preferences according to guest's stay history
+* Managing guest preferences according to guests' stay history
 
 ### Reservation management
 * Making reservations with a unique Reservation Number
 * Total cost calculated upon runtime; guests may select preferred amenities
 * Ease of Check-in / Check-out process and payment reminders
 * Email sent to guest upon successful reservation
-* Search & Filtering by reservation number, status and dates
+* Search & Filtering by reservation number, status, and dates
 
 ### Bill & Payment Handling
 * Total Cost for a reservation is computed and taxes are applied
@@ -139,19 +137,19 @@ Ocean View Resort features a CI/CD pipeline by GitHub actions, where it followed
 
 Branch strategy:
 * ```development``` : Development environment for new features
-* ```q/a```: Isolated, stable environment to test features and verify code stability safely for QA
+* ```qa```: Isolated, stable environment to test features and verify code stability safely for QA
 * ```regression```: Address and prevent software regression, to make isolated changes by refactoring skeletal code to ensure bugs do not 'sneak in' past initial tests again 
 * ```master```: Production environment for deployment and live-monitoring
 
 Version-control techniques:
 * Merging: Once a feature was fully-complete and working, its branch was merged into ```development``` branch before deletion
 * Commits & Pushes: Following Unified Process, small incremental commits were pushed to the ```development``` branch, serving a single purpose and making it easier to track
-* Cherry-pick: When pushing commits from ```development``` to ```q/a```, cherry-pick was used to selectively integrate changes
-* Deployment: After thorough testing, code is pushed from ```q/a``` branch to ```master``` branch
+* Pull Requests (PR): When pushing commits to ```master```, a pull request was created to review before selectively integrating changes
+* Deployment: After thorough testing, code is pushed from ```qa``` branch to ```master``` branch
 
 Commit-History: Commits to ```development``` branch history can be viewed [here](https://github.com/salma-shah/cis6003-hotel-management-system/commits/development/)
 
-```master``` branch holds only the 'shippable' code; therefore, only merge requests were made to it, following real-world best practices. 
+```master``` branch holds only the 'shippable' code; therefore, only pull requests were made to it, following real-world best practices. 
 
 Following and integrating into the CI/CD pipeline ensures that only safely tested and reviewed code is delivered to the production environment, with minimal disruptions that could cause damage. This improves performance and ensures client requirements are fulfilled.   
 
@@ -164,19 +162,26 @@ Following and integrating into the CI/CD pipeline ensures that only safely teste
 These security measures create a protected environment against unauthorized access. The hotel manages sensitive data like guest information and financial transactions; therefore, confidentiality, integrity, and availability are required.
 
 ## Version
-* Version: Ocean View Hotel 1.10.2
+* Version: Ocean View Hotel **v1.10.3**
 * Last updated: 5th March 2025
 
 ## Hosted on: 
 ![Tomcat Logo](https://tomcat.apache.org/res/images/tomcat.png)
 
 ## Lessons Learned
+* Following the **layered-architecture** approach was practical, allowing for easy bug tracing and delegating responsibilities across layers. When errors arose, pinpointing the root cause was easy by following the logs.
+* This was the first project where I actually utilized **GitHub tools** to their maximum (like version control and branching); it made development and testing more efficient and less complicated. I could work on different features simultaneously and ```git stash``` command allowed me to store changes that were not ready to be committed yet, so I could switch to another branch.
+* **Custom exception-handling:** Learned beyond simply throwing generic Exceptions or SQL Exceptions in every layer. Custom Exceptions proved to be handy for meaningful error-handling messages, particularly in the service layers. However, I would like to improve my knowledge and learn how to handle exceptions in the servlet layers and their best practices.
+* **SQL triggers and Stored Procedures:** While it seemed intimidating at first, implementing triggers and Stored Procedures reduced the need for huge queries in the persistence layer and simplified the process. Furthermore, for simple but critical functions like updating room and payment statuses, automatic triggers made it convenient and eliminated redundant, extra queries.
+* Implementing the most suitable design patterns for this system (Singleton, Factory, Builder & Decorator) allowed me to extend my knowledge and learn how practicing these approaches and following SOLID principles helps improve code-maintainability and makes it flexible for growth in the future. I hope to apply more patterns for different projects in the future.
+
+* I learned that delivering a working solution is more than just writing code; the importance lies in its design. *Maintenance, flexibility, and extensibility* need to be taken into account. 
 
 ## Contribution
 If you would like to contribute to this repository:
 1. Fork the repository
 2. Create a new branch (`git checkout -b feature/your-feature-name`)
-3. Make your changes then commit them (`git commit -m 'Add your feature'`)
+3. Make your changes, then commit them (`git commit -m 'Add your feature'`)
 4. Push to the branch (`git push origin feature/your-feature-name`)
 5. Open a pull request
 
