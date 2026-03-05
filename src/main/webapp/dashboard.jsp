@@ -171,29 +171,25 @@
                 <div class="col-md-3">
                     <div class="stat-card">
                         <p>Confirmed</p>
-                        <h3>27</h3>
-<%--                        <h3><c:out value="${reservationCount.Confirmed}" /></h3>--%>
+                        <h3><c:out value="${reservationCount.Confirmed}" /></h3>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="stat-card ">
                         <p>Checked-In</p>
-                        <h3>17</h3>
-<%--                        <h3><c:out value="${reservationCount.CheckedIn}" /></h3>--%>
+                        <h3><c:out value="${reservationCount.CheckedIn}" /></h3>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="stat-card ">
                         <p>Checked-Out</p>
-                        <h3>07</h3>
-<%--                        <h3><c:out value="${reservationCount.CheckedOut}" /></h3>--%>
+                        <h3><c:out value="${reservationCount.CheckedOut}" /></h3>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="stat-card ">
                         <p>Cancelled</p>
-                        <h3>03</h3>
-<%--                        <h3><c:out value="${reservationCount.Cancelled}" /></h3>--%>
+                        <h3><c:out value="${reservationCount.Cancelled}" /></h3>
                     </div>
                 </div>
             </div>
