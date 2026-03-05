@@ -1,0 +1,148 @@
+package servlet;
+
+import dto.UserCredentialDTO;
+import dto.UserDTO;
+import business.service.AuthService;
+import business.service.impl.AuthServiceImpl;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+@WebServlet(name = "AuthServlet", urlPatterns = "/auth/*")
+public class AuthServlet extends HttpServlet {
+
+    // enabling logging in tomcat server
+    private static final Logger LOG = Logger.getLogger(AuthServlet.class.getName());
+    private AuthService authService;
+
+    @Override
+    public void init() {
+        this.authService = new AuthServiceImpl();
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException {
+
+        // LOG.info("AuthServlet doGet hit");
+//        response.sendRedirect(request.getContextPath() + "/login.jsp");
+
+        String path = request.getPathInfo();
+        if (path == null) {
+            path = "/";
+        }
+
+        switch (path) {
+            case "/logout":
+                logout(request, response);
+                break;
+            case  "/":
+               request.getRequestDispatcher("/login.jsp").forward(request, response);
+               break;
+        }
+
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException {
+
+        // logs for debugging
+//        LOG.log(Level.INFO, "Handling POST request for authentication purposes.");
+//        LOG.info("ServletPath = " + request.getServletPath());
+//        LOG.info("PathInfo = " + request.getPathInfo());
+
+        String path = request.getPathInfo();
+
+        if (path == null) {
+            path = "/";
+        }
+
+       // setting the methods based on the paths
+        if (path.equals("/login")) {
+            login(request, response);
+            //            case "/logout":
+//                logout(request, response);
+//                break;
+        } else {
+            LOG.log(Level.SEVERE, "Unsupported path: " + path);
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        }
+    }
+
+
+    // method for login so that we can reuse these methods in doGet and doPost both
+    private void login(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+
+            LOG.log(Level.INFO, "Login request received");
+
+            // getting form parameters from the form
+            String username = request.getParameter("username");
+            String password = request.getParameter("password");
+
+            // validating the input
+            if (username == null || password == null || username.trim().isEmpty() || password.trim().isEmpty()) {
+                request.setAttribute("emptyFields", "Please enter username and password");
+                request.getRequestDispatcher("/login.jsp").forward(request, response);
+                return;
+            }
+
+            UserCredentialDTO credentials= new UserCredentialDTO(username, password);
+
+            // verifying password for username
+            // using password manager class
+            //  the service will do it
+
+            UserDTO user = authService.login(credentials);
+
+            // if credentials are correct, then the user will be taken to dashboard
+            // create session and passing use details
+            HttpSession session = request.getSession();
+            // System.out.println("SESSION ID (login): " + request.getSession().getId());
+
+            session.setAttribute("userId", user.getUserId());
+            session.setAttribute("username", user.getUsername());
+            session.setAttribute("userRole", user.getRole().name());
+            response.sendRedirect(request.getContextPath() + "/user/dashboard");
+    }
+
+    // logout method
+    private void logout(HttpServletRequest request, HttpServletResponse response) throws IOException {
+          LOG.log(Level.INFO, "Logout request received");
+
+            // getting current session
+            HttpSession session = request.getSession();
+
+            // if session exists
+            if (session != null) {
+                // logging the users details
+                String username = (String) session.getAttribute("username");
+
+                // if username exists
+                if (username != null) {
+                    LOG.log(Level.INFO, "Logout from user: " + username);
+                    LOG.log(Level.INFO, "Logout from session: " + session.getId());
+                } else {
+                    LOG.log(Level.INFO, "Logout from unidentified user");
+                }
+
+                // now destroying the session
+                session.invalidate();
+                LOG.log(Level.INFO, "Logout successful. Session: " + session.getId() + " was destroyed");
+                response.sendRedirect(request.getContextPath() + "/index.jsp");
+            }
+            else
+            {
+                LOG.log(Level.INFO, "No active session was found to invalidate for logout request.");
+            }
+
+    }
+}
+

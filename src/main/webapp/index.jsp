@@ -1,5 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@page isELIgnored="false"%>
 <head>
     <meta charset="UTF-8">
     <title>Ocean View Hotel</title>
@@ -57,10 +57,10 @@
 <div class="logo-card">
     <img src="images/logo.png" alt="Ocean View Hotel Logo">
 
-    <h1>Ocean View Hotel</h1>
+    <h1>Ocean View Resort</h1>
     <p><b>Comfort</b> 𓆝 <b>Galle</b>  𓆝<b>Experience</b></p>
 
-    <a href="login.jsp" class="btn enter-btn">
+    <a class="btn enter-btn" href="<c:url value='/auth' />" >
         Enter
     </a>
 </div>

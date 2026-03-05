@@ -1,6 +1,11 @@
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@page isELIgnored="false"%>
+
 <head>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"/>
+    <title>Sidebar</title>
 </head>
+
 <style>
     body {
         margin: 0;
@@ -26,12 +31,24 @@
     .sidebar a {
         color: white;
         text-decoration: none;
-        margin: 15px 0;
-        display: block;
+        margin: 12px 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 15px;
+    }
+
+    .sidebar i {
+        width: 20px;
+        text-align: center;
+        font-size: 18px;
     }
 
     .sidebar a:hover {
         text-decoration: underline;
+        background: rgba(255,255,255,0.12);
+        border-radius: 6px;
+        padding-left: 6px;
     }
 
     .logout-btn {
@@ -42,35 +59,151 @@
         border-radius: 20px;
         width: fit-content;
     }
+
+     /*modal css */
+    .custom-modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.55);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* modal box */
+    .custom-modal-content {
+        background: #ffffff;
+        width: 360px;
+        max-width: 90%;
+        border-radius: 8px;
+        padding: 24px;
+        position: relative;
+    }
+
+    /* close icon */
+    .custom-modal .close {
+        position: absolute;
+        top: 12px;
+        right: 14px;
+        font-size: 20px;
+        cursor: pointer;
+        color: #666;
+    }
+
+    /* text */
+    .custom-modal-content p {
+        margin: 10px 0 20px;
+        font-size: 15px;
+        color: #333;
+        text-align: center;
+    }
+
+    /* footer */
+    .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    /* buttons */
+    #confirmLogout {
+        background-color: #dc3545;
+        color: #fff;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    #confirmLogout:hover {
+        background-color: #bb2d3b;
+    }
+
+    #cancelLogout {
+        background-color: #e0e0e0;
+        color: #333;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
 </style>
 
 <div class="sidebar p-3">
 
-    <h4 class="mb-4">Dashboard</h4>
+    <a class="nav-link" href="<c:url value='/user/dashboard'/>">
+        <h4 class="mb-4">Dashboard</h4></a>
 
     <nav class="nav flex-column sidebar-nav">
 
-        <a class="nav-link" href="reservations.jsp">
-            <i class="bi bi-book me-2"></i> Reservations
+        <a class="nav-link" href="<c:url value='/reservation/all'/>">
+            <i class="bi bi-book"></i> Reservations
         </a>
 
-        <a class="nav-link" href="rooms.jsp">
-            <i class="bi bi-house-door"></i>    Rooms
+        <a class="nav-link" href="<c:url value='/room/all'/>">
+            <i class="bi bi-house-door"></i>  Rooms
         </a>
 
-        <a class="nav-link" href="help.jsp">
-            <i class="bi bi-question-square me-2"></i> Help
+        <a class="nav-link" href="<c:url value='/guest/all'/>">
+            <i class="bi bi-person-badge"></i> Guests
         </a>
 
-        <a class="nav-link" href="register.jsp">
-            <i class="bi bi-person-circle"></i>    Create New Account
+    <%--        this is a section only manager can view--%>
+       <c:if test="${sessionScope.userRole == 'Manager'}">
+        <a class="nav-link" href="<c:url value='/user/all' />">
+            <i class="bi bi-gear"></i> Manage User Accounts
         </a>
+           <a class="nav-link" href="<c:url value='/report'/>">
+               <i class="bi bi-journal-check"></i>    Generate Reports
+           </a>
+       </c:if>
 
+        <a class="nav-link" href="<c:url value='/help' />">
+            <i class="bi bi-question-square"></i>  Help
+        </a>
     </nav>
 
-    <button class="logout-btn">
+    <button class="logout-btn" onclick="openLogoutModal()">
         Logout
     </button>
 
+<%--    we will use a pop up modal--%>
+    <div id="logoutModal" class="custom-modal">
+            <div class="custom-modal-content">
+            <span class="close" onclick="closeLogoutModal()">&times;</span>
+            <p>Are you sure you want to logout?</p>
+                <div class="modal-footer">
+            <button id="confirmLogout" class="btn btn-danger">Yes</button>
+            <button id="cancelLogout">No</button>
+        </div>
+            </div>
+    </div>
 </div>
+
+<script>
+    function openLogoutModal() {
+        document.getElementById('logoutModal').style.display = 'flex';
+    }
+
+    function closeLogoutModal() {
+        document.getElementById('logoutModal').style.display = 'none';
+    }
+
+    document.getElementById('confirmLogout').onclick = () => {
+        window.location.href = '<c:url value='/auth/logout' />' ;
+    };
+
+    document.getElementById('cancelLogout').onclick = closeLogoutModal;
+
+    window.onclick = (e) => {
+        const modal = document.getElementById('logoutModal');
+        if (e.target === modal) {
+            closeLogoutModal();
+        }
+    };
+
+
+</script>
 

@@ -1,3 +1,6 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page isELIgnored="false" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,9 +13,9 @@
 
     <!-- bootstrap Icons -->
     <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 
-    <!-- creating custom css for rounded corners and edges-->
+    <!-- creating custom CSS for rounded corners and edges-->
     <style>
         body {
             min-height: 100vh;
@@ -69,6 +72,17 @@
             padding: 6px 25px;
             font-size: 14px;
         }
+
+        .error-message {
+            color: darkred;
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .form-error i {
+            margin-right: 6px;
+        }
+
     </style>
 </head>
 <body>
@@ -78,26 +92,35 @@
     <!-- heading part of form -->
     <div class="login-header">
         <h1>Welcome to</h1>
-        <h2>Ocean View Hotel</h2>
+        <h2>Ocean View Resort</h2>
     </div>
 
     <!-- form body -->
     <div class="login-body">
-        <form action = ""  method="post" id="loginForm">
-            <div class="mb-3">
+        <form action="<c:url value='/auth/login' />" method="post" id="loginForm">
+        <div class="mb-3">
                 <label>Username</label>
-                <input type="text" class="form-control" id="username" name="username" required>
+                <input type="text" class="form-control" id="username" name="username">
+            <div class="error-message" id="emptyUsernameError" style="display: none" ></div>
             </div>
+
 
             <div class="mb-3">
                 <label>Password</label>
                 <div style="position: relative;">
-                    <input type="password" class="form-control" id="password" name="password" required>
+                    <input type="password" class="form-control" id="password" name="password">
                     <button type="button" id="togglePassword" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer;">
                         <i class="bi bi-eye" id="eyeIcon"></i>
                     </button>
+                    <div class="error-message" id="emptyPasswordError" style="display: none" ></div>
                 </div>
             </div>
+
+            <c:if test="${not empty pageContext.exception}">
+                <div style="color: darkred">
+                ${pageContext.exception.message}
+                </div>
+            </c:if>
 
             <div class="text-center">
                 <button type="submit" class="btn btn-light login-btn" >
@@ -105,8 +128,11 @@
                 </button>
             </div>
         </form>
+
     </div>
 </div>
+
+
 
 <%--if user enters password, they may toggle the eye icon and choose between viewing the password text or not--%>
 <%--this controls showing/not showing the text --%>
@@ -129,7 +155,35 @@
             eyeIcon.classList.add('bi-eye');
         }
         });
-</script>
 
+        document.addEventListener("DOMContentLoaded", () => {
+            const form = document.getElementById("loginForm");
+
+            form.addEventListener("submit", (e) => {
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                let valid = false;
+
+                if (!username) {
+                    const usernameError = document.getElementById("emptyUsernameError");
+                    usernameError.style.display = "block";
+                    document.getElementById("emptyUsernameError").textContent = "Username is required";
+                    valid = true;
+                }
+
+                if (!password) {
+                    const usernameError = document.getElementById("emptyPasswordError");
+                    usernameError.style.display = "block";
+                    document.getElementById("emptyPasswordError").textContent = "Password is required";
+                    valid = true;
+                }
+
+                if (valid) {
+                    e.preventDefault();
+                }
+            });
+
+        });
+</script>
 </body>
 </html>
