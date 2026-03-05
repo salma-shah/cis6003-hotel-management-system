@@ -2,12 +2,9 @@ package mail.factory.impl;
 
 import dto.GuestDTO;
 import dto.ReservationDTO;
-import dto.RoomTypeDTO;
 import mail.EmailBase;
 import mail.factory.EmailFactory;
 import mail.impl.SuccessfulReservationEmail;
-
-import java.time.LocalDate;
 
 public class SuccessfulReservationEmailFactory extends EmailFactory {
     private final ReservationDTO reservationDTO;

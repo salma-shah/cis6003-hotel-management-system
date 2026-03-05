@@ -1,7 +1,5 @@
 package dto;
 
-import java.util.Map;
-
 public class ReportDTO {
 
     // reservation summary

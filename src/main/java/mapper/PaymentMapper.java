@@ -2,7 +2,6 @@ package mapper;
 
 import dto.PaymentDTO;
 import entity.Payment;
-import entity.Reservation;
 
 public class PaymentMapper {
     public static Payment toPayment(PaymentDTO paymentDTO) {

@@ -4,7 +4,7 @@ import jakarta.mail.*;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 
-import java.io.UnsupportedEncodingException;
+// import java.io.UnsupportedEncodingException;
 //import javax.mail.MessagingException;
 //import javax.mail.Session;
 //import javax.mail.Transport;

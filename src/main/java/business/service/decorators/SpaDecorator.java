@@ -1,7 +1,6 @@
 package business.service.decorators;
 
 import business.service.IRoom;
-import entity.Room;
 
 public class SpaDecorator extends RoomDecorator {
     public SpaDecorator(IRoom decoratedRoom) {

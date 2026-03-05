@@ -1,9 +1,7 @@
 package mapper;
 
 import dto.AmenityDTO;
-import dto.ContactFormDTO;
 import entity.Amenity;
-import entity.ContactForm;
 
 public class AmenityMapper {
     public static Amenity toAmenity(AmenityDTO amenityDTO) {
