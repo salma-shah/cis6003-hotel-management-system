@@ -1,4 +1,4 @@
-# Ocean View Resort (v 1.10.3) 🏝️🍹⛱️🌞🌊 
+# Ocean View Resort (v1.10.3) 🏝️🍹⛱️🌞🌊 
 A hotel management system that assists staff with handling resort room reservations. From secure user authentication to making reservations with a unique ID and a helpful guide section, the system is user-friendly and meets the requirements. Built with Java EE and MySQL, following a layered architecture, this system is designed to automate and manage room reservations and guest records. 
 
 ## Demo-Video: 
