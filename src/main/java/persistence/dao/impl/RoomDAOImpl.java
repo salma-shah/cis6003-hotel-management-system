@@ -10,7 +10,6 @@ import entity.RoomType;
 import exception.db.DataAccessException;
 import exception.EntityNotFoundException;
 import persistence.dao.RoomDAO;
-import persistence.dao.RoomTypeDAO;
 import persistence.dao.helper.QueryHelper;
 
 import java.sql.*;
@@ -20,8 +19,6 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
     public class RoomDAOImpl implements RoomDAO {
-        // enabling logging in tomcat server
-        private static final Logger LOG = Logger.getLogger(RoomDAOImpl.class.getName());
 
         @Override
         public boolean add(Room entity)  {
@@ -131,7 +128,8 @@ import java.util.stream.Collectors;
 
                 // adding filter by checkin/checkout dates
                 if (searchParams.containsKey("check_in") && searchParams.containsKey("check_out")) {
-                    roomSql.append(" AND NOT EXISTS ( SELECT 1 FROM reservation rv WHERE rv.room_id = r.room_id AND rv.status='Confirmed' AND (? < rv.checkout_date AND ? > checkin_date) ) ");
+                    roomSql.append(" AND NOT EXISTS ( SELECT 1 FROM reservation rv WHERE rv.room_id = r.room_id AND rv.status IN ('Confirmed' , 'CheckedIn')" +
+                            " AND (? < rv.checkout_date AND ? > checkin_date) ) ");
                     params.add(searchParams.get("check_in"));
                     params.add(searchParams.get("check_out"));
                 }

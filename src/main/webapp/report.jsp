@@ -73,7 +73,7 @@
 
             <div class="content-card">
                 <h5>Select Report Type</h5>
-
+                <h6>Please either select specific dates or weekly/monthly</h6>
                 <br>
 
                 <form method="post" action="<c:url value='/report/generate' />">
@@ -85,15 +85,15 @@
                 </select>
                 </div>
                 <br>
-<%--                <div>--%>
-<%--            <label for="startDate">Start Date:</label>--%>
-<%--            <input type="date" name="startDate">--%>
-<%--                </div>--%>
-<%--                <br>--%>
-<%--                <div>--%>
-<%--            <label for="endDate">End Date:</label>--%>
-<%--            <input type="date" name="endDate">--%>
-<%--                </div>--%>
+                <div>
+            <label for="startDate">Start Date:</label>
+            <input type="date" name="startDate">
+                </div>
+                <br>
+                <div>
+            <label for="endDate">End Date:</label>
+            <input type="date" name="endDate">
+                </div>
                 <br>
                 <div>
             <button class="enter-btn" type="submit">Generate Report</button>
@@ -105,5 +105,15 @@
 
     </main>
 </div>
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const error = params.get('error');
+
+    if (error === "invalid_input")
+    {
+        alert("You can only select weekly/monthly report type or for specific dates.")
+    }
+
+</script>
 </body>
 </html>

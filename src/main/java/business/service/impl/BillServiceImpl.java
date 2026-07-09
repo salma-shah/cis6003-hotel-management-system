@@ -49,7 +49,8 @@ public class BillServiceImpl implements BillService {
     }
 
     @Override
-    public byte[] generateBillPDF(int billId, String resCode, int guestId, double stayCost, double tax, double discount,  double totalAmount) {
+    public byte[] generateBillPDF(int billId, String resCode, int guestId, double stayCost, double tax, double discount,
+                                  double totalAmount) {
            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
            PdfWriter pdfWriter = new PdfWriter(outputStream);
            PdfDocument pdfDocument = new PdfDocument(pdfWriter);

@@ -12,6 +12,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @WebServlet(name= "ReportServlet", urlPatterns = "/report/*")
 public class ReportServlet extends HttpServlet {
@@ -50,27 +52,44 @@ public class ReportServlet extends HttpServlet {
         LocalDate end;
 
         String type = request.getParameter("reportType");
-//        String startDateString = request.getParameter("startDate");
-//        String endDateString = request.getParameter("endDate");
-//        LocalDate startDate = LocalDate.parse(startDateString);
-//        LocalDate endDate = LocalDate.parse(endDateString);
-//
-        // selecting the report type
-        if (type.equals("weekly")) {
-            start = LocalDate.now().minusDays(7);
-            end = LocalDate.now();
-        }
-        else
+        String startDateString = request.getParameter("startDate");
+        String endDateString = request.getParameter("endDate");
+        Logger.getLogger(ReportServlet.class.getName()).log(Level.INFO, "start date : " + startDateString);
+        Logger.getLogger(ReportServlet.class.getName()).log(Level.INFO, "end date : " + endDateString);
+
+        if (type != null && !startDateString.isEmpty() && !endDateString.isEmpty())
         {
-            start = YearMonth.now().atDay(1);
-            end = LocalDate.now();
+            response.sendRedirect(request.getContextPath() + "/report?error=invalid_input");
+            return;
         }
 
-        // generating the report
-        ReportDTO report = reportService.generateReport(start, end);
-        byte[] reportPDF = reportService.generateReportPDF(start, end, report);
-        response.setContentType("application/pdf");
-        response.setHeader("Content-Disposition", "attachment; filename=OceanViewResortReport_" + start + "_TO_" + end+ "_.pdf");
-        response.getOutputStream().write(reportPDF);
+        if (startDateString != null && endDateString != null && !startDateString.isEmpty() && !endDateString.isEmpty()) {
+            LocalDate startDate = LocalDate.parse(startDateString);
+            LocalDate endDate = LocalDate.parse(endDateString);
+
+            // generating reports for specific date values
+            ReportDTO reportDTO = reportService.generateReport(startDate, endDate);
+            byte[] reportPDF = reportService.generateReportPDF(startDate, endDate, reportDTO);
+            response.setContentType("application/pdf");
+            response.setHeader("Content-Disposition", "attachment; filename=OceanViewResortReport_" + startDate + "_TO_" + endDateString + "_.pdf");
+            response.getOutputStream().write(reportPDF);
+        }
+        else {
+            // selecting the report type
+            if (type.equals("weekly")) {
+                start = LocalDate.now().minusDays(7);
+                end = LocalDate.now();
+            } else {
+                start = YearMonth.now().atDay(1);
+                end = LocalDate.now();
+            }
+
+            // generating the report
+            ReportDTO report = reportService.generateReport(start, end);
+            byte[] reportPDF = reportService.generateReportPDF(start, end, report);
+            response.setContentType("application/pdf");
+            response.setHeader("Content-Disposition", "attachment; filename=OceanViewResortReport_" + start + "_TO_" + end + "_.pdf");
+            response.getOutputStream().write(reportPDF);
+        }
     }
 }

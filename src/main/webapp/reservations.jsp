@@ -70,6 +70,16 @@
             font-weight: 600;
         }
 
+        .status-cancelled {
+            color: #bc9a12;
+            font-weight: 600;
+        }
+
+        .status-confirmed {
+            color: #2e4495;
+            font-weight: 600;
+        }
+
         .header-row h2 {
             margin: 0 0 20px;
             font-weight: 600;
@@ -209,6 +219,12 @@
                                     </c:when>
                                     <c:when test="${reservation.status == 'CheckedOut'}">
                                         <span class="status-checkedout">${reservation.status}</span>
+                                    </c:when>
+                                    <c:when test="${reservation.status == 'Cancelled'}">
+                                        <span class="status-cancelled">${reservation.status}</span>
+                                    </c:when>
+                                    <c:when test="${reservation.status == 'Confirmed'}">
+                                        <span class="status-confirmed">${reservation.status}</span>
                                     </c:when>
                                     <c:otherwise>${reservation.status}</c:otherwise>
                                 </c:choose>
@@ -432,6 +448,8 @@
                         const statusClass =
                             reservation.status === "CheckedIn" ? "<span class='status-checkedin'>Checked In</span>" :
                                 reservation.status === "CheckedOut"  ? "<span class='status-checkedout'>Checked Out</span>" :
+                                    reservation.status === "Cancelled" ? "<span class='status-cancelled'>Cancelled</span>" :
+                                        reservation.status === "Confirmed" ? "<span class='status-confirmed'>Confirmed</span>" :
                                     reservation.status;
 
                         let btns = "<button class='btn btn-sm btn-primary flex-fill' " +
