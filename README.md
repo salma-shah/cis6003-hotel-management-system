@@ -54,15 +54,21 @@ Ocean View Resort is a popular beachside hotel in Galle, serving hundreds of gue
 * Accurate data reports about total revenue, total number of stays (sorted by status), room occupancy rate, new and returning guests rate, paid and oustanding revenue to facilitate decision-making
 * Export weekly/monthly reports as PDF files
 
+## Software Design Patterns
+* Singleton Pattern
+* Factory Pattern
+* Builder Pattern
+* Decorator Pattern
+
 ## Screenshots 
-<img width="400" height="400" alt="OVR_index_pg" src="https://github.com/user-attachments/assets/7281bc2f-f823-4395-85bf-91842310caa8" />
-<img width="400" height="400" alt="OVR_dashboard_pg" src="https://github.com/user-attachments/assets/583d26d0-c6b8-4eb0-9268-ae8d55b0dc74" />
-<img width="400" height="400" alt="OVR_guests_pg" src="https://github.com/user-attachments/assets/388aa448-bb61-4ef2-bc1c-7423e2aa5562" />
-<img width="400" height="400" alt="OVR_rooms_all" src="https://github.com/user-attachments/assets/d8ba1381-1cbc-444b-8814-f28bbf4439a2" />
-<img width="400" height="400" alt="OVR_res_all" src="https://github.com/user-attachments/assets/aa2bc833-64f3-45ef-a104-5d9a85a104b3" />
-<img width="400" height="400" alt="OVR_payment" src="https://github.com/user-attachments/assets/62963671-71a3-4554-9798-a22115857a2a" />
-<img width="400" height="400" alt="OVR_help_pg" src="https://github.com/user-attachments/assets/adcf3835-581c-4a69-9425-74780a91f36a" />
-<img width="400" height="400" alt="OVR_report" src="https://github.com/user-attachments/assets/4f4920ed-be53-4664-9e2a-6ab8cbdf8c8b" />
+<img width="850" height="400" alt="OVR_index_pg" src="https://github.com/user-attachments/assets/7281bc2f-f823-4395-85bf-91842310caa8" />
+<img width="850" height="400" alt="OVR_dashboard_pg" src="https://github.com/user-attachments/assets/583d26d0-c6b8-4eb0-9268-ae8d55b0dc74" />
+<img width="850" height="400" alt="OVR_guests_pg" src="https://github.com/user-attachments/assets/388aa448-bb61-4ef2-bc1c-7423e2aa5562" />
+<img width="850" height="400" alt="OVR_rooms_all" src="https://github.com/user-attachments/assets/d8ba1381-1cbc-444b-8814-f28bbf4439a2" />
+<img width="850" height="400" alt="OVR_res_all" src="https://github.com/user-attachments/assets/aa2bc833-64f3-45ef-a104-5d9a85a104b3" />
+<img width="850" height="400" alt="OVR_payment" src="https://github.com/user-attachments/assets/62963671-71a3-4554-9798-a22115857a2a" />
+<img width="850" height="400" alt="OVR_help_pg" src="https://github.com/user-attachments/assets/adcf3835-581c-4a69-9425-74780a91f36a" />
+<img width="850" height="400" alt="OVR_report" src="https://github.com/user-attachments/assets/4f4920ed-be53-4664-9e2a-6ab8cbdf8c8b" />
 
 ## Architecture & Technology Stack
 System follows a layered-architecture approach to separate concerns for both modularity and maintainability:
