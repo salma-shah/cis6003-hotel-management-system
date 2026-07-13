@@ -170,7 +170,7 @@ These security measures create a protected environment against unauthorized acce
 
 ## Version
 * Version: Ocean View Hotel **v1.10.3**
-* Last updated: 5th March 2025
+* Last updated: 11th July 2025
 
 ## Hosted on: 
 ![Tomcat Logo](https://tomcat.apache.org/res/images/tomcat.png)
