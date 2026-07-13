@@ -55,10 +55,11 @@ Ocean View Resort is a popular beachside hotel in Galle, serving hundreds of gue
 * Export weekly/monthly reports as PDF files
 
 ## Software Design Patterns
-* Singleton Pattern
-* Factory Pattern
-* Builder Pattern
-* Decorator Pattern
+* **Singleton Pattern:** Applied to creating a database connection, in order to improve performance. Only one single point of the Database Connection is created, allowing centralized access. This approach is efficent, saving memory and processing power.
+* **Builder Pattern:** Encapsulates the construction logic in the static nested Builder class. Entities and DTOs are immutable, for code reliability and 
+maintenance purposes, ensuring thread-safety and easy caching. It provides a fluid syntax and simplifies debugging, making it most suitable for scenarios where guests would have to provide identification documents, based on whether they are locals or foreigners. 
+* **Factory Pattern:** Created an Factory for handling the dispatch of different email formats, based on the scenario. This approach promoted loose-coupling and dynamic creation at runtime. It makes the system scalable, even when different email types are added in the future.  
+* **Decorator Pattern:** Applied to 'decorate' rooms with different amenities. Amenity selection becomes modular and reusable, adhering to SOLID principles. Allows for future expansions and makes the system scalable.
 
 ## Screenshots 
 <img width="850" height="400" alt="OVR_index_pg" src="https://github.com/user-attachments/assets/7281bc2f-f823-4395-85bf-91842310caa8" />
